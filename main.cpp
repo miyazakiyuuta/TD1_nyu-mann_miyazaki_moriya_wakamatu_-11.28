@@ -4,6 +4,18 @@ const char kWindowTitle[] = "LC1C_TD(~11/28)_タイトル";
 const int kWindowWidth = 1280; // 画面の横幅
 const int kWindowHeight = 720; // 画面の縦幅
 
+struct Vector2
+{
+	float x;
+	float y;
+};
+
+struct Player
+{
+	Vector2 pos;
+	int isAlive;
+};
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
