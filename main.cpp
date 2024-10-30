@@ -1,6 +1,6 @@
 #include <Novice.h>
 
-const char kWindowTitle[] = "LC1C_21_ミヤザキ_ユウタ_タイトル";
+const char kWindowTitle[] = "LC1C_TD(~11/28)_タイトル";
 const int kWindowWidth = 1280; // 画面の横幅
 const int kWindowHeight = 720; // 画面の縦幅
 
