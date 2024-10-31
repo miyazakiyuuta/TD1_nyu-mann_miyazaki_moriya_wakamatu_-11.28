@@ -25,6 +25,18 @@ struct Player
 	int isJump;
 	int isAlive;
 };
+struct Boss
+{
+	Vector2 pos;
+	Vector2 attackPos;
+	int isAlive;
+	int attackCoolTimer;
+	float speed;
+	int isChange;
+	int hpCount;
+	float width;
+	float height;
+};
 
 struct Sword
 {
@@ -47,6 +59,7 @@ struct Boss
 	int isChange;
 };
 
+
 //スクリーン座標変換用関数
 float ToScreen(float posY)
 {
@@ -54,6 +67,27 @@ float ToScreen(float posY)
 	const float kWorldToScreenScale = -1.0f;
 	return (posY * kWorldToScreenScale) + kWorldToScreenTranslate;
 }
+
+//矩形の当たり判定用関数
+void IsHit(Vector2 leftTopA, float widthA, float heightA, Vector2 leftTopB, float widthB, float heightB, int& isHit)
+{
+	float ax1 = leftTopA.x;
+	float ay1 = leftTopA.y;
+	float ax2 = leftTopA.x + widthA;
+	float ay2 = leftTopA.y - heightA;
+	float bx1 = leftTopB.x;
+	float by1 = leftTopB.y;
+	float bx2 = leftTopB.x + widthB;
+	float by2 = leftTopB.y - heightB;
+	if (bx1 < ax2 && ax1 < bx2)//x座標が重なっているとき
+	{
+		if (by1 > ay2 && ay1 > by2)
+		{
+			isHit = true;
+		}
+	}
+}
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -73,11 +107,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.width = 32.0f; //縦幅
 	player.height = 32.0f; //横幅
 	player.radius = 16.0f; //半径
-	player.speed = 5.0f; //移動速度
+	player.speed = 15.0f; //移動速度
 	player.jump = 15.0f; //ジャンプ速度
 	player.gravity = 0.0f; //重力
 	player.isJump = false; //ジャンプ状態か否か
 	player.isAlive; //生存
+
 
 	Sword shortSword;
 	shortSword.pos.x = 100.0f; //ｘ座標
@@ -99,6 +134,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	longSword.durationTime = 30; //攻撃の持続時間
 	longSword.isAtk = false; //攻撃しているか
 
+
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
@@ -108,11 +144,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Boss boss;
 	boss.pos = { 360.0f,620.0f };
+
 	boss.radius = 125;
 	boss.speed = 10.0f;
 	boss.attackCoolTimer = 60;
 	boss.isAlive = true;
 	boss.isChange = false;
+
+	boss.isAlive = true;
+	boss.isChange = false;
+	boss.hpCount = 100;
+	boss.width = 150;
+	boss.height = 200;
+
+	//ボス攻撃
+	boss.attackCoolTimer = 60;
+
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -132,6 +179,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//===========================================================
 
 		//とりあえずキーボードで追加
+
 		//左右移動
 		if (keys[DIK_A])
 		{
@@ -143,7 +191,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			player.pos.x += player.speed;
 		}
 
-		//ジャンプ
+		// ジャンプ
 		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
 		{
 			player.isJump = true;
@@ -220,7 +268,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (player.pos.y - player.width / 2.0f > 0.0f)
 		{
 			player.pos.y += player.gravity -= 0.7f;
-		} else
+
+		} 
+    else
+		}
+		else
 		{
 			player.gravity = 0.0f;
 		}
@@ -234,7 +286,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
+		//===========================================================
+		//ボスの移動
+		//===========================================================
 
+		//とりあえずキーボードで追加
+
+		if (boss.hpCount <= 100)
+		{
+
+		}
 
 		///
 		/// ↑更新処理ここまで
@@ -272,6 +333,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		Novice::DrawEllipse(static_cast<int>(boss.pos.x), static_cast<int>(boss.pos.y), static_cast<int>(boss.radius), static_cast<int>(boss.radius), 0.0f, RED, kFillModeSolid);
 
+
+		Novice::DrawBox(
+			static_cast<int>(boss.pos.x),
+			static_cast<int>(boss.pos.y),
+			static_cast<int>(boss.width),
+			static_cast<int>(boss.height),
+			0.0f, RED, kFillModeSolid);
 
 		///
 		/// ↑描画処理ここまで
