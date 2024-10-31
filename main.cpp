@@ -21,8 +21,8 @@ struct Boss
 {
 	Vector2 pos;
 	int isAlive;
-	float AttackCoolTimer;
-	int speed;
+	int attackCoolTimer;
+	float speed;
 	float radius;
 	int isChange;
 };
@@ -41,12 +41,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
 
 	// キー入力結果を受け取る箱
-	char keys[256] = {0};
-	char preKeys[256] = {0};
+	char keys[256] = { 0 };
+	char preKeys[256] = { 0 };
 
 	unsigned int currentTime = time(nullptr);
 	srand(currentTime);
 
+	Boss boss;
+	boss.pos = { 360.0f,620.0f };
+	boss.radius =125;
+	boss.speed = 10.0f;
+	boss.attackCoolTimer = 60;
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
