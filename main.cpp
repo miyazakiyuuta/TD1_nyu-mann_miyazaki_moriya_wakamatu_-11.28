@@ -343,10 +343,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Novice::DrawBox(0, 0, 60, 60, 0.0f, BLUE, kFillModeSolid);
 		}
 
-
-		Novice::DrawEllipse(static_cast<int>(boss.pos.x), static_cast<int>(boss.pos.y), static_cast<int>(boss.radius), static_cast<int>(boss.radius), 0.0f, RED, kFillModeSolid);
-
-
 		Novice::DrawBox(
 			static_cast<int>(boss.pos.x),
 			static_cast<int>(ToScreen(boss.pos.y+boss.height/2.0f)),
