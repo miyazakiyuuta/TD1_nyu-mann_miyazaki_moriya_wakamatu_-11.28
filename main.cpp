@@ -1,4 +1,6 @@
 #include <Novice.h>
+#include <stdlib.h>
+#include <time.h>
 
 const char kWindowTitle[] = "LC1C_TD(~11/28)_タイトル";
 const int kWindowWidth = 1280; // 画面の横幅
@@ -24,6 +26,34 @@ struct Player
 	int isAlive;
 };
 
+struct Sword
+{
+	Vector2 pos;
+	float width;
+	float height;
+	float radius;
+	int coolTime;
+	int durationTime;
+	int isAtk;
+};
+
+struct Boss
+{
+	Vector2 pos;
+	int isAlive;
+	int attackCoolTimer;
+	float speed;
+	float radius;
+	int isChange;
+};
+
+//スクリーン座標変換用関数
+float ToScreen(float posY)
+{
+	const float kWorldToScreenTranslate = 620.0f;
+	const float kWorldToScreenScale = -1.0f;
+	return (posY * kWorldToScreenScale) + kWorldToScreenTranslate;
+}
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -49,15 +79,40 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.isJump = false; //ジャンプ状態か否か
 	player.isAlive; //生存
 
-	float scaffold = 620.0f; //地面
-	float scrollX = 0.0f; //スクリーンｘ座標
-	float scrollY = 0.0f; //スクリーンｙ座標
-	float monitorX = 0.0f; //モニターｘ座標
-	float monitorY = 0.0f; //モニターｙ座標
+	Sword shortSword;
+	shortSword.pos.x = 100.0f; //ｘ座標
+	shortSword.pos.y = 100.0f; //ｙ座標
+	shortSword.width = 64.0f; //縦幅
+	shortSword.height = 64.0f; //横幅
+	shortSword.radius = 32.0f; //半径
+	shortSword.coolTime = 0; //攻撃クールタイム
+	shortSword.durationTime = 30; //攻撃の持続時間
+	shortSword.isAtk = false; //攻撃しているか
+
+	Sword longSword;
+	longSword.pos.x = 100.0f; //ｘ座標
+	longSword.pos.y = 100.0f; //ｙ座標
+	longSword.width = 64.0f; //縦幅
+	longSword.height = 64.0f; //横幅
+	longSword.radius = 32.0f; //半径
+	longSword.coolTime = 0; //攻撃クールタイム
+	longSword.durationTime = 30; //攻撃の持続時間
+	longSword.isAtk = false; //攻撃しているか
 
 	// キー入力結果を受け取る箱
-	char keys[256] = {0};
-	char preKeys[256] = {0};
+	char keys[256] = { 0 };
+	char preKeys[256] = { 0 };
+
+	unsigned int currentTime = static_cast<unsigned int>(time(nullptr));
+	srand(currentTime);
+
+	Boss boss;
+	boss.pos = { 360.0f,620.0f };
+	boss.radius = 125;
+	boss.speed = 10.0f;
+	boss.attackCoolTimer = 60;
+	boss.isAlive = true;
+	boss.isChange = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -73,44 +128,112 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 
 		//===========================================================
-		//移動
+		//プレイヤー
 		//===========================================================
 
 		//とりあえずキーボードで追加
-		if (keys[DIK_A]) {
+		//左右移動
+		if (keys[DIK_A])
+		{
 			player.pos.x -= player.speed;
 		}
 
-		if (keys[DIK_D]) {
+		if (keys[DIK_D])
+		{
 			player.pos.x += player.speed;
 		}
 
-		// ジャンプ
-		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
+		//ジャンプ
+		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+		{
 			player.isJump = true;
 		}
-		if (player.isJump) {
-			player.pos.y -= player.jump;
+		if (player.isJump)
+		{
+			player.pos.y += player.jump;
+		}
+
+		//攻撃
+
+		if (keys[DIK_J] && !preKeys[DIK_J]) //短剣
+		{
+			if (!longSword.isAtk) //大剣攻撃時は使えない
+			{
+				if (shortSword.coolTime <= 0) //クールタイムが０以下の時のみ
+				{
+					shortSword.isAtk = true;
+					shortSword.coolTime = 20;
+				}
+			}
+		}
+
+		if (keys[DIK_K] && !preKeys[DIK_K]) //大剣
+		{
+			if (!shortSword.isAtk) //短剣攻撃時は使えない
+			{
+				if (longSword.coolTime <= 0) //クールタイムが０以下の時のみ
+				{
+					longSword.isAtk = true;
+					longSword.coolTime = 40;
+				}
+			}
+		}
+
+		//クールタイム
+		if (shortSword.coolTime >= 0) //短剣
+		{
+			shortSword.coolTime--;
+		}
+
+		if (longSword.coolTime >= 0) //大剣
+		{
+			longSword.coolTime--;
+		}
+
+		//攻撃の持続時間
+		if (shortSword.isAtk) //短剣
+		{
+			if (shortSword.durationTime >= 0)
+			{
+				shortSword.durationTime--;
+			} 
+			else
+			{
+				shortSword.isAtk = false;
+				shortSword.durationTime = 30;
+			}
+		}
+
+		if (longSword.isAtk) //大剣
+		{
+			if (longSword.durationTime >= 0)
+			{
+				longSword.durationTime--;
+			} else
+			{
+				longSword.isAtk = false;
+				longSword.durationTime = 30;
+			}
 		}
 
 		//重力
-		if (player.pos.y + player.radius < scaffold) {
-			player.pos.y += player.gravity += 0.7f;
-		} else {
+		if (player.pos.y - player.width / 2.0f > 0.0f)
+		{
+			player.pos.y += player.gravity -= 0.7f;
+		} else
+		{
 			player.gravity = 0.0f;
 		}
 
 		//地面に着地した時
-		if (player.pos.y + player.radius >= scaffold) {
-			player.pos.y = scaffold - player.radius;
+		if (player.pos.y - player.width / 2.0f <= 0.0f)
+		{
+			player.pos.y = player.width / 2.0f;
 			player.isJump = false;
 		}
 
-		//モニター座標
-		monitorX = player.pos.x - scrollX;
-		monitorY = player.pos.y - scrollY;
-		player.posW.x = monitorX;
-		player.posW.y = monitorY;
+
+
 
 
 		///
@@ -121,16 +244,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
+		//地面
 		Novice::DrawLine(0, 620, 1280, 620, RED);
 
+		//プレイヤー
 		Novice::DrawBox
 		(
-			static_cast<int>(player.posW.x - player.width / 2.0f),
-			static_cast<int>(player.posW.y - player.height / 2.0f),
+			static_cast<int>(player.pos.x - player.width / 2.0f),
+			static_cast<int>(ToScreen(player.pos.y + player.height / 2.0f)),
 			static_cast<int>(player.width),
 			static_cast<int>(player.height),
 			0.0f, WHITE, kFillModeSolid
 		);
+
+		//攻撃が出ているかテスト	
+
+		if (shortSword.isAtk) //短剣(持続時)
+		{
+			Novice::DrawBox(0,0,60,60,0.0f, RED, kFillModeSolid);
+		}
+
+		if (longSword.isAtk) //大剣(持続時)
+		{
+			Novice::DrawBox(0, 0, 60, 60, 0.0f, BLUE, kFillModeSolid);
+		}
+
+
+		Novice::DrawEllipse(static_cast<int>(boss.pos.x), static_cast<int>(boss.pos.y), static_cast<int>(boss.radius), static_cast<int>(boss.radius), 0.0f, RED, kFillModeSolid);
+
 
 		///
 		/// ↑描画処理ここまで
