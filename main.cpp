@@ -1,4 +1,6 @@
 #include <Novice.h>
+#include <stdlib.h>
+#include <time.h>
 
 const char kWindowTitle[] = "LC1C_TD(~11/28)_タイトル";
 const int kWindowWidth = 1280; // 画面の横幅
@@ -23,7 +25,23 @@ struct Player
 	int isJump;
 	int isAlive;
 };
+struct Boss
+{
+	Vector2 pos;
+	int isAlive;
+	int attackCoolTimer;
+	float speed;
+	float radius;
+	int isChange;
+};
 
+//スクリーン座標変換用関数
+float ToScreen(float posY)
+{
+	const float kWorldToScreenTranslate = 620.0f;
+	const float kWorldToScreenScale = -1.0f;
+	return (posY * kWorldToScreenScale) + kWorldToScreenTranslate;
+}
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -56,8 +74,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	float monitorY = 0.0f; //モニターｙ座標
 
 	// キー入力結果を受け取る箱
-	char keys[256] = {0};
-	char preKeys[256] = {0};
+	char keys[256] = { 0 };
+	char preKeys[256] = { 0 };
+
+	unsigned int currentTime = static_cast<unsigned int>(time(nullptr));
+	srand(currentTime);
+
+	Boss boss;
+	boss.pos = { 360.0f,620.0f };
+	boss.radius =125;
+	boss.speed = 10.0f;
+	boss.attackCoolTimer = 60;
+  boss.isAlive = true;
+	boss.isChange = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -121,6 +150,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
+
 		Novice::DrawLine(0, 620, 1280, 620, RED);
 
 		Novice::DrawBox
@@ -131,6 +161,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			static_cast<int>(player.height),
 			0.0f, WHITE, kFillModeSolid
 		);
+    
+		Novice::DrawEllipse(static_cast<int>(boss.pos.x), static_cast<int>(boss.pos.y), static_cast<int>(boss.radius), static_cast<int>(boss.radius), 0.0f, RED, kFillModeSolid);
+
 
 		///
 		/// ↑描画処理ここまで
