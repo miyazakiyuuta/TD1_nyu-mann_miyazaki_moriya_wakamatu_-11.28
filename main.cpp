@@ -42,6 +42,26 @@ float ToScreen(float posY)
 	const float kWorldToScreenScale = -1.0f;
 	return (posY * kWorldToScreenScale) + kWorldToScreenTranslate;
 }
+//矩形の当たり判定用関数
+int IsHit(Vector2 leftTopA, float widthA, float heightA, Vector2 leftTopB, float widthB, float heightB, int& isHit)
+{
+	float ax1 = leftTopA.x;
+	float ay1 = leftTopA.y;
+	float ax2 = leftTopA.x + widthA;
+	float ay2 = leftTopA.y - heightA;
+	float bx1 = leftTopB.x;
+	float by1 = leftTopB.y;
+	float bx2 = leftTopB.x + widthB;
+	float by2 = leftTopB.y - heightB;
+	if (bx1 < ax2 && ax1 < bx2)//x座標が重なっているとき
+	{
+		if (by1 > ay2 && ay1 > by2)
+		{
+			isHit = true;
+		}
+	}
+	return isHit;
+}
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
