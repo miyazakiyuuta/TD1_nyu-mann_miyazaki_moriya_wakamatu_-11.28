@@ -44,7 +44,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = { 0 };
 	char preKeys[256] = { 0 };
 
-	unsigned int currentTime = time(nullptr);
+	unsigned int currentTime = static_cast<unsigned int>(time(nullptr));
 	srand(currentTime);
 
 	Boss boss;
@@ -52,6 +52,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	boss.radius =125;
 	boss.speed = 10.0f;
 	boss.attackCoolTimer = 60;
+  boss.isAlive = true;
+	boss.isChange = false;
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -72,6 +75,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
+
+		Novice::DrawEllipse(static_cast<int>(boss.pos.x), static_cast<int>(boss.pos.y), static_cast<int>(boss.radius), static_cast<int>(boss.radius), 0.0f, RED, kFillModeSolid);
 
 		///
 		/// ↑描画処理ここまで
