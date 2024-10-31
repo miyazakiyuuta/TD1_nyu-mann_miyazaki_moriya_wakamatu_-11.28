@@ -16,6 +16,17 @@ struct Player
 	int isAlive;
 };
 
+
+struct Boss
+{
+	Vector2 pos;
+	int isAlive;
+	float AttackCoolTimer;
+	int speed;
+	float radius;
+	int isChange;
+};
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
