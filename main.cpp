@@ -36,6 +36,7 @@ struct Boss
 	int hpCount;
 	float width;
 	float height;
+	float attackSpeed;
 };
 
 //スクリーン座標変換用関数
@@ -79,18 +80,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	srand(currentTime);
 
 	Boss boss;
-	boss.pos = { 360.0f,620.0f };
-
+	boss.pos = { 960.0f,100.0f };
+	boss.speed = 10.0f;
 	boss.isAlive = true;
 	boss.isChange = false;
 	boss.hpCount = 100;
-	boss.width = 150;
+	boss.width = 300;
 	boss.height = 200;
 
 	//ボス攻撃
 	boss.attackCoolTimer = 60;
-
-
+	boss.attackPos = boss.pos;
+	boss.attackSpeed = 10.0f;
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -157,7 +158,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (boss.hpCount <= 100)
 		{
-
+			if (keys[DIK_P] && !preKeys[DIK_P])
+			{
+				
+			}
 		}
 
 		///
@@ -183,7 +187,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		Novice::DrawBox(
 			static_cast<int>(boss.pos.x),
-			static_cast<int>(boss.pos.y),
+			static_cast<int>(ToScreen(boss.pos.y+boss.height/2.0f)),
 			static_cast<int>(boss.width),
 			static_cast<int>(boss.height),
 			0.0f, RED, kFillModeSolid);
