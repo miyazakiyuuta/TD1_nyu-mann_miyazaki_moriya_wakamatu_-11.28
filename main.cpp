@@ -1,4 +1,6 @@
 #include <Novice.h>
+#include <stdlib.h>
+#include <time.h>
 
 const char kWindowTitle[] = "LC1C_TD(~11/28)_タイトル";
 const int kWindowWidth = 1280; // 画面の横幅
@@ -15,6 +17,15 @@ struct Player
 	Vector2 pos;
 	int isAlive;
 };
+struct Boss
+{
+	Vector2 pos;
+	int isAlive;
+	float AttackCoolTimer;
+	int speed;
+	float radius;
+	int isChange;
+};
 
 //スクリーン座標変換用関数
 float ToScreen(float posY)
@@ -23,7 +34,6 @@ float ToScreen(float posY)
 	const float kWorldToScreenScale = -1.0f;
 	return (posY * kWorldToScreenScale) + kWorldToScreenTranslate;
 }
-
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -33,6 +43,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// キー入力結果を受け取る箱
 	char keys[256] = {0};
 	char preKeys[256] = {0};
+
+	unsigned int currentTime = time(nullptr);
+	srand(currentTime);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
