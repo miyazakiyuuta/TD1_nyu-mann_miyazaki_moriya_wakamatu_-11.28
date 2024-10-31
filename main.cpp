@@ -28,11 +28,14 @@ struct Player
 struct Boss
 {
 	Vector2 pos;
+	Vector2 attackPos;
 	int isAlive;
 	int attackCoolTimer;
 	float speed;
-	float radius;
 	int isChange;
+	int hpCount;
+	float width;
+	float height;
 };
 
 //スクリーン座標変換用関数
@@ -61,7 +64,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.width = 32.0f; //縦幅
 	player.height = 32.0f; //横幅
 	player.radius = 16.0f; //半径
-	player.speed = 5.0f; //移動速度
+	player.speed = 15.0f; //移動速度
 	player.jump = 15.0f; //ジャンプ速度
 	player.gravity = 0.0f; //重力
 	player.isJump = false; //ジャンプ状態か否か
@@ -82,11 +85,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Boss boss;
 	boss.pos = { 360.0f,620.0f };
-	boss.radius =125;
 	boss.speed = 10.0f;
-	boss.attackCoolTimer = 60;
-  boss.isAlive = true;
+	boss.isAlive = true;
 	boss.isChange = false;
+	boss.hpCount = 100;
+	boss.width = 150;
+	boss.height = 200;
+
+	//ボス攻撃
+	boss.attackCoolTimer = 60;
+
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -142,6 +150,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		player.posW.y = monitorY;
 
 
+
+		//===========================================================
+		//ボスの移動
+		//===========================================================
+
+		//とりあえずキーボードで追加
+
+		if (boss.hpCount <= 100)
+		{
+
+		}
+
 		///
 		/// ↑更新処理ここまで
 		///
@@ -161,9 +181,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			static_cast<int>(player.height),
 			0.0f, WHITE, kFillModeSolid
 		);
-    
-		Novice::DrawEllipse(static_cast<int>(boss.pos.x), static_cast<int>(boss.pos.y), static_cast<int>(boss.radius), static_cast<int>(boss.radius), 0.0f, RED, kFillModeSolid);
 
+		Novice::DrawBox(
+			static_cast<int>(boss.pos.x),
+			static_cast<int>(boss.pos.y),
+			static_cast<int>(boss.width),
+			static_cast<int>(boss.height),
+			0.0f, RED, kFillModeSolid);
+		
 
 		///
 		/// ↑描画処理ここまで
