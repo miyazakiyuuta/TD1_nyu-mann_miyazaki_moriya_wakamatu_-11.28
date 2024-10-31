@@ -16,6 +16,14 @@ struct Player
 	int isAlive;
 };
 
+//スクリーン座標変換用関数
+float ToScreen(float posY)
+{
+	const float kWorldToScreenTranslate = 620.0f;
+	const float kWorldToScreenScale = -1.0f;
+	return (posY * kWorldToScreenScale) + kWorldToScreenTranslate;
+}
+
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
