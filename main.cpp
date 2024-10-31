@@ -17,18 +17,23 @@ struct Player
 	Vector2 pos;
 	int isAlive;
 };
-
-
 struct Boss
 {
 	Vector2 pos;
 	int isAlive;
-	int AttackCoolTimer;
+	int attackCoolTimer;
 	float speed;
 	float radius;
 	int isChange;
 };
 
+//スクリーン座標変換用関数
+float ToScreen(float posY)
+{
+	const float kWorldToScreenTranslate = 620.0f;
+	const float kWorldToScreenScale = -1.0f;
+	return (posY * kWorldToScreenScale) + kWorldToScreenTranslate;
+}
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
@@ -36,18 +41,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
 
 	// キー入力結果を受け取る箱
-	char keys[256] = {0};
-	char preKeys[256] = {0};
+	char keys[256] = { 0 };
+	char preKeys[256] = { 0 };
 
 	unsigned int currentTime = static_cast<unsigned int>(time(nullptr));
 	srand(currentTime);
 
 	Boss boss;
-	boss.pos = { 640.0f, 620.0f };
-	boss.isAlive = true;
-	boss.AttackCoolTimer = 0;
-	boss.speed = 4.0f;
-	boss.radius = 125.0f;
+	boss.pos = { 360.0f,620.0f };
+	boss.radius =125;
+	boss.speed = 10.0f;
+	boss.attackCoolTimer = 60;
+  boss.isAlive = true;
 	boss.isChange = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
