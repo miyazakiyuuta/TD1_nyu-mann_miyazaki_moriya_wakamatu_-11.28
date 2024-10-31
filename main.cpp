@@ -50,6 +50,15 @@ struct Sword
 	int isAtk;
 };
 
+struct Attack
+{
+	Vector2 pos;
+	float width;
+	float height;
+	float speed;
+	int isShot;
+};
+
 //スクリーン座標変換用関数
 float ToScreen(float posY)
 {
@@ -143,9 +152,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	boss.height = 200;
 	//ボス攻撃
 	boss.attackCoolTimer = 60;
-	boss.attackPos = boss.pos;
+  boss.attackPos = boss.pos;
 	boss.attackSpeed = 10.0f;
   
+	Attack smallFire[9];
+
+	for (int i = 1; i < 9; i++)
+	{
+		smallFire[i].pos = { 1100.0f - i * 10, 200 };
+		smallFire[i].width = 16.0f;
+		smallFire[i].height = 16.0f;
+		smallFire[i].speed = 10.0f;
+		smallFire[i].isShot = false;
+	}
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -283,6 +303,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
+		ToScreen(smallFire[0].pos.y);
+
+		for (int i = 1; i < 9; i++)
+		{
+			ToScreen(smallFire[i].pos.y);
+		}
+
 		///
 		/// ↑更新処理ここまで
 		///
@@ -326,6 +353,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			static_cast<int>(boss.width),
 			static_cast<int>(boss.height),
 			0.0f, RED, kFillModeSolid);
+
+		for (int i = 1; i < 9; i++)
+		{
+			if (smallFire[i].isShot)
+			{
+				Novice::DrawBox(
+					static_cast<int>(smallFire[i].pos.x),
+					static_cast<int>(smallFire[i].pos.y),
+					static_cast<int>(smallFire[i].width),
+					static_cast<int>(smallFire[i].height),
+					0.0f, 0xFFFFFFFF, kFillModeSolid);
+			}
+		}
 
 		///
 		/// ↑描画処理ここまで
