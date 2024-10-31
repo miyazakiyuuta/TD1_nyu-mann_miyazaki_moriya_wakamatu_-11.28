@@ -43,7 +43,7 @@ float ToScreen(float posY)
 	return (posY * kWorldToScreenScale) + kWorldToScreenTranslate;
 }
 //矩形の当たり判定用関数
-int IsHit(Vector2 leftTopA, float widthA, float heightA, Vector2 leftTopB, float widthB, float heightB, int& isHit)
+void IsHit(Vector2 leftTopA, float widthA, float heightA, Vector2 leftTopB, float widthB, float heightB, int& isHit)
 {
 	float ax1 = leftTopA.x;
 	float ay1 = leftTopA.y;
@@ -60,7 +60,6 @@ int IsHit(Vector2 leftTopA, float widthA, float heightA, Vector2 leftTopB, float
 			isHit = true;
 		}
 	}
-	return isHit;
 }
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
