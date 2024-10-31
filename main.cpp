@@ -23,8 +23,8 @@ struct Boss
 {
 	Vector2 pos;
 	int isAlive;
-	float AttackCoolTimer;
-	int speed;
+	int AttackCoolTimer;
+	float speed;
 	float radius;
 	int isChange;
 };
@@ -39,8 +39,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	char keys[256] = {0};
 	char preKeys[256] = {0};
 
-	unsigned int currentTime = time(nullptr);
+	unsigned int currentTime = static_cast<unsigned int>(time(nullptr));
 	srand(currentTime);
+
+	Boss boss;
+	boss.pos = { 640.0f, 620.0f };
+	boss.isAlive = true;
+	boss.AttackCoolTimer = 0;
+	boss.speed = 4.0f;
+	boss.radius = 125.0f;
+	boss.isChange = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -62,6 +70,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓描画処理ここから
 		///
+
+		Novice::DrawEllipse(static_cast<int>(boss.pos.x), static_cast<int>(boss.pos.y), static_cast<int>(boss.radius), static_cast<int>(boss.radius), 0.0f, RED, kFillModeSolid);
 
 		///
 		/// ↑描画処理ここまで
