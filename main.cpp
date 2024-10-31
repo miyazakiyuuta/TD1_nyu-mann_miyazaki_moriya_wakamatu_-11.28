@@ -67,11 +67,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.isJump = false; //ジャンプ状態か否か
 	player.isAlive; //生存
 
-	float scaffold = 620.0f; //地面
-	float scrollX = 0.0f; //スクリーンｘ座標
-	float scrollY = 0.0f; //スクリーンｙ座標
-	float monitorX = 0.0f; //モニターｘ座標
-	float monitorY = 0.0f; //モニターｙ座標
 
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
@@ -82,10 +77,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Boss boss;
 	boss.pos = { 360.0f,620.0f };
-	boss.radius =125;
+	boss.radius = 125;
 	boss.speed = 10.0f;
 	boss.attackCoolTimer = 60;
-  boss.isAlive = true;
+	boss.isAlive = true;
 	boss.isChange = false;
 
 	// ウィンドウの×ボタンが押されるまでループ
@@ -106,40 +101,43 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//===========================================================
 
 		//とりあえずキーボードで追加
-		if (keys[DIK_A]) {
+		if (keys[DIK_A])
+		{
 			player.pos.x -= player.speed;
 		}
 
-		if (keys[DIK_D]) {
+		if (keys[DIK_D])
+		{
 			player.pos.x += player.speed;
 		}
 
 		// ジャンプ
-		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE]) {
+		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+		{
 			player.isJump = true;
 		}
-		if (player.isJump) {
-			player.pos.y -= player.jump;
+		if (player.isJump)
+		{
+			player.pos.y += player.jump;
 		}
 
 		//重力
-		if (player.pos.y + player.radius < scaffold) {
-			player.pos.y += player.gravity += 0.7f;
-		} else {
+		if (player.pos.y - player.width / 2.0f > 0.0f)
+		{
+			player.pos.y += player.gravity -= 0.7f;
+		}
+		else
+		{
 			player.gravity = 0.0f;
 		}
 
 		//地面に着地した時
-		if (player.pos.y + player.radius >= scaffold) {
-			player.pos.y = scaffold - player.radius;
+		if (player.pos.y - player.width / 2.0f <= 0.0f)
+		{
+			player.pos.y = player.width / 2.0f;
 			player.isJump = false;
 		}
 
-		//モニター座標
-		monitorX = player.pos.x - scrollX;
-		monitorY = player.pos.y - scrollY;
-		player.posW.x = monitorX;
-		player.posW.y = monitorY;
 
 
 		///
@@ -155,13 +153,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		Novice::DrawBox
 		(
-			static_cast<int>(player.posW.x - player.width / 2.0f),
-			static_cast<int>(player.posW.y - player.height / 2.0f),
+			static_cast<int>(player.pos.x - player.width / 2.0f),
+			static_cast<int>(ToScreen(player.pos.y + player.height / 2.0f)),
 			static_cast<int>(player.width),
 			static_cast<int>(player.height),
 			0.0f, WHITE, kFillModeSolid
 		);
-    
+
 		Novice::DrawEllipse(static_cast<int>(boss.pos.x), static_cast<int>(boss.pos.y), static_cast<int>(boss.radius), static_cast<int>(boss.radius), 0.0f, RED, kFillModeSolid);
 
 
