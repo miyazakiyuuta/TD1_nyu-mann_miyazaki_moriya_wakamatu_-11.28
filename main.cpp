@@ -321,7 +321,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					longSword.durationTime--;
 					player.gravity = -15.0f;
 				} 
-        else
+                else
 				{
 					longSword.isAtk = false;
 					longSword.durationTime = 30;
@@ -341,7 +341,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			{
 				player.pos.y += player.gravity -= 0.7f;
 			} 
-      else
+            else
 			{
 				player.gravity = 0.0f;
 			}
