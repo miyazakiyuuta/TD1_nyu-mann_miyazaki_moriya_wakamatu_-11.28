@@ -157,6 +157,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	boss.width = 300; // 横幅
 	boss.height = 200; // 縦幅
 	//ボス攻撃
+	boss.attackCoolTimer = 60;
 	boss.fireCoolTimer = 0; // 小炎攻撃用のタイマー
 	boss.isAttacking = false;
   
