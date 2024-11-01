@@ -36,7 +36,6 @@ struct Boss
 	int hpCount;
 	float width;
 	float height;
-	float attackSpeed;
 };
 
 struct Sword
@@ -152,8 +151,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	boss.height = 200;
 	//ボス攻撃
 	boss.attackCoolTimer = 60;
-  boss.attackPos = boss.pos;
-	boss.attackSpeed = 10.0f;
   
 	Attack smallFire[9];
 
