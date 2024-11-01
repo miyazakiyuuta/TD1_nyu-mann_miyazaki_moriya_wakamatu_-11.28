@@ -216,11 +216,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (keys[DIK_A])
 		{
 			player.pos.x -= player.speed;
+			player.isDirections = true;
 		}
 
 		if (keys[DIK_D])
 		{
 			player.pos.x += player.speed;
+			player.isDirections = false;
 		}
 
 		// ジャンプ
