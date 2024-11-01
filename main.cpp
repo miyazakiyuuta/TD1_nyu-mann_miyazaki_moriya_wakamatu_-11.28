@@ -62,6 +62,14 @@ struct Attack
 	int isShot;
 };
 
+enum SCENE
+{
+	GAMETITLE,
+	GAMEPLAY,
+	GAMEOVER,
+	GAMECLEAR
+};
+
 enum
 {
 	SMALLFIRE,
@@ -105,6 +113,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//==============================================
 	//変数初期化
 	//==============================================
+
+	int scene = GAMEPLAY;
 
 	//プレイヤー
 	Player player;
@@ -206,148 +216,315 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓更新処理ここから
 		///
 
-		//===========================================================
-		//プレイヤー
-		//===========================================================
-
-		//とりあえずキーボードで追加
-
-		//左右移動
-		if (keys[DIK_A])
+		//シーン切り替え
+		switch (scene)
 		{
-			player.pos.x -= player.speed;
+		case GAMETITLE:
+			break;
+		case GAMEPLAY:
+			break;
+		case GAMEOVER:
+			break;
+		case GAMECLEAR:
+			break;
 		}
 
-		if (keys[DIK_D])
+		if (scene == GAMEPLAY)
 		{
-			player.pos.x += player.speed;
-		}
+			//===========================================================
+			//プレイヤー
+			//===========================================================
 
-		// ジャンプ
-		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
-		{
-			player.isJump = true;
-		}
-		if (player.isJump)
-		{
-			player.pos.y += player.jump;
-		}
+			//とりあえずキーボードで追加
 
-		//==============================================================
-		//攻撃
-		//==============================================================
-
-		if (keys[DIK_J] && !preKeys[DIK_J]) //短剣
-		{
-			if (!longSword.isAtk) //大剣攻撃時は使えない
+			//左右移動
+			if (keys[DIK_A])
 			{
-				if (shortSword.coolTime <= 0) //クールタイムが０以下の時のみ
+				player.pos.x -= player.speed;
+			}
+
+			if (keys[DIK_D])
+			{
+				player.pos.x += player.speed;
+			}
+
+			// ジャンプ
+			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+			{
+				player.isJump = true;
+			}
+			if (player.isJump)
+			{
+				player.pos.y += player.jump;
+			}
+
+			//==============================================================
+			//攻撃
+			//==============================================================
+
+			if (keys[DIK_J] && !preKeys[DIK_J]) //短剣
+			{
+				if (!longSword.isAtk) //大剣攻撃時は使えない
 				{
-					shortSword.isAtk = true;
-					shortSword.coolTime = 20;
+					if (shortSword.coolTime <= 0) //クールタイムが０以下の時のみ
+					{
+						shortSword.isAtk = true;
+						shortSword.coolTime = 20;
+					}
 				}
 			}
-		}
 
-		if (keys[DIK_K] && !preKeys[DIK_K]) //大剣
-		{
-			if (!shortSword.isAtk) //短剣攻撃時は使えない
+			if (keys[DIK_K] && !preKeys[DIK_K]) //大剣
 			{
-				if (longSword.coolTime <= 0) //クールタイムが０以下の時のみ
+				if (!shortSword.isAtk) //短剣攻撃時は使えない
 				{
-					longSword.isAtk = true;
-					longSword.coolTime = 40;
+					if (longSword.coolTime <= 0) //クールタイムが０以下の時のみ
+					{
+						longSword.isAtk = true;
+						longSword.coolTime = 40;
+					}
 				}
 			}
-		}
 
-		//クールタイム
-		if (shortSword.coolTime >= 0) //短剣
-		{
-			shortSword.coolTime--;
-		}
-
-		if (longSword.coolTime >= 0) //大剣
-		{
-			longSword.coolTime--;
-		}
-
-		//攻撃の持続時間
-		if (shortSword.isAtk) //短剣
-		{
-			if (shortSword.durationTime >= 0)
+			//クールタイム
+			if (shortSword.coolTime >= 0) //短剣
 			{
-				shortSword.durationTime--;
-			} else
+				shortSword.coolTime--;
+			}
+
+			if (longSword.coolTime >= 0) //大剣
 			{
+				longSword.coolTime--;
+			}
+
+			//攻撃の持続時間
+			if (shortSword.isAtk) //短剣
+			{
+				if (shortSword.durationTime >= 0)
+				{
+					shortSword.durationTime--;
+				}
+				else
+				{
+					shortSword.isAtk = false;
+					shortSword.durationTime = 30;
+				}
+			}
+
+			if (longSword.isAtk) //大剣
+			{
+				if (longSword.durationTime >= 0)
+				{
+					longSword.durationTime--;
+				}
+				else
+				{
+					longSword.isAtk = false;
+					longSword.durationTime = 30;
+				}
+			}
+
+			//攻撃の座標
+			 //短剣
+			shortSword.pos.x = player.pos.x;
+			shortSword.pos.y = player.pos.y + player.radius + shortSword.radius;
+			//大剣
+			longSword.pos.x = player.pos.x;
+			longSword.pos.y = player.pos.y + player.radius + longSword.radius;
+
+			//重力
+			if (player.pos.y - player.width / 2.0f > 0.0f)
+			{
+				player.pos.y += player.gravity -= 0.7f;
+
+			}
+			else
+			{
+				player.gravity = 0.0f;
+			}
+
+			//地面に着地した時
+			if (player.pos.y - player.width / 2.0f <= 0.0f)
+			{
+				player.pos.y = player.width / 2.0f;
+				player.isJump = false;
+			}
+
+
+
+			//===========================================================
+			//ボスの移動
+			//===========================================================
+
+			//とりあえずキーボードで追加
+
+			if (boss.hpCount <= 100)
+			{
+				if (!boss.isAttacking)
+				{
+					if (boss.attackCoolTimer > 0)
+					{
+						boss.attackCoolTimer--;
+					}
+					if (boss.attackCoolTimer <= 0)
+					{
+						boss.attackCoolTimer = 0;
+
+
+						if (keys[DIK_P] && !preKeys[DIK_P])
+						{
+							attackTypeFirst = rand() % 2;
+							boss.isAttacking = true;
+						}
+					}
+				}
+
+				if (boss.isAttacking)
+				{
+					switch (attackTypeFirst)
+					{
+					case SMALLFIRE:
+						if (keys[DIK_P])
+						{
+							if (fireShootCount <= 7)
+							{
+								if (boss.fireCoolTimer <= 0)
+								{
+									for (int i = 0; i < smallFireMax; i++)
+									{
+										if (!smallFire[i].isShot)
+										{
+											smallFire[i].isShot = true;
+											smallFire[i].pos.x = 1000.0f;
+											fireShootCount++;
+
+											break;
+										}
+									}
+
+									boss.fireCoolTimer = 45;
+								}
+							}
+						}
+
+						if (boss.fireCoolTimer > 0)
+						{
+							boss.fireCoolTimer--;
+						}
+
+						for (int i = 0; i < smallFireMax; i++)
+						{
+							if (smallFire[i].isShot)
+							{
+								smallFire[i].pos.x -= smallFire[i].speed;
+
+								if (smallFire[i].pos.x <= 0.0f - smallFire[i].width)
+								{
+									smallFire[i].isShot = false;
+									fireDisappearCount++;
+
+									break;
+								}
+							}
+						}
+
+						if (fireDisappearCount == 8)
+						{
+							boss.isAttacking = false;
+							boss.attackCoolTimer = 150;
+							fireDisappearCount = 0;
+							fireShootCount = 0;
+
+							for (int i = 0; i < smallFireMax; i++)
+							{
+								smallFire[i].isShot = false;
+							}
+
+							break;
+						}
+
+						break;
+
+					case BIGFIRE:
+						if (keys[DIK_P])
+						{
+							if (!smallFire[8].isShot)
+							{
+								smallFire[8].pos.x = 1000.0f;
+								smallFire[8].isShot = true;
+							}
+						}
+
+						if (smallFire[8].isShot)
+						{
+							smallFire[8].pos.x -= smallFire[8].speed;
+
+							if (smallFire[8].pos.x <= 0.0f - smallFire[8].width)
+							{
+								smallFire[8].isShot = false;
+								fireDisappearCount = 1;
+							}
+						}
+
+						if (fireDisappearCount == 1)
+						{
+							boss.isAttacking = false;
+							boss.attackCoolTimer = 150;
+							fireDisappearCount = 0;
+
+							break;
+						}
+
+						break;
+					}
+				}
+			}
+
+			//===========================================================
+			//当たり判定
+			//===========================================================
+
+			//短剣とボス
+			if (shortSword.isAtk)
+			{
+				if (!player.isDirections) { //右を向いている時、右に攻撃をする
+					IsHit(shortSword.pos, shortSword.width, shortSword.height, boss.pos, boss.width, boss.height, shortSword.isBossHit);
+				}
+				if (player.isDirections) { //左を向いている時、左に攻撃をする
+					IsHit(shortSword.pos, -shortSword.width, shortSword.height, boss.pos, boss.width, boss.height, shortSword.isBossHit);
+				}
+			}
+
+			//大剣とボス
+			if (longSword.isAtk)
+			{
+				if (!player.isDirections) { //右を向いている時、右に攻撃をする
+					IsHit(longSword.pos, longSword.width, longSword.height, boss.pos, boss.width, boss.height, longSword.isBossHit);
+				}
+				if (player.isDirections) { //左を向いている時、左に攻撃をする
+					IsHit(longSword.pos, -longSword.width, longSword.height, boss.pos, boss.width, boss.height, longSword.isBossHit);
+				}
+			}
+
+			//短剣の攻撃がボスに当たっている時
+			if (shortSword.isBossHit) {
 				shortSword.isAtk = false;
 				shortSword.durationTime = 30;
+				boss.hpCount -= shortSword.damage; //ボスのHPを攻撃力分減らす
+				shortSword.isBossHit = false;
 			}
-		}
 
-		if (longSword.isAtk) //大剣
-		{
-			if (longSword.durationTime >= 0)
-			{
-				longSword.durationTime--;
-			} else
-			{
+			//大剣の攻撃がボスに当たっている時
+			if (longSword.isBossHit) {
 				longSword.isAtk = false;
 				longSword.durationTime = 30;
-			}
-		}
+				boss.hpCount -= longSword.damage; //ボスのHPを攻撃力分減らす
+				longSword.isBossHit = false;
 
-		//攻撃の座標
-		 //短剣
-		shortSword.pos.x = player.pos.x;
-		shortSword.pos.y = player.pos.y + player.radius + shortSword.radius;
-		//大剣
-		longSword.pos.x = player.pos.x;
-		longSword.pos.y = player.pos.y + player.radius + longSword.radius;
-
-		//重力
-		if (player.pos.y - player.width / 2.0f > 0.0f)
-		{
-			player.pos.y += player.gravity -= 0.7f;
-
-		} else
-		{
-			player.gravity = 0.0f;
-		}
-
-		//地面に着地した時
-		if (player.pos.y - player.width / 2.0f <= 0.0f)
-		{
-			player.pos.y = player.width / 2.0f;
-			player.isJump = false;
-		}
-
-
-
-		//===========================================================
-		//ボスの移動
-		//===========================================================
-
-		//とりあえずキーボードで追加
-
-		if (boss.hpCount <= 100)
-		{
-			if (!boss.isAttacking)
-			{
-				if (boss.attackCoolTimer > 0)
+				if (keys[DIK_P] && !preKeys[DIK_P])
 				{
-					boss.attackCoolTimer--;
-				}
-				if (boss.attackCoolTimer <= 0)
-				{
-					boss.attackCoolTimer = 0;
-
-
-					if (keys[DIK_P] && !preKeys[DIK_P])
-					{
-						attackTypeFirst = rand() % 2;
-						boss.isAttacking = true;
-					}
+					attackTypeFirst = rand() % 2;
+					boss.isAttacking = true;
 				}
 			}
 
@@ -451,155 +628,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 			}
 		}
-
-		//===========================================================
-		//当たり判定
-		//===========================================================
-
-		//短剣とボス
-		if (shortSword.isAtk)
-		{
-			if (!player.isDirections) { //右を向いている時、右に攻撃をする
-				IsHit(shortSword.pos, shortSword.width, shortSword.height, boss.pos, boss.width, boss.height, shortSword.isBossHit);
-			}
-			if (player.isDirections) { //左を向いている時、左に攻撃をする
-				IsHit(shortSword.pos, -shortSword.width, shortSword.height, boss.pos, boss.width, boss.height, shortSword.isBossHit);
-			}
-		}
-
-		//大剣とボス
-		if (longSword.isAtk)
-		{
-			if (!player.isDirections) { //右を向いている時、右に攻撃をする
-				IsHit(longSword.pos, longSword.width, longSword.height, boss.pos, boss.width, boss.height, longSword.isBossHit);
-			}
-			if (player.isDirections) { //左を向いている時、左に攻撃をする
-				IsHit(longSword.pos, -longSword.width, longSword.height, boss.pos, boss.width, boss.height, longSword.isBossHit);
-			}
-		}
-
-		//短剣の攻撃がボスに当たっている時
-		if (shortSword.isBossHit) {
-			shortSword.isAtk = false;
-			shortSword.durationTime = 30;
-			boss.hpCount -= shortSword.damage; //ボスのHPを攻撃力分減らす
-			shortSword.isBossHit = false;
-		}
-
-		//大剣の攻撃がボスに当たっている時
-		if (longSword.isBossHit) {
-			longSword.isAtk = false;
-			longSword.durationTime = 30;
-			boss.hpCount -= longSword.damage; //ボスのHPを攻撃力分減らす
-			longSword.isBossHit = false;
-
-			if (keys[DIK_P] && !preKeys[DIK_P])
-			{
-				attackTypeFirst = rand() % 2;
-				boss.isAttacking = true;
-			}
-		}
-
-		if (boss.isAttacking)
-		{
-			switch (attackTypeFirst)
-			{
-			case SMALLFIRE:
-				if (keys[DIK_P])
-				{
-					if (fireShootCount <= 7)
-					{
-						if (boss.fireCoolTimer <= 0)
-						{
-							for (int i = 0; i < smallFireMax; i++)
-							{
-								if (!smallFire[i].isShot)
-								{
-									smallFire[i].isShot = true;
-									smallFire[i].pos.x = 1000.0f;
-									fireShootCount++;
-
-									break;
-								}
-							}
-
-							boss.fireCoolTimer = 45;
-						}
-					}
-				}
-
-				if (boss.fireCoolTimer > 0)
-				{
-					boss.fireCoolTimer--;
-				}
-
-				for (int i = 0; i < smallFireMax; i++)
-				{
-					if (smallFire[i].isShot)
-					{
-						smallFire[i].pos.x -= smallFire[i].speed;
-
-						if (smallFire[i].pos.x <= 0.0f - smallFire[i].width)
-						{
-							smallFire[i].isShot = false;
-							fireDisappearCount++;
-
-							break;
-						}
-					}
-				}
-
-				if (fireDisappearCount == 8)
-				{
-					boss.isAttacking = false;
-					boss.attackCoolTimer = 150;
-					fireDisappearCount = 0;
-					fireShootCount = 0;
-
-					for (int i = 0; i < smallFireMax; i++)
-					{
-						smallFire[i].isShot = false;
-					}
-
-					break;
-				}
-
-				break;
-
-			case BIGFIRE:
-				if (keys[DIK_P])
-				{
-					if (!smallFire[8].isShot)
-					{
-						smallFire[8].pos.x = 1000.0f;
-						smallFire[8].isShot = true;
-					}
-				}
-
-				if (smallFire[8].isShot)
-				{
-					smallFire[8].pos.x -= smallFire[8].speed;
-
-					if (smallFire[8].pos.x <= 0.0f - smallFire[8].width)
-					{
-						smallFire[8].isShot = false;
-						fireDisappearCount = 1;
-					}
-				}
-
-				if (fireDisappearCount == 1)
-				{
-					boss.isAttacking = false;
-					boss.attackCoolTimer = 150;
-					fireDisappearCount = 0;
-
-					break;
-				}
-
-				break;
-			}
-		}
-
 
 		///
 		/// ↑更新処理ここまで
