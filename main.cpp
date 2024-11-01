@@ -215,7 +215,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓更新処理ここから
 		///
-
+        
 		/*シーン切り替え*/
 		switch (scene)
 		{
@@ -305,8 +305,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (shortSword.durationTime >= 0)
 				{
 					shortSword.durationTime--;
-				}
-				else
+					player.gravity = -15.0f;
+				} 
+        else
 				{
 					shortSword.isAtk = false;
 					shortSword.durationTime = 30;
@@ -318,8 +319,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (longSword.durationTime >= 0)
 				{
 					longSword.durationTime--;
-				}
-				else
+					player.gravity = -15.0f;
+				} 
+        else
 				{
 					longSword.isAtk = false;
 					longSword.durationTime = 30;
@@ -338,9 +340,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (player.pos.y - player.width / 2.0f > 0.0f)
 			{
 				player.pos.y += player.gravity -= 0.7f;
-
-			}
-			else
+			} 
+      else
 			{
 				player.gravity = 0.0f;
 			}
@@ -634,7 +635,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↑更新処理ここまで
 		///
-
+    
 		///
 		/// ↓描画処理ここから
 		///
@@ -743,7 +744,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Novice::ScreenPrintf(100, 120, "attack coolTimer: %d", boss.attackCoolTimer);
 			Novice::ScreenPrintf(100, 140, "attack type: %d", attackTypeFirst);
 		}
-
+    
 		///
 		/// ↑描画処理ここまで
 		///
