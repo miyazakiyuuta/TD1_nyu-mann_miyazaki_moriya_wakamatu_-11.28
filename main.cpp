@@ -28,7 +28,6 @@ struct Player
 struct Boss
 {
 	Vector2 pos;
-	Vector2 attackPos;
 	int isAlive;
 	int attackCoolTimer;
 	float speed;
@@ -36,7 +35,8 @@ struct Boss
 	int hpCount;
 	float width;
 	float height;
-	float attackSpeed;
+	int fireCoolTimer;
+	int isAttacking;
 };
 
 struct Sword
@@ -57,6 +57,12 @@ struct Attack
 	float height;
 	float speed;
 	int isShot;
+};
+
+enum
+{
+	SMALLFIRE,
+	BIGFIRE
 };
 
 //スクリーン座標変換用関数
@@ -142,29 +148,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	srand(currentTime);
 
 	Boss boss;
-	boss.pos = { 960.0f,100.0f };
-	boss.speed = 10.0f;
-	boss.attackCoolTimer = 60;
-	boss.isAlive = true;
-	boss.isChange = false;
-	boss.hpCount = 100;
-	boss.width = 300;
-	boss.height = 200;
+	boss.pos = { 960.0f,100.0f }; // x座標
+	boss.speed = 10.0f; // 移動速度
+	boss.attackCoolTimer = 0; // 攻撃のクールタイム
+	boss.isAlive = true; // 生きているか
+	boss.isChange = false; // 形態変化用のフラグ
+	boss.hpCount = 100; // 体力
+	boss.width = 300; // 横幅
+	boss.height = 200; // 縦幅
 	//ボス攻撃
-	boss.attackCoolTimer = 60;
-  boss.attackPos = boss.pos;
-	boss.attackSpeed = 10.0f;
+	boss.fireCoolTimer = 0; // 小炎攻撃用のタイマー
+	boss.isAttacking = false;
   
+	const int smallFireMax = 8;
+
+	int fireShootCount = 0;
+	int fireDisappearCount = 0;
+
 	Attack smallFire[9];
 
-	for (int i = 1; i < 9; i++)
+	for (int i = 0; i < smallFireMax; i++)
 	{
-		smallFire[i].pos = { 1100.0f - i * 10, 200 };
-		smallFire[i].width = 16.0f;
-		smallFire[i].height = 16.0f;
-		smallFire[i].speed = 10.0f;
+		smallFire[i].pos = { 0.0f, 32.0f };
+		smallFire[i].width = 32.0f;
+		smallFire[i].height = 32.0f;
+		smallFire[i].speed = 5.0f;
 		smallFire[i].isShot = false;
 	}
+
+	smallFire[8].pos = { 0.0f, 32.0f };
+	smallFire[8].width = 32.0f;
+	smallFire[8].height = 32.0f;
+	smallFire[8].speed = 15.0f;
+	smallFire[8].isShot = false;
+
+	int attackTypeFirst = 0;
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -297,17 +315,123 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		if (boss.hpCount <= 100)
 		{
-			if (keys[DIK_P] && !preKeys[DIK_P])
+			if (!boss.isAttacking)
 			{
-				
+				if (boss.attackCoolTimer > 0)
+				{
+					boss.attackCoolTimer--;
+				}
+				if (boss.attackCoolTimer <= 0)
+				{
+					boss.attackCoolTimer = 0;
+
+					if (keys[DIK_P] && !preKeys[DIK_P])
+					{
+						attackTypeFirst = rand() % 2;
+						boss.isAttacking = true;
+					}
+				}
 			}
-		}
 
-		ToScreen(smallFire[0].pos.y);
+			if (boss.isAttacking)
+			{
+				switch (attackTypeFirst)
+				{
+				case SMALLFIRE:
+					if (keys[DIK_P])
+					{
+						if (fireShootCount <= 7)
+						{
+							if (boss.fireCoolTimer <= 0)
+							{
+								for (int i = 0; i < smallFireMax; i++)
+								{
+									if (!smallFire[i].isShot)
+									{
+										smallFire[i].isShot = true;
+										smallFire[i].pos.x = 1000.0f;
+										fireShootCount++;
 
-		for (int i = 1; i < 9; i++)
-		{
-			ToScreen(smallFire[i].pos.y);
+										break;
+									}
+								}
+
+								boss.fireCoolTimer = 45;
+							}
+						}
+					}
+
+					if (boss.fireCoolTimer > 0)
+					{
+						boss.fireCoolTimer--;
+					}
+
+					for (int i = 0; i < smallFireMax; i++)
+					{
+						if (smallFire[i].isShot)
+						{
+							smallFire[i].pos.x -= smallFire[i].speed;
+
+							if (smallFire[i].pos.x <= 0.0f - smallFire[i].width)
+							{
+								smallFire[i].isShot = false;
+								fireDisappearCount++;
+
+								break;
+							}
+						}
+					}
+
+					if (fireDisappearCount == 8)
+					{
+						boss.isAttacking = false;
+						boss.attackCoolTimer = 150;
+						fireDisappearCount = 0;
+						fireShootCount = 0;
+
+						for (int i = 0; i < smallFireMax; i++)
+						{
+							smallFire[i].isShot = false;
+						}
+
+						break;
+					}
+
+					break;
+
+				case BIGFIRE:
+					if (keys[DIK_P])
+					{
+						if (!smallFire[8].isShot)
+						{
+							smallFire[8].pos.x = 1000.0f;
+							smallFire[8].isShot = true;
+						}
+					}
+
+					if (smallFire[8].isShot)
+					{
+						smallFire[8].pos.x -= smallFire[8].speed;
+
+						if (smallFire[8].pos.x <= 0.0f - smallFire[8].width)
+						{
+							smallFire[8].isShot = false;
+							fireDisappearCount = 1;
+						}
+					}
+
+					if (fireDisappearCount == 1)
+					{
+						boss.isAttacking = false;
+						boss.attackCoolTimer = 150;
+						fireDisappearCount = 0;
+
+						break;
+					}
+
+					break;
+				}
+			}
 		}
 
 		///
@@ -350,18 +474,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			static_cast<int>(boss.height),
 			0.0f, RED, kFillModeSolid);
 
-		for (int i = 1; i < 9; i++)
+		for (int i = 0; i < smallFireMax; i++)
 		{
 			if (smallFire[i].isShot)
 			{
 				Novice::DrawBox(
-					static_cast<int>(smallFire[i].pos.x),
-					static_cast<int>(smallFire[i].pos.y),
+					static_cast<int>(smallFire[i].pos.x - smallFire[i].width / 2.0f),
+					static_cast<int>(ToScreen(smallFire[i].pos.y + smallFire[i].height / 2.0f)),
 					static_cast<int>(smallFire[i].width),
 					static_cast<int>(smallFire[i].height),
-					0.0f, 0xFFFFFFFF, kFillModeSolid);
+					0.0f, RED, kFillModeSolid);
 			}
 		}
+
+		if (smallFire[8].isShot)
+		{
+			Novice::DrawBox(
+				static_cast<int>(smallFire[8].pos.x - smallFire[8].width / 2.0f),
+				static_cast<int>(ToScreen(smallFire[8].pos.y + smallFire[8].height / 2.0f)),
+				static_cast<int>(smallFire[8].width),
+				static_cast<int>(smallFire[8].height),
+				0.0f, RED, kFillModeSolid);
+		}
+
+		Novice::ScreenPrintf(100, 100, "isAttacking: %d", boss.isAttacking);
+		Novice::ScreenPrintf(100, 120, "attack coolTimer: %d", boss.attackCoolTimer);
+		Novice::ScreenPrintf(100, 140, "attack type: %d", attackTypeFirst);
 
 		///
 		/// ↑描画処理ここまで
