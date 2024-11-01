@@ -234,8 +234,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		//==============================================================
-//攻撃
-//==============================================================
+　　//攻撃
+　　//==============================================================
 
 		if (keys[DIK_J] && !preKeys[DIK_J]) //短剣
 		{
@@ -341,6 +341,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (boss.attackCoolTimer <= 0)
 				{
 					boss.attackCoolTimer = 0;
+
 
 					if (keys[DIK_P] && !preKeys[DIK_P])
 					{
@@ -452,8 +453,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 
 		//===========================================================
-        //当たり判定
-        //===========================================================
+    //当たり判定
+    //===========================================================
 
         //短剣とボス
 		if (shortSword.isAtk)
@@ -491,6 +492,115 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			longSword.durationTime = 30;
 			boss.hpCount -= longSword.damage; //ボスのHPを攻撃力分減らす
 			longSword.isBossHit = false;
+
+					if (keys[DIK_P] && !preKeys[DIK_P])
+					{
+						attackTypeFirst = rand() % 2;
+						boss.isAttacking = true;
+					}
+				}
+			}
+
+			if (boss.isAttacking)
+			{
+				switch (attackTypeFirst)
+				{
+				case SMALLFIRE:
+					if (keys[DIK_P])
+					{
+						if (fireShootCount <= 7)
+						{
+							if (boss.fireCoolTimer <= 0)
+							{
+								for (int i = 0; i < smallFireMax; i++)
+								{
+									if (!smallFire[i].isShot)
+									{
+										smallFire[i].isShot = true;
+										smallFire[i].pos.x = 1000.0f;
+										fireShootCount++;
+
+										break;
+									}
+								}
+
+								boss.fireCoolTimer = 45;
+							}
+						}
+					}
+
+					if (boss.fireCoolTimer > 0)
+					{
+						boss.fireCoolTimer--;
+					}
+
+					for (int i = 0; i < smallFireMax; i++)
+					{
+						if (smallFire[i].isShot)
+						{
+							smallFire[i].pos.x -= smallFire[i].speed;
+
+							if (smallFire[i].pos.x <= 0.0f - smallFire[i].width)
+							{
+								smallFire[i].isShot = false;
+								fireDisappearCount++;
+
+								break;
+							}
+						}
+					}
+
+					if (fireDisappearCount == 8)
+					{
+						boss.isAttacking = false;
+						boss.attackCoolTimer = 150;
+						fireDisappearCount = 0;
+						fireShootCount = 0;
+
+						for (int i = 0; i < smallFireMax; i++)
+						{
+							smallFire[i].isShot = false;
+						}
+
+						break;
+					}
+
+					break;
+
+				case BIGFIRE:
+					if (keys[DIK_P])
+					{
+						if (!smallFire[8].isShot)
+						{
+							smallFire[8].pos.x = 1000.0f;
+							smallFire[8].isShot = true;
+						}
+					}
+
+					if (smallFire[8].isShot)
+					{
+						smallFire[8].pos.x -= smallFire[8].speed;
+
+						if (smallFire[8].pos.x <= 0.0f - smallFire[8].width)
+						{
+							smallFire[8].isShot = false;
+							fireDisappearCount = 1;
+						}
+					}
+
+					if (fireDisappearCount == 1)
+					{
+						boss.isAttacking = false;
+						boss.attackCoolTimer = 150;
+						fireDisappearCount = 0;
+
+						break;
+					}
+
+					break;
+				}
+			}
+
 		}
 
 		///
