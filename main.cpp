@@ -188,7 +188,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	for (int i = 0; i < smallFireMax; i++)
 	{
-		smallFire[i].pos = { 0.0f, 32.0f };
+		smallFire[i].pos = { 0.0f, 0.0f };
 		smallFire[i].width = 32.0f;
 		smallFire[i].height = 32.0f;
 		smallFire[i].speed = 5.0f;
@@ -373,12 +373,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					{
 						boss.attackCoolTimer = 0;
 
-
-						if (keys[DIK_P] && !preKeys[DIK_P])
-						{
-							attackTypeFirst = rand() % 2;
-							boss.isAttacking = true;
-						}
+						attackTypeFirst = rand() % 2;
+						boss.isAttacking = true;
 					}
 				}
 
@@ -387,26 +383,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					switch (attackTypeFirst)
 					{
 					case SMALLFIRE:
-						if (keys[DIK_P])
+						if (fireShootCount <= 7)
 						{
-							if (fireShootCount <= 7)
+							if (boss.fireCoolTimer <= 0)
 							{
-								if (boss.fireCoolTimer <= 0)
+								for (int i = 0; i < smallFireMax; i++)
 								{
-									for (int i = 0; i < smallFireMax; i++)
+									if (!smallFire[i].isShot)
 									{
-										if (!smallFire[i].isShot)
-										{
-											smallFire[i].isShot = true;
-											smallFire[i].pos.x = 1000.0f;
-											fireShootCount++;
+										smallFire[i].isShot = true;
+										smallFire[i].pos.x = boss.pos.x;
+										smallFire[i].pos.y = boss.pos.y - 80.0f;
+										fireShootCount++;
 
-											break;
-										}
+										break;
 									}
-
-									boss.fireCoolTimer = 45;
 								}
+
+								boss.fireCoolTimer = 45;
 							}
 						}
 
@@ -449,13 +443,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						break;
 
 					case BIGFIRE:
-						if (keys[DIK_P])
+						if (!smallFire[8].isShot)
 						{
-							if (!smallFire[8].isShot)
-							{
-								smallFire[8].pos.x = 1000.0f;
-								smallFire[8].isShot = true;
-							}
+							smallFire[8].pos.x = boss.pos.x;
+							smallFire[8].pos.y = boss.pos.y - 80.0f;
+							smallFire[8].isShot = true;
 						}
 
 						if (smallFire[8].isShot)
