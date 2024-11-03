@@ -1,6 +1,7 @@
 #include <Novice.h>
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 const char kWindowTitle[] = "LC1C_TD(~11/28)_タイトル";
 const int kWindowWidth = 1280; // 画面の横幅
@@ -60,6 +61,8 @@ struct Attack
 	float height;
 	float speed;
 	int isShot;
+	float gravity;
+	Vector2 direction;
 };
 
 enum SCENE
@@ -70,7 +73,7 @@ enum SCENE
 	GAMECLEAR
 };
 
-enum
+enum ATTACK
 {
 	SMALLFIRE,
 	BIGFIRE
@@ -193,6 +196,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		smallFire[i].height = 32.0f; // 縦幅
 		smallFire[i].speed = 5.0f; // 速度
 		smallFire[i].isShot = false; // 撃たれたか
+		smallFire[i].gravity = 0.0f;
 	}
 
 	smallFire[8].pos = { 0.0f, 0.0f }; // 座標
@@ -200,6 +204,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	smallFire[8].height = 32.0f; // 縦幅
 	smallFire[8].speed = 15.0f; // 速度
 	smallFire[8].isShot = false; // 撃たれたか
+	smallFire[8].direction = { 0.0f };
+
+	float f2pDistance = 0.0f; // 炎とプレイヤーの距離
 
 	int attackTypeFirst = 0; // 第一形態の技の種類
 
@@ -386,122 +393,148 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						boss.isAttacking = true;
 					}
 				}
+			}
 
-				if (boss.isAttacking)
+			if (boss.isAttacking)
+			{
+				switch (attackTypeFirst)
 				{
-					switch (attackTypeFirst)
+				case SMALLFIRE:
+					if (fireShootCount <= 7)
 					{
-					case SMALLFIRE:
-						if (fireShootCount <= 7)
+						if (boss.fireCoolTimer <= 0)
 						{
-							if (boss.fireCoolTimer <= 0)
+							for (int i = 0; i < smallFireMax; i++)
 							{
-								for (int i = 0; i < smallFireMax; i++)
+								if (!smallFire[i].isShot)
 								{
-									if (!smallFire[i].isShot)
-									{
-										smallFire[i].isShot = true;
-										smallFire[i].pos.x = boss.pos.x + 16.0f;
-										smallFire[i].pos.y = boss.pos.y - 64.0f;
-										fireShootCount++;
-
-										break;
-									}
-								}
-
-								boss.fireCoolTimer = 40;
-							}
-						}
-
-						if (boss.fireCoolTimer > 0)
-						{
-							boss.fireCoolTimer--;
-						}
-
-						for (int i = 0; i < smallFireMax; i++)
-						{
-							if (smallFire[i].isShot)
-							{
-								smallFire[i].pos.x -= smallFire[i].speed;
-
-								if (smallFire[i].pos.x <= 0.0f - smallFire[i].width)
-								{
-									smallFire[i].isShot = false;
-									fireDisappearCount++;
+									smallFire[i].isShot = true;
+									smallFire[i].pos.x = boss.pos.x + 16.0f;
+									smallFire[i].pos.y = boss.pos.y - 64.0f;
+									fireShootCount++;
 
 									break;
 								}
 							}
+
+							boss.fireCoolTimer = 40;
 						}
+					}
 
-						if (fireDisappearCount == 8)
+					if (boss.fireCoolTimer > 0)
+					{
+						boss.fireCoolTimer--;
+					}
+
+					for (int i = 0; i < smallFireMax; i++)
+					{
+						if (smallFire[i].isShot)
 						{
-							boss.isAttacking = false;
-							boss.attackCoolTimer = 120;
-							fireDisappearCount = 0;
-							fireShootCount = 0;
+							smallFire[i].pos.x -= smallFire[i].speed;
 
-							for (int i = 0; i < smallFireMax; i++)
+							//重力
+							if (smallFire[i].pos.y - smallFire[i].width / 2.0f > 0.0f)
+							{
+								smallFire[i].pos.y += smallFire[i].gravity -= 0.8f;
+							}
+							else
+							{
+								smallFire[i].gravity = 0.0f;
+							}
+
+							//地面に着地した時
+							if (smallFire[i].pos.y - smallFire[i].width / 2.0f <= 0.0f)
+							{
+								smallFire[i].pos.y = smallFire[i].width / 2.0f;
+							}
+
+							if (smallFire[i].pos.x <= 0.0f - smallFire[i].width)
 							{
 								smallFire[i].isShot = false;
-							}
+								fireDisappearCount++;
 
-							break;
-						}
-
-						break;
-
-					case BIGFIRE:
-						if (!smallFire[8].isShot)
-						{
-							smallFire[8].pos.x = boss.pos.x + 16.0f;
-							smallFire[8].pos.y = boss.pos.y - 64.0f;
-							smallFire[8].isShot = true;
-						}
-
-						if (smallFire[8].isShot)
-						{
-							smallFire[8].pos.x -= smallFire[8].speed;
-
-							if (smallFire[8].pos.x <= 0.0f - smallFire[8].width)
-							{
-								smallFire[8].isShot = false;
-								fireDisappearCount = 1;
+								break;
 							}
 						}
+					}
 
-						if (fireDisappearCount == 1)
+					if (fireDisappearCount == 8)
+					{
+						boss.isAttacking = false;
+						boss.attackCoolTimer = 90;
+						fireDisappearCount = 0;
+						fireShootCount = 0;
+
+						for (int i = 0; i < smallFireMax; i++)
 						{
-							boss.isAttacking = false;
-							boss.attackCoolTimer = 120;
-							fireDisappearCount = 0;
-
-							break;
+							smallFire[i].isShot = false;
 						}
 
 						break;
 					}
+
+					break;
+
+				case BIGFIRE:
+					if (!smallFire[8].isShot)
+					{
+						smallFire[8].pos.x = boss.pos.x + 16.0f;
+						smallFire[8].pos.y = boss.pos.y - 64.0f;
+						f2pDistance = sqrtf(powf(player.pos.x - smallFire[8].pos.x, 2) + powf(player.pos.y - smallFire[8].pos.y, 2));
+						
+						if (f2pDistance != 0.0f)
+						{
+							smallFire[8].direction.x = (player.pos.x - smallFire[8].pos.x) / f2pDistance;
+							smallFire[8].direction.y = (player.pos.y - smallFire[8].pos.y) / f2pDistance;
+						}
+
+						smallFire[8].isShot = true;
+					}
+
+					if (smallFire[8].isShot)
+					{
+						smallFire[8].pos.x += smallFire[8].direction.x * smallFire[8].speed;
+						smallFire[8].pos.y += smallFire[8].direction.y * smallFire[8].speed;
+
+						if (smallFire[8].pos.y <= 0.0f + smallFire[8].height / 2.0f ||
+							smallFire[8].pos.x <= 0.0f - smallFire[8].width)
+						{
+							smallFire[8].isShot = false;
+							fireDisappearCount = 1;
+						}
+					}
+
+					if (fireDisappearCount == 1)
+					{
+						boss.isAttacking = false;
+						boss.attackCoolTimer = 90;
+						fireDisappearCount = 0;
+
+						break;
+					}
+
+					break;
 				}
+			}
 
-				frameCount++;
+			frameCount++;
 
-				if (frameCount >= 120)
-				{
-					frameCount = 0;
-				}
+			if (frameCount >= 120)
+			{
+				frameCount = 0;
+			}
 
-				bossCountChange = bossAnimCount;
-				bossAnimCount = frameCount / 15;
+			bossCountChange = bossAnimCount;
+			bossAnimCount = frameCount / 15;
 
-				if (bossAnimCount > bossCountChange)
-				{
-					ghBoss1Move += 296;
-				}
+			if (bossAnimCount > bossCountChange)
+			{
+				ghBoss1Move += 296;
+			}
 
-				if (ghBoss1Move > 2072)
-				{
-					ghBoss1Move = 0;
-				}
+			if (ghBoss1Move > 2072)
+			{
+				ghBoss1Move = 0;
 			}
 
 			//===========================================================
