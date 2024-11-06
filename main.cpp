@@ -117,7 +117,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//変数初期化
 	//==============================================
 
+	//シーン
 	int scene = GAMEPLAY;
+
+	//コントローラー
+	int padX = 0;	//左スティックの左右値
+	int padY = 0;	//左スティックの上下値
 
 	//プレイヤー
 	Player player;
@@ -128,7 +133,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.width = 32.0f; //縦幅
 	player.height = 32.0f; //横幅
 	player.radius = 16.0f; //半径
-	player.speed = 15.0f; //移動速度
+	player.speed = 10.0f; //移動速度
 	player.jump = 15.0f; //ジャンプ速度
 	player.gravity = 0.0f; //重力
 	player.isJump = false; //ジャンプ状態か否か
@@ -231,7 +236,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↓更新処理ここから
 		///
-        
+
 		/*シーン切り替え*/
 		switch (scene)
 		{
@@ -251,23 +256,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//プレイヤー
 			//===========================================================
 
-			//とりあえずキーボードで追加
+			//スティックの値を取得する
+			Novice::GetAnalogInputLeft(0, &padX, &padY);
 
-			//左右移動
-			if (keys[DIK_A])
+			//左右移動(AD or 左スティック)
+			if (keys[DIK_A] || padX <= -1)
 			{
 				player.pos.x -= player.speed;
 				player.isDirections = true;
 			}
 
-			if (keys[DIK_D])
+			if (keys[DIK_D] || padX >= 1)
 			{
 				player.pos.x += player.speed;
 				player.isDirections = false;
 			}
 
-			// ジャンプ
-			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+			//ジャンプ(SPACE or A)
+			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsPressButton(0, PadButton::kPadButton10))
 			{
 				player.isJump = true;
 			}
@@ -280,7 +286,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//攻撃
 			//==============================================================
 
-			if (keys[DIK_J] && !preKeys[DIK_J]) //短剣
+			//短剣(J or X)
+			if (keys[DIK_J] && !preKeys[DIK_J] || Novice::IsPressButton(0, PadButton::kPadButton12))
 			{
 				if (!longSword.isAtk) //大剣攻撃時は使えない
 				{
@@ -292,7 +299,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 			}
 
-			if (keys[DIK_K] && !preKeys[DIK_K]) //大剣
+			//大剣(K or Y)
+			if (keys[DIK_K] && !preKeys[DIK_K] || Novice::IsPressButton(0, PadButton::kPadButton13))
 			{
 				if (!shortSword.isAtk) //短剣攻撃時は使えない
 				{
@@ -322,8 +330,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				{
 					shortSword.durationTime--;
 					player.gravity = -15.0f;
-				} 
-        else
+				} else
 				{
 					shortSword.isAtk = false;
 					shortSword.durationTime = 30;
@@ -336,8 +343,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				{
 					longSword.durationTime--;
 					player.gravity = -15.0f;
-				} 
-                else
+				} else
 				{
 					longSword.isAtk = false;
 					longSword.durationTime = 30;
@@ -356,8 +362,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (player.pos.y - player.width / 2.0f > 0.0f)
 			{
 				player.pos.y += player.gravity -= 0.7f;
-			} 
-            else
+			} else
 			{
 				player.gravity = 0.0f;
 			}
@@ -481,7 +486,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						smallFire[8].pos.x = boss.pos.x + 16.0f;
 						smallFire[8].pos.y = boss.pos.y - 64.0f;
 						f2pDistance = sqrtf(powf(player.pos.x - smallFire[8].pos.x, 2) + powf(player.pos.y - smallFire[8].pos.y, 2));
-						
 						if (f2pDistance != 0.0f)
 						{
 							smallFire[8].direction.x = (player.pos.x - smallFire[8].pos.x) / f2pDistance;
@@ -583,7 +587,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		///
 		/// ↑更新処理ここまで
 		///
-    
+
 		///
 		/// ↓描画処理ここから
 		///
@@ -706,7 +710,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				static_cast<int>(boss.height),
 				0.0f, 0xFFFFFFFF, kFillModeWireFrame);
 		}
-    
+
 		///
 		/// ↑描画処理ここまで
 		///
