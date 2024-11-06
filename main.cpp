@@ -441,7 +441,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							if (smallFire[i].pos.y - smallFire[i].width / 2.0f > 0.0f)
 							{
 								smallFire[i].pos.y += smallFire[i].gravity -= 0.8f;
-							} else
+							}
+							else
 							{
 								smallFire[i].gravity = 0.0f;
 							}
@@ -485,7 +486,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						smallFire[8].pos.x = boss.pos.x + 16.0f;
 						smallFire[8].pos.y = boss.pos.y - 64.0f;
 						f2pDistance = sqrtf(powf(player.pos.x - smallFire[8].pos.x, 2) + powf(player.pos.y - smallFire[8].pos.y, 2));
-
 						if (f2pDistance != 0.0f)
 						{
 							smallFire[8].direction.x = (player.pos.x - smallFire[8].pos.x) / f2pDistance;
