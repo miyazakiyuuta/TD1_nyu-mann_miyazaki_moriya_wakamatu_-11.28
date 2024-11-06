@@ -256,6 +256,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	giantFire.speed = 10.0f;
 	giantFire.isShot = false;
 	giantFire.direction = { 0.0f };
+	giantFire.isPlayerHit = false;
 
 	float f2pDistance = 0.0f; // 炎とプレイヤーの距離
 
@@ -887,6 +888,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					smallFire[i].isPlayerHit = false;
 					fireDisappearCount++;
 				}
+			}
+
+			if (giantFire.isShot)
+			{
+				IsHit(player.pos, player.width, player.height, giantFire.pos, giantFire.width, giantFire.height, giantFire.isPlayerHit);
+			}
+
+			if (giantFire.isPlayerHit)
+			{
+				player.hpCount -= 5;
+				giantFire.isShot = false;
+				giantFire.isPlayerHit = false;
+				fireDisappearCount++;
 			}
 		}
 
