@@ -20,7 +20,6 @@ struct Player
 	Vector2 posW;
 	float width;
 	float height;
-	float radius;
 	float speed;
 	float jump;
 	float gravity;
@@ -48,7 +47,6 @@ struct Sword
 	Vector2 pos;
 	float width;
 	float height;
-	float radius;
 	int coolTime;
 	int durationTime;
 	int isAtk;
@@ -136,7 +134,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.posW.y = 100.0f; //ｙ座標(ワールド)
 	player.width = 32.0f; //縦幅
 	player.height = 32.0f; //横幅
-	player.radius = 16.0f; //半径
 	player.speed = 10.0f; //移動速度
 	player.jump = 15.0f; //ジャンプ速度
 	player.gravity = 0.0f; //重力
@@ -151,7 +148,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	shortSword.pos.y = 100.0f; //ｙ座標
 	shortSword.width = 64.0f; //縦幅
 	shortSword.height = 64.0f; //横幅
-	shortSword.radius = 32.0f; //半径
 	shortSword.coolTime = 0; //攻撃クールタイム
 	shortSword.durationTime = 30; //攻撃の持続時間
 	shortSword.isAtk = false; //攻撃しているか
@@ -163,7 +159,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	longSword.pos.y = 100.0f; //ｙ座標
 	longSword.width = 64.0f; //縦幅
 	longSword.height = 64.0f; //横幅
-	longSword.radius = 32.0f; //半径
 	longSword.coolTime = 0; //攻撃クールタイム
 	longSword.durationTime = 30; //攻撃の持続時間
 	longSword.isAtk = false; //攻撃しているか
@@ -293,13 +288,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (keys[DIK_A] || padX <= -1)
 			{
 				player.pos.x -= player.speed;
-				player.isDirections = true;
+				if (!shortSword.isAtk && !longSword.isAtk)
+				{
+					player.isDirections = true;
+				}
 			}
 
 			if (keys[DIK_D] || padX >= 1)
 			{
 				player.pos.x += player.speed;
-				player.isDirections = false;
+				if (!shortSword.isAtk && !longSword.isAtk)
+				{
+					player.isDirections = false;
+				}
 			}
 
 			//ジャンプ(SPACE or A)
@@ -360,7 +361,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				{
 					shortSword.durationTime--;
 					player.gravity = -15.0f;
-				} else
+				}
+				else
 				{
 					shortSword.isAtk = false;
 					shortSword.durationTime = 30;
@@ -373,7 +375,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				{
 					longSword.durationTime--;
 					player.gravity = -15.0f;
-				} else
+				}
+				else
 				{
 					longSword.isAtk = false;
 					longSword.durationTime = 30;
@@ -382,17 +385,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//攻撃の座標
 			 //短剣
-			shortSword.pos.x = player.pos.x;
-			shortSword.pos.y = player.pos.y + player.radius + shortSword.radius;
+			shortSword.pos.y = player.pos.y + player.height + shortSword.height;
+			if (!player.isDirections)//右
+			{
+				shortSword.pos.x = player.pos.x;
+			}
+			else//左
+			{
+				shortSword.pos.x = player.pos.x - shortSword.width;
+			}
 			//大剣
-			longSword.pos.x = player.pos.x;
-			longSword.pos.y = player.pos.y + player.radius + longSword.radius;
+			longSword.pos.y = player.pos.y + player.height + longSword.height;
+			if (!player.isDirections)//右
+			{
+				longSword.pos.x = player.pos.x;
+			}
+			else//左
+			{
+				longSword.pos.x = player.pos.x - longSword.width;
+			}
 
 			//重力
 			if (player.pos.y - player.width / 2.0f > 0.0f)
 			{
 				player.pos.y += player.gravity -= 0.7f;
-			} else
+			}
+			else
 			{
 				player.gravity = 0.0f;
 			}
@@ -706,23 +724,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//短剣とボス
 			if (shortSword.isAtk)
 			{
-				if (!player.isDirections) { //右を向いている時、右に攻撃をする
-					IsHit(shortSword.pos, shortSword.width, shortSword.height, boss.pos, boss.width, boss.height, shortSword.isBossHit);
-				}
-				if (player.isDirections) { //左を向いている時、左に攻撃をする
-					IsHit(shortSword.pos, -shortSword.width, shortSword.height, boss.pos, boss.width, boss.height, shortSword.isBossHit);
-				}
+				IsHit(shortSword.pos, shortSword.width, shortSword.height, boss.pos, boss.width, boss.height, shortSword.isBossHit);
 			}
 
 			//大剣とボス
 			if (longSword.isAtk)
 			{
-				if (!player.isDirections) { //右を向いている時、右に攻撃をする
-					IsHit(longSword.pos, longSword.width, longSword.height, boss.pos, boss.width, boss.height, longSword.isBossHit);
-				}
-				if (player.isDirections) { //左を向いている時、左に攻撃をする
-					IsHit(longSword.pos, -longSword.width, longSword.height, boss.pos, boss.width, boss.height, longSword.isBossHit);
-				}
+				IsHit(longSword.pos, longSword.width, longSword.height, boss.pos, boss.width, boss.height, longSword.isBossHit);
 			}
 
 			//短剣の攻撃がボスに当たっている時
@@ -812,57 +820,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			if (shortSword.isAtk) //短剣の判定(持続時)
 			{
-				if (!player.isDirections) //右を向いている時
-				{
-					Novice::DrawBox
-					(
-						static_cast<int>(shortSword.pos.x),
-						static_cast<int>(ToScreen(shortSword.pos.y)),
-						static_cast<int>(shortSword.width),
-						static_cast<int>(shortSword.height),
-						0.0f, 0xFF000055, kFillModeSolid
-					);
-				}
-
-				if (player.isDirections) //左を向いている時
-				{
-					Novice::DrawBox
-					(
-						static_cast<int>(shortSword.pos.x),
-						static_cast<int>(ToScreen(shortSword.pos.y)),
-						static_cast<int>(-shortSword.width),
-						static_cast<int>(shortSword.height),
-						0.0f, 0xFF000055, kFillModeSolid
-					);
-				}
-
+				Novice::DrawBox
+				(
+					static_cast<int>(shortSword.pos.x),
+					static_cast<int>(ToScreen(shortSword.pos.y)),
+					static_cast<int>(shortSword.width),
+					static_cast<int>(shortSword.height),
+					0.0f, 0xFF000055, kFillModeSolid
+				);
 			}
 
 			if (longSword.isAtk) //大剣の判定(持続時)
 			{
-				if (!player.isDirections) //右を向いている時
-				{
-					Novice::DrawBox
-					(
-						static_cast<int>(longSword.pos.x),
-						static_cast<int>(ToScreen(longSword.pos.y)),
-						static_cast<int>(longSword.width),
-						static_cast<int>(longSword.height),
-						0.0f, 0x0000FF55, kFillModeSolid
-					);
-				}
-
-				if (player.isDirections) //左を向いている時
-				{
-					Novice::DrawBox
-					(
-						static_cast<int>(longSword.pos.x),
-						static_cast<int>(ToScreen(longSword.pos.y)),
-						static_cast<int>(-longSword.width),
-						static_cast<int>(longSword.height),
-						0.0f, 0x0000FF55, kFillModeSolid
-					);
-				}
+				Novice::DrawBox
+				(
+					static_cast<int>(longSword.pos.x),
+					static_cast<int>(ToScreen(longSword.pos.y)),
+					static_cast<int>(longSword.width),
+					static_cast<int>(longSword.height),
+					0.0f, 0x0000FF55, kFillModeSolid
+				);
 			}
 
 			// 小炎攻撃(連射)
