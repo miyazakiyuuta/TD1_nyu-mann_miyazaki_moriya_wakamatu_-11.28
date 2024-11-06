@@ -40,6 +40,9 @@ struct Boss
 	float height;
 	int fireCoolTimer;
 	int isAttacking;
+	int isCharging;
+	int chargeTimer;
+	int isHovering;
 };
 
 struct Sword
@@ -78,7 +81,8 @@ enum ATTACK
 {
 	SMALLFIRE,
 	FASTFIRE,
-	MULTIPLEFIRE
+	MULTIPLEFIRE,
+	GIANTFIRE
 };
 
 //スクリーン座標変換用関数
@@ -186,6 +190,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	boss.attackCoolTimer = 60;
 	boss.fireCoolTimer = 0; // 小炎攻撃用のタイマー
 	boss.isAttacking = false;
+	boss.isCharging = false;
+	boss.chargeTimer = 120;
+	boss.isHovering = false;
 
 	const int slowFireMax = 8; // 低速小炎の最大数
 	const int fastFireMax = 12; // 高速小炎の最大数
@@ -236,11 +243,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		smallFire[i].isPlayerHit = false;
 	}
 
+	Attack giantFire;
+
+	giantFire.pos = { 0.0f };
+	giantFire.width = 128.0f;
+	giantFire.height = 128.0f;
+	giantFire.speed = 10.0f;
+	giantFire.isShot = false;
+	giantFire.direction = { 0.0f };
+
 	float f2pDistance = 0.0f; // 炎とプレイヤーの距離
 
 	int attackTypeFirst = 0; // 第一形態の技の種類
 
-	int ghBoss1 = ghBoss1 = Novice::LoadTexture("./Resources/images/TD1.png"); // 第一形態のボスの画像
+	int ghBoss1 = Novice::LoadTexture("./Resources/images/Doragon_1.png"); // 第一形態のボスの画像
 	int ghBoss1Move = 0; // ボスの画像の左上の座標
 
 	int frameCount = 0; // フレーム
@@ -442,7 +458,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 					boss.isAttacking = true;
 
-					if (boss.hpCount <= 90)
+					if (boss.hpCount <= 50)
+					{
+						attackTypeFirst = rand() % 4;
+					}
+					else if (boss.hpCount <= 90)
 					{
 						attackTypeFirst = rand() % 3;
 					}
@@ -583,6 +603,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						boss.attackCoolTimer = 90;
 						fireDisappearCount = 0;
 						fireShootCount = 0;
+						f2pDistance = 0.0f;
 
 						break;
 					}
@@ -694,6 +715,88 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					}
 
 					break;
+
+					case GIANTFIRE:
+						if (!boss.isHovering && fireDisappearCount <= 0)//ボスが滞空していないとき&攻撃が1発も撃たれていないとき
+
+						{
+							//ボスが上にいく処理
+							if (boss.pos.y < 500.0f)
+							{
+								boss.pos.y += boss.speed;
+							}
+							//ボスが上に上がりきったときの処理
+							if (boss.pos.y >= 500.0f)
+							{
+								boss.isHovering = true;//最高地点で飛んでいる
+								boss.isCharging = true;//攻撃のためにはいる
+								boss.chargeTimer = 120;
+								giantFire.pos.x = boss.pos.x;
+								giantFire.pos.y = boss.pos.y;
+							}
+						}
+
+						if (boss.isHovering)//滞空しているとき
+						{
+							if (boss.isCharging)//攻撃をためているとき
+							{
+								if (boss.chargeTimer > 0)
+								{
+									boss.chargeTimer--;
+								}
+								else//チャージ完了
+								{
+									//この時点でのプレイヤーの位置に攻撃を飛ばすためのベクトルの計算
+									f2pDistance = sqrtf(powf(player.pos.x - giantFire.pos.x, 2) + powf(player.pos.y - giantFire.pos.y, 2));
+									//正規化
+									if (f2pDistance != 0.0f)
+									{
+										giantFire.direction.x = (player.pos.x - giantFire.pos.x) / f2pDistance;
+										giantFire.direction.y = (player.pos.y - giantFire.pos.y) / f2pDistance;
+									}
+
+									boss.isCharging = false;
+									giantFire.isShot = true;
+								}
+							}
+
+							if (giantFire.isShot)
+							{
+								giantFire.pos.x += giantFire.speed * giantFire.direction.x;
+								giantFire.pos.y += giantFire.speed * giantFire.direction.y;
+
+								if (giantFire.pos.x <= 0.0f - giantFire.width ||
+									giantFire.pos.y <= 0.0f + giantFire.height / 2.0f)
+								{
+									giantFire.isShot = false;
+									fireDisappearCount = 1;
+								}
+							}
+
+							if (!giantFire.isShot && fireDisappearCount == 1)
+							{
+								if (boss.pos.y > 160.0f)
+								{
+									boss.pos.y -= boss.speed;
+								}
+								else
+								{
+									boss.isHovering = false;
+								}
+							}
+						}
+
+						if (!boss.isHovering && fireDisappearCount == 1)
+						{
+							boss.isAttacking = false;
+							boss.chargeTimer = 0;
+							boss.attackCoolTimer = 90;
+							fireDisappearCount = 0;
+
+							break;
+						}
+
+						break;
 				}
 			}
 
@@ -882,6 +985,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						static_cast<int>(smallFire[i].height),
 						0.0f, RED, kFillModeSolid);
 				}
+			}
+
+			if (giantFire.isShot)
+			{
+				Novice::DrawBox(
+					static_cast<int>(giantFire.pos.x - giantFire.width / 2),
+					static_cast<int>(ToScreen(giantFire.pos.y + giantFire.height / 2.0f)),
+					static_cast<int>(giantFire.width),
+					static_cast<int>(giantFire.height),
+					0.0f, RED, kFillModeSolid);
 			}
 
 			// ボス
