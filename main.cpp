@@ -8,6 +8,7 @@ const char kWindowTitle[] = "LC1C_TD(~11/28)_タイトル";
 const int kWindowWidth = 1280; // 画面の横幅
 const int kWindowHeight = 720; // 画面の縦幅
 
+#pragma region 構造体
 struct Vector2
 {
 	float x;
@@ -74,6 +75,7 @@ struct Attack
 	int isPlayerHit;
 	int isBossHit; 
 };
+#pragma endregion
 
 enum SCENE
 {
@@ -91,6 +93,7 @@ enum ATTACK
 	GIANTFIRE
 };
 
+#pragma region 自作関数
 //スクリーン座標変換用関数
 float ToScreen(float posY)
 {
@@ -118,6 +121,7 @@ void IsHit(Vector2 leftTopA, float widthA, float heightA, Vector2 leftTopB, floa
 		}
 	}
 }
+#pragma endregion
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -136,6 +140,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int padX = 0;	//左スティックの左右値
 	int padY = 0;	//左スティックの上下値
 
+#pragma region プレイヤー
 	//プレイヤー
 	Player player;
 	player.pos.x = 100.0f; //ｘ座標
@@ -181,7 +186,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	longSword.reactionTime = 30; //硬直で動けない時間 
 	longSword.isBossHit = false; //攻撃が当たっているか(ボスに) 
 	longSword.isSmallFireHit = false; //攻撃が当たっているか(smallFireに)
-
+#pragma endregion
 
 	// キー入力結果を受け取る箱
 	char keys[256] = { 0 };
@@ -190,16 +195,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	unsigned int currentTime = static_cast<unsigned int>(time(nullptr));
 	srand(currentTime);
 
-	//ボス
+#pragma region ボス
 	Boss boss;
-	boss.pos = { 1000.0f, 160.0f }; // 座標
+	boss.pos = { 1000.0f, 160.0f }; // 左上座標
 	boss.speed = 10.0f; // 移動速度
 	boss.attackCoolTimer = 0; // 攻撃のクールタイム
 	boss.isAlive = true; // 生きているか
 	boss.isChange = false; // 形態変化用のフラグ
 	boss.hpCount = 100; // 体力
-	boss.width = 120.0f; // 横幅
-	boss.height = 162.0f; // 縦幅
+	boss.width = 120.0f; // 横幅(当たり判定用)
+	boss.height = 162.0f; // 縦幅(当たり判定用)
 
 	//ボス攻撃
 	boss.attackCoolTimer = 60;
@@ -276,14 +281,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int attackTypeFirst = 0; // 第一形態の技の種類
 
 	int ghBoss1 = Novice::LoadTexture("./Resources/images/Doragon_1.png"); // 第一形態のボスの画像
-	int ghBoss1Move = 0; // ボスの画像の左上の座標
+
+	int bossAnimeCount = 0; // ボスのアニメーションｎフレームカウント
+	float boss1MaxImageWidth = 2880.0f; // ボスの画像の最大横幅
+	float boss1FrameImageWidth = 320.0f; // ボスの1フレームの画像横幅
+	float boss1ImageHeight = 176.0f; //ボスの画像の縦幅
+#pragma endregion
 
 	int frameCount = 0; // フレーム
-	int bossAnimCount = 0; // ボスのアニメカウント
-	int bossCountChange = 0; // ボスのカウントが変わったかチェックする変数
-	float ghBoss1TotalWidth = 1920.0f; // ボスの画像の最大幅
-	float ghBoss1Width = 296.0f; // ボスの一枚ずつの画像の幅
-
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -804,54 +809,45 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 					break;
 
-					case GIANTFIRE:
-						if (!boss.isHovering && fireDisappearCount <= 0)//ボスが滞空していないとき&攻撃が1発も撃たれていないとき
+				case GIANTFIRE:
+					if (!boss.isHovering && fireDisappearCount <= 0)//ボスが滞空していないとき&攻撃が1発も撃たれていないとき
 
+					{
+						//ボスが上にいく処理
+						if (boss.pos.y < 500.0f)
 						{
-							//ボスが上にいく処理
-							if (boss.pos.y < 500.0f)
-							{
-								boss.pos.y += boss.speed;
-							}
-							//ボスが上に上がりきったときの処理
-							if (boss.pos.y >= 500.0f)
-							{
-								boss.isHovering = true;//最高地点で飛んでいる
-								boss.isCharging = true;//攻撃のためにはいる
-								boss.chargeTimer = 120;
-								giantFire.pos.x = boss.pos.x;
-								giantFire.pos.y = boss.pos.y;
-							}
+							boss.pos.y += boss.speed;
 						}
-
-						if (boss.isHovering)//滞空しているとき
+						//ボスが上に上がりきったときの処理
+						if (boss.pos.y >= 500.0f)
 						{
-							if (boss.isCharging)//攻撃をためているとき
-							{
-								if (boss.chargeTimer > 0)
-								{
-									boss.chargeTimer--;
-								}
-								else//チャージ完了
-								{
-									//この時点でのプレイヤーの位置に攻撃を飛ばすためのベクトルの計算
-									f2pDistance = sqrtf(powf(player.pos.x - giantFire.pos.x, 2) + powf(player.pos.y - giantFire.pos.y, 2));
-									//正規化
-									if (f2pDistance != 0.0f)
-									{
-										giantFire.direction.x = (player.pos.x - giantFire.pos.x) / f2pDistance;
-										giantFire.direction.y = (player.pos.y - giantFire.pos.y) / f2pDistance;
-									}
+							boss.isHovering = true;//最高地点で飛んでいる
+							boss.isCharging = true;//攻撃のためにはいる
+							boss.chargeTimer = 120;
+							giantFire.pos.x = boss.pos.x;
+							giantFire.pos.y = boss.pos.y;
+						}
+					}
 
-									boss.isCharging = false;
-									giantFire.isShot = true;
-								}
+					if (boss.isHovering)//滞空しているとき
+					{
+						if (boss.isCharging)//攻撃をためているとき
+						{
+							if (boss.chargeTimer > 0)
+							{
+								boss.chargeTimer--;
 							}
-
-							if (giantFire.isShot)
+							else//チャージ完了
 							{
-								giantFire.pos.x += giantFire.speed * giantFire.direction.x;
-								giantFire.pos.y += giantFire.speed * giantFire.direction.y;
+								//この時点でのプレイヤーの位置に攻撃を飛ばすためのベクトルの計算
+								f2pDistance = sqrtf(powf(player.pos.x - giantFire.pos.x, 2) + powf(player.pos.y - giantFire.pos.y, 2));
+								//正規化
+								if (f2pDistance != 0.0f)
+								{
+									giantFire.direction.x = (player.pos.x - giantFire.pos.x) / f2pDistance;
+									giantFire.direction.y = (player.pos.y - giantFire.pos.y) / f2pDistance;
+								  giantFire.pos.x += giantFire.speed * giantFire.direction.x;
+								  giantFire.pos.y += giantFire.speed * giantFire.direction.y;
 
 								if (giantFire.pos.x <= 0.0f - giantFire.width ||
 									giantFire.pos.y <= 0.0f + giantFire.height / 2.0f || giantFire.pos.x >= 1400.0f || giantFire.pos.y >= 800.0f)
@@ -864,56 +860,67 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 									{
 										giantFire.speed *= -0.5f;
 									}
+								}
 
-								}
-							}
-
-							if (!giantFire.isShot && fireDisappearCount == 1)
-							{
-								if (boss.pos.y > 160.0f)
-								{
-									boss.pos.y -= boss.speed;
-								}
-								else
-								{
-									boss.isHovering = false;
-								}
+								boss.isCharging = false;
+								giantFire.isShot = true;
 							}
 						}
 
-						if (!boss.isHovering && fireDisappearCount == 1)
+						if (giantFire.isShot)
 						{
-							boss.isAttacking = false;
-							boss.chargeTimer = 0;
-							boss.attackCoolTimer = 90;
-							fireDisappearCount = 0;
+							giantFire.pos.x += giantFire.speed * giantFire.direction.x;
+							giantFire.pos.y += giantFire.speed * giantFire.direction.y;
 
-							break;
+							if (giantFire.pos.x <= 0.0f - giantFire.width ||
+								giantFire.pos.y <= 0.0f + giantFire.height / 2.0f)
+							{
+								giantFire.isShot = false;
+								fireDisappearCount = 1;
+							}
 						}
+
+						if (!giantFire.isShot && fireDisappearCount == 1)
+						{
+							if (boss.pos.y > 160.0f)
+							{
+								boss.pos.y -= boss.speed;
+							}
+							else
+							{
+								boss.isHovering = false;
+							}
+						}
+					}
+
+					if (!boss.isHovering && fireDisappearCount == 1)
+					{
+						boss.isAttacking = false;
+						boss.chargeTimer = 0;
+						boss.attackCoolTimer = 90;
+						fireDisappearCount = 0;
 
 						break;
+					}
+
+					break;
 				}
 			}
 
-			frameCount++;
-
-			if (frameCount >= 120)
+			//ボスのアニメーション
+			if (frameCount >= 60)
 			{
 				frameCount = 0;
+				bossAnimeCount = 0;
 			}
+			frameCount++;
 
-			bossCountChange = bossAnimCount;
-			bossAnimCount = frameCount / 15;
-
-			if (bossAnimCount > bossCountChange)
+			if (frameCount % (60 / 8) == 0)
 			{
-				ghBoss1Move += 296;
+				bossAnimeCount++;
 			}
 
-			if (ghBoss1Move > 2072)
-			{
-				ghBoss1Move = 0;
-			}
+
 
 			//===========================================================
 			//当たり判定
@@ -1156,16 +1163,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 
 			// ボス
-			Novice::DrawSpriteRect(
-				static_cast<int>(boss.pos.x - 48.0f),
-				static_cast<int>(ToScreen(boss.pos.y)),
-				ghBoss1Move,
+			Novice::DrawSpriteRect
+			(
+				static_cast<int>(boss.pos.x - (boss1FrameImageWidth / 2.0f - boss.width / 2.0f)),
+				static_cast<int>(ToScreen(boss.pos.y + (boss1ImageHeight - boss.height))),
+				320 * bossAnimeCount,
 				0,
-				static_cast<int>(ghBoss1Width),
-				static_cast<int>(boss.height),
+				static_cast<int>(boss1FrameImageWidth),
+				static_cast<int>(boss1ImageHeight),
 				ghBoss1,
-				boss.height / ghBoss1TotalWidth, 1,
-				0, 0xFFFFFFFF);
+				boss1FrameImageWidth / boss1MaxImageWidth, 1,
+				0, 0xFFFFFFFF
+			);
 
 			Novice::ScreenPrintf(100, 100, "isAttacking: %d", boss.isAttacking);
 			Novice::ScreenPrintf(100, 120, "attack coolTimer: %d", boss.attackCoolTimer);
