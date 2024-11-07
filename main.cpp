@@ -202,7 +202,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	boss.attackCoolTimer = 0; // 攻撃のクールタイム
 	boss.isAlive = true; // 生きているか
 	boss.isChange = false; // 形態変化用のフラグ
-	boss.hpCount = 100; // 体力
+	boss.hpCount = 50; // 体力
 	boss.width = 120.0f; // 横幅(当たり判定用)
 	boss.height = 162.0f; // 縦幅(当たり判定用)
 
@@ -537,7 +537,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 					if (boss.hpCount <= 50)
 					{
-						attackTypeFirst = rand() % 4;
+						attackTypeFirst = 3;
 					}
 					else if (boss.hpCount <= 90)
 					{
@@ -848,50 +848,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								{
 									giantFire.direction.x = (player.pos.x - giantFire.pos.x) / f2pDistance;
 									giantFire.direction.y = (player.pos.y - giantFire.pos.y) / f2pDistance;
-									giantFire.pos.x += giantFire.speed * giantFire.direction.x;
-									giantFire.pos.y += giantFire.speed * giantFire.direction.y;
-
-									if (giantFire.pos.x <= 0.0f - giantFire.width ||
-										giantFire.pos.y <= 0.0f + giantFire.height / 2.0f || giantFire.pos.x >= 1400.0f || giantFire.pos.y >= 800.0f)
-									{
-										giantFire.isShot = false;
-										fireDisappearCount = 1;
-
-										//smallFireを反射した場合の軌道を修正
-										if (giantFire.speed <= 0)
-										{
-											giantFire.speed *= -0.5f;
-										}
-									}
 
 									boss.isCharging = false;
 									giantFire.isShot = true;
 								}
 							}
+						}
 
-							if (giantFire.isShot)
+						if (giantFire.isShot)
+						{
+							giantFire.pos.x += giantFire.speed * giantFire.direction.x;
+							giantFire.pos.y += giantFire.speed * giantFire.direction.y;
+
+							if (giantFire.pos.x <= 0.0f - giantFire.width ||
+								giantFire.pos.y <= 0.0f + giantFire.height / 2.0f || giantFire.pos.x >= 1400.0f || giantFire.pos.y >= 800.0f)
 							{
-								giantFire.pos.x += giantFire.speed * giantFire.direction.x;
-								giantFire.pos.y += giantFire.speed * giantFire.direction.y;
+								giantFire.isShot = false;
+								fireDisappearCount = 1;
 
-								if (giantFire.pos.x <= 0.0f - giantFire.width ||
-									giantFire.pos.y <= 0.0f + giantFire.height / 2.0f)
+								//smallFireを反射した場合の軌道を修正
+								if (giantFire.speed <= 0)
 								{
-									giantFire.isShot = false;
-									fireDisappearCount = 1;
+									giantFire.speed *= -0.5f;
 								}
 							}
+						}
 
-							if (!giantFire.isShot && fireDisappearCount == 1)
+						if (!giantFire.isShot && fireDisappearCount == 1)
+						{
+							if (boss.pos.y > 160.0f)
 							{
-								if (boss.pos.y > 160.0f)
-								{
-									boss.pos.y -= boss.speed;
-								}
-								else
-								{
-									boss.isHovering = false;
-								}
+								boss.pos.y -= boss.speed;
+							}
+							else
+							{
+								boss.isHovering = false;
 							}
 						}
 
