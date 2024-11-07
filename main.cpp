@@ -202,7 +202,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	boss.attackCoolTimer = 0; // 攻撃のクールタイム
 	boss.isAlive = true; // 生きているか
 	boss.isChange = false; // 形態変化用のフラグ
-	boss.hpCount = 50; // 体力
+	boss.hpCount = 100; // 体力
 	boss.width = 120.0f; // 横幅(当たり判定用)
 	boss.height = 162.0f; // 縦幅(当たり判定用)
 
@@ -537,7 +537,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 					if (boss.hpCount <= 50)
 					{
-						attackTypeFirst = 3;
+						attackTypeFirst = rand() % 4;
 					}
 					else if (boss.hpCount <= 90)
 					{
