@@ -55,7 +55,7 @@ struct Sword
 	int durationTime;
 	int isAtk;
 	int damage;
-	int isReaction;
+	int isReaction; 
 	int reactionTime;
 	int isBossHit;
 	int isSmallFireHit;
@@ -70,10 +70,10 @@ struct Attack
 	int isShot;
 	float gravity;
 	Vector2 direction;
-	int isReflection;
+	int isReflection; 
 	int reflectionDamage;
 	int isPlayerHit;
-	int isBossHit;
+	int isBossHit; 
 };
 #pragma endregion
 
@@ -351,7 +351,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				{
 					player.isJump = true;
 				}
-
+				
 				if (player.isJump)
 				{
 					player.pos.y += player.jump;
@@ -413,7 +413,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (shortSword.durationTime >= 0)
 				{
 					shortSword.durationTime--;
-				}
+				} 
 				else
 				{
 					shortSword.isAtk = false;
@@ -426,8 +426,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (longSword.durationTime >= 0)
 				{
 					longSword.durationTime--;
-				}
-				else
+				} else
 				{
 					longSword.isAtk = false;
 					longSword.durationTime = 30;
@@ -462,8 +461,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					player.gravity = 0.7f;
 					player.speed = 0.0f;
 					player.jump = 0.0f;
-				}
-				else
+				} else
 				{
 					longSword.reactionTime = 30;
 					player.speed = 10.0f;
@@ -848,65 +846,64 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								{
 									giantFire.direction.x = (player.pos.x - giantFire.pos.x) / f2pDistance;
 									giantFire.direction.y = (player.pos.y - giantFire.pos.y) / f2pDistance;
-									giantFire.pos.x += giantFire.speed * giantFire.direction.x;
-									giantFire.pos.y += giantFire.speed * giantFire.direction.y;
-
-									if (giantFire.pos.x <= 0.0f - giantFire.width ||
-										giantFire.pos.y <= 0.0f + giantFire.height / 2.0f || giantFire.pos.x >= 1400.0f || giantFire.pos.y >= 800.0f)
-									{
-										giantFire.isShot = false;
-										fireDisappearCount = 1;
-
-										//smallFireを反射した場合の軌道を修正
-										if (giantFire.speed <= 0)
-										{
-											giantFire.speed *= -0.5f;
-										}
-									}
-
-									boss.isCharging = false;
-									giantFire.isShot = true;
-								}
-							}
-
-							if (giantFire.isShot)
-							{
-								giantFire.pos.x += giantFire.speed * giantFire.direction.x;
-								giantFire.pos.y += giantFire.speed * giantFire.direction.y;
+								  giantFire.pos.x += giantFire.speed * giantFire.direction.x;
+								  giantFire.pos.y += giantFire.speed * giantFire.direction.y;
 
 								if (giantFire.pos.x <= 0.0f - giantFire.width ||
-									giantFire.pos.y <= 0.0f + giantFire.height / 2.0f)
+									giantFire.pos.y <= 0.0f + giantFire.height / 2.0f || giantFire.pos.x >= 1400.0f || giantFire.pos.y >= 800.0f)
 								{
 									giantFire.isShot = false;
 									fireDisappearCount = 1;
-								}
-							}
 
-							if (!giantFire.isShot && fireDisappearCount == 1)
-							{
-								if (boss.pos.y > 160.0f)
-								{
-									boss.pos.y -= boss.speed;
+									//smallFireを反射した場合の軌道を修正
+									if (giantFire.speed <= 0)
+									{
+										giantFire.speed *= -0.5f;
+									}
 								}
-								else
-								{
-									boss.isHovering = false;
-								}
+
+								boss.isCharging = false;
+								giantFire.isShot = true;
 							}
 						}
 
-						if (!boss.isHovering && fireDisappearCount == 1)
+						if (giantFire.isShot)
 						{
-							boss.isAttacking = false;
-							boss.chargeTimer = 0;
-							boss.attackCoolTimer = 90;
-							fireDisappearCount = 0;
+							giantFire.pos.x += giantFire.speed * giantFire.direction.x;
+							giantFire.pos.y += giantFire.speed * giantFire.direction.y;
 
-							break;
+							if (giantFire.pos.x <= 0.0f - giantFire.width ||
+								giantFire.pos.y <= 0.0f + giantFire.height / 2.0f)
+							{
+								giantFire.isShot = false;
+								fireDisappearCount = 1;
+							}
 						}
+
+						if (!giantFire.isShot && fireDisappearCount == 1)
+						{
+							if (boss.pos.y > 160.0f)
+							{
+								boss.pos.y -= boss.speed;
+							}
+							else
+							{
+								boss.isHovering = false;
+							}
+						}
+					}
+
+					if (!boss.isHovering && fireDisappearCount == 1)
+					{
+						boss.isAttacking = false;
+						boss.chargeTimer = 0;
+						boss.attackCoolTimer = 90;
+						fireDisappearCount = 0;
 
 						break;
 					}
+
+					break;
 				}
 			}
 
