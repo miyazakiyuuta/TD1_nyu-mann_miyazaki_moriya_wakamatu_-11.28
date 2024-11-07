@@ -54,8 +54,11 @@ struct Sword
 	int coolTime;
 	int durationTime;
 	int isAtk;
-	int isBossHit;
 	int damage;
+	int isReaction; 
+	int reactionTime;
+	int isBossHit;
+	int isSmallFireHit;
 };
 
 struct Attack
@@ -67,7 +70,10 @@ struct Attack
 	int isShot;
 	float gravity;
 	Vector2 direction;
+	int isReflection; 
+	int reflectionDamage;
 	int isPlayerHit;
+	int isBossHit; 
 };
 #pragma endregion
 
@@ -149,9 +155,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.isJump = false; //ジャンプ状態か否か
 	player.isAlive; //生存
 	player.isDirections = false; //プレイヤーの向いている方向(false = 右,true = 左)
-	player.hpCount = 10;
+	player.hpCount = 10; //hp
 
-
+	//短剣
 	Sword shortSword;
 	shortSword.pos.x = 100.0f; //ｘ座標
 	shortSword.pos.y = 100.0f; //ｙ座標
@@ -162,7 +168,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	shortSword.isAtk = false; //攻撃しているか
 	shortSword.isBossHit = false; //攻撃が当たっているか(ボスに)
 	shortSword.damage = 3; //攻撃力
+	shortSword.isReaction = false; //硬直が起きているか 
+	shortSword.reactionTime = 30; //硬直で動けない時間
 
+	//大剣
 	Sword longSword;
 	longSword.pos.x = 100.0f; //ｘ座標
 	longSword.pos.y = 100.0f; //ｙ座標
@@ -173,6 +182,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	longSword.isAtk = false; //攻撃しているか
 	longSword.isBossHit = false; //攻撃が当たっているか(ボスに)
 	longSword.damage = 5; //攻撃力
+	longSword.isReaction = false; //硬直が起きているか 
+	longSword.reactionTime = 30; //硬直で動けない時間 
+	longSword.isBossHit = false; //攻撃が当たっているか(ボスに) 
+	longSword.isSmallFireHit = false; //攻撃が当たっているか(smallFireに)
 #pragma endregion
 
 	// キー入力結果を受け取る箱
@@ -183,7 +196,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	srand(currentTime);
 
 #pragma region ボス
-	//ボス
 	Boss boss;
 	boss.pos = { 1000.0f, 160.0f }; // 左上座標
 	boss.speed = 10.0f; // 移動速度
@@ -193,6 +205,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	boss.hpCount = 100; // 体力
 	boss.width = 120.0f; // 横幅(当たり判定用)
 	boss.height = 162.0f; // 縦幅(当たり判定用)
+
 	//ボス攻撃
 	boss.attackCoolTimer = 60;
 	boss.fireCoolTimer = 0; // 小炎攻撃用のタイマー
@@ -221,7 +234,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		smallFire[i].height = 32.0f; // 縦幅
 		smallFire[i].speed = 5.0f; // 速度
 		smallFire[i].isShot = false; // 撃たれたか
-		smallFire[i].gravity = 0.0f;
+		smallFire[i].gravity = 0.0f; //重力
 	}
 
 	for (int i = 8; i < fastFireMax; i++)
@@ -247,7 +260,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	for (int i = 0; i < smallFireMax; i++)
 	{
-		smallFire[i].isPlayerHit = false;
+		smallFire[i].isPlayerHit = false; //プレイヤーに当たったか
+		smallFire[i].isBossHit = false; // 反射された攻撃がボスに当たったか 
+		smallFire[i].isReflection = false; // 反射されたか 
+		smallFire[i].reflectionDamage = 5; // 反射された攻撃がボスに当たった時のダメージ
 	}
 
 	Attack giantFire;
@@ -258,6 +274,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	giantFire.speed = 10.0f;
 	giantFire.isShot = false;
 	giantFire.direction = { 0.0f };
+	giantFire.isPlayerHit = false;
 
 	float f2pDistance = 0.0f; // 炎とプレイヤーの距離
 
@@ -307,66 +324,78 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//スティックの値を取得する
 			Novice::GetAnalogInputLeft(0, &padX, &padY);
 
-			//左右移動(AD or 左スティック)
-			if (keys[DIK_A] || padX <= -1)
+			//攻撃時は動けない
+			if (!shortSword.isAtk && !longSword.isAtk)
 			{
-				player.pos.x -= player.speed;
-				if (!shortSword.isAtk && !longSword.isAtk)
+				//左右移動(AD or 左スティック)
+				if (keys[DIK_A] || padX <= -1)
 				{
-					player.isDirections = true;
+					player.pos.x -= player.speed;
+					if (!shortSword.isAtk && !longSword.isAtk)
+					{
+						player.isDirections = true;
+					}
 				}
-			}
 
-			if (keys[DIK_D] || padX >= 1)
-			{
-				player.pos.x += player.speed;
-				if (!shortSword.isAtk && !longSword.isAtk)
+				if (keys[DIK_D] || padX >= 1)
 				{
-					player.isDirections = false;
+					player.pos.x += player.speed;
+					if (!shortSword.isAtk && !longSword.isAtk)
+					{
+						player.isDirections = false;
+					}
 				}
-			}
 
-			//ジャンプ(SPACE or A)
-			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsPressButton(0, PadButton::kPadButton10))
-			{
-				player.isJump = true;
-			}
-			if (player.isJump)
-			{
-				player.pos.y += player.jump;
+				//ジャンプ(SPACE or A)
+				if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsPressButton(0, PadButton::kPadButton10))
+				{
+					player.isJump = true;
+				}
+				
+				if (player.isJump)
+				{
+					player.pos.y += player.jump;
+				}
 			}
 
 			//==============================================================
 			//攻撃
 			//==============================================================
 
-			//短剣(J or X)
-			if (keys[DIK_J] && !preKeys[DIK_J] || Novice::IsPressButton(0, PadButton::kPadButton12))
+			//攻撃時は動けない
+			if (!shortSword.isAtk && !longSword.isAtk)
 			{
-				if (!longSword.isAtk) //大剣攻撃時は使えない
+				//短剣(J or X)
+				if (keys[DIK_J] && !preKeys[DIK_J] || Novice::IsPressButton(0, PadButton::kPadButton12))
 				{
-					if (shortSword.coolTime <= 0) //クールタイムが０以下の時のみ
+					if (!longSword.isAtk) //大剣攻撃時は使えない
 					{
-						shortSword.isAtk = true;
-						shortSword.coolTime = 20;
+						if (shortSword.coolTime <= 0) //クールタイムが０以下の時のみ
+						{
+							shortSword.isAtk = true;
+							shortSword.isReaction = true;
+							shortSword.coolTime = 20;
+						}
+					}
+				}
+
+				//大剣(K or Y)
+				if (keys[DIK_K] && !preKeys[DIK_K] || Novice::IsPressButton(0, PadButton::kPadButton13))
+				{
+					if (!shortSword.isAtk) //短剣攻撃時は使えない
+					{
+						if (longSword.coolTime <= 0) //クールタイムが０以下の時のみ
+						{
+							longSword.isAtk = true;
+							longSword.isReaction = true;
+							longSword.coolTime = 40;
+						}
 					}
 				}
 			}
 
-			//大剣(K or Y)
-			if (keys[DIK_K] && !preKeys[DIK_K] || Novice::IsPressButton(0, PadButton::kPadButton13))
-			{
-				if (!shortSword.isAtk) //短剣攻撃時は使えない
-				{
-					if (longSword.coolTime <= 0) //クールタイムが０以下の時のみ
-					{
-						longSword.isAtk = true;
-						longSword.coolTime = 40;
-					}
-				}
-			}
+			//--------------クールタイム----------------//
 
-			//クールタイム
 			if (shortSword.coolTime >= 0) //短剣
 			{
 				shortSword.coolTime--;
@@ -377,14 +406,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				longSword.coolTime--;
 			}
 
-			//攻撃の持続時間
+			//-------------攻撃の持続時間----------------//
+
 			if (shortSword.isAtk) //短剣
 			{
 				if (shortSword.durationTime >= 0)
 				{
 					shortSword.durationTime--;
-					player.gravity = -15.0f;
-				}
+				} 
 				else
 				{
 					shortSword.isAtk = false;
@@ -397,18 +426,53 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (longSword.durationTime >= 0)
 				{
 					longSword.durationTime--;
-					player.gravity = -15.0f;
-				}
-				else
+				} else
 				{
 					longSword.isAtk = false;
 					longSword.durationTime = 30;
 				}
 			}
 
-			//攻撃の座標
-			 //短剣
-			shortSword.pos.y = player.pos.y + player.height + shortSword.height;
+
+			//------------攻撃時の硬直によって動けない時間------------//
+
+			if (shortSword.isReaction) //短剣
+			{
+				if (shortSword.reactionTime >= 0)
+				{
+					shortSword.reactionTime--;
+					player.gravity = 0.7f;
+					player.speed = 0.0f;
+					player.jump = 0.0f;
+				}
+				else
+				{
+					shortSword.reactionTime = 30;
+					player.speed = 10.0f;
+					shortSword.isReaction = false;
+				}
+			}
+
+			if (longSword.isReaction) //大剣
+			{
+				if (longSword.reactionTime >= 0)
+				{
+					longSword.reactionTime--;
+					player.gravity = 0.7f;
+					player.speed = 0.0f;
+					player.jump = 0.0f;
+				} else
+				{
+					longSword.reactionTime = 30;
+					player.speed = 10.0f;
+					longSword.isReaction = false;
+				}
+			}
+
+			//-----------攻撃の座標--------------//
+
+			//短剣
+			shortSword.pos.y = player.pos.y - player.height / 2.0f + shortSword.height;
 			if (!player.isDirections)//右
 			{
 				shortSword.pos.x = player.pos.x;
@@ -418,7 +482,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				shortSword.pos.x = player.pos.x - shortSword.width;
 			}
 			//大剣
-			longSword.pos.y = player.pos.y + player.height + longSword.height;
+			longSword.pos.y = player.pos.y - player.height / 2.0f + longSword.height;
 			if (!player.isDirections)//右
 			{
 				longSword.pos.x = player.pos.x;
@@ -428,8 +492,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				longSword.pos.x = player.pos.x - longSword.width;
 			}
 
-			//重力
-			if (player.pos.y - player.width / 2.0f > 0.0f)
+			//----------------重力------------------//
+
+			if (player.pos.y - player.height / 2.0f > 0.0f)
 			{
 				player.pos.y += player.gravity -= 0.7f;
 			}
@@ -439,19 +504,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 
 			//地面に着地した時
-			if (player.pos.y - player.width / 2.0f <= 0.0f)
+			if (player.pos.y - player.height / 2.0f <= 0.0f)
 			{
-				player.pos.y = player.width / 2.0f;
+				player.pos.y = player.height / 2.0f;
+				player.jump = 15.0f;
 				player.isJump = false;
 			}
 
+			//-----------HP--------------//
 
+			if (player.hpCount <= 0) {
+				player.isAlive = false;
+			}
 
 			//===========================================================
 			//ボスの移動
 			//===========================================================
-
-			//とりあえずキーボードで追加
 
 			if (!boss.isAttacking)
 			{
@@ -533,10 +601,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								smallFire[i].pos.y = smallFire[i].width / 2.0f;
 							}
 
-							if (smallFire[i].pos.x <= 0.0f - smallFire[i].width)
+							if (smallFire[i].pos.x <= 0.0f - smallFire[i].width || smallFire[i].pos.x >= 1400.0f || smallFire[i].pos.y >= 800.0f)
 							{
 								smallFire[i].isShot = false;
 								fireDisappearCount++;
+
+								//smallFireを反射した場合の軌道を修正
+								if (smallFire[i].speed <= 0)
+								{
+									smallFire[i].speed *= -0.5f;
+								}
 							}
 						}
 					}
@@ -596,10 +670,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							smallFire[i].pos.y += smallFire[i].direction.y * smallFire[i].speed;
 
 							if (smallFire[i].pos.y <= 0.0f + smallFire[i].height / 2.0f ||
-								smallFire[i].pos.x <= 0.0f - smallFire[i].width)
+								smallFire[i].pos.x <= 0.0f - smallFire[i].width || smallFire[i].pos.x >= 1400.0f || smallFire[i].pos.y >= 800.0f)
 							{
 								smallFire[i].isShot = false;
 								fireDisappearCount++;
+
+								//smallFireを反射した場合の軌道を修正
+								if (smallFire[i].speed <= 0)
+								{
+									smallFire[i].speed *= -0.5f;
+								}
 							}
 						}
 					}
@@ -698,10 +778,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							}
 
 							if (smallFire[i].pos.x <= 0.0f - smallFire[i].width ||
-								smallFire[i].pos.y <= 0.0f + smallFire[i].height / 2.0f)
+								smallFire[i].pos.y <= 0.0f + smallFire[i].height / 2.0f || smallFire[i].pos.x >= 1400.0f || smallFire[i].pos.y >= 800.0f)
 							{
 								smallFire[i].isShot = false;
 								fireDisappearCount++;
+
+								//smallFireを反射した場合の軌道を修正
+								if (smallFire[i].speed <= 0)
+								{
+									smallFire[i].speed *= -0.5f;
+								}
 							}
 						}
 					}
@@ -760,6 +846,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								{
 									giantFire.direction.x = (player.pos.x - giantFire.pos.x) / f2pDistance;
 									giantFire.direction.y = (player.pos.y - giantFire.pos.y) / f2pDistance;
+								  giantFire.pos.x += giantFire.speed * giantFire.direction.x;
+								  giantFire.pos.y += giantFire.speed * giantFire.direction.y;
+
+								if (giantFire.pos.x <= 0.0f - giantFire.width ||
+									giantFire.pos.y <= 0.0f + giantFire.height / 2.0f || giantFire.pos.x >= 1400.0f || giantFire.pos.y >= 800.0f)
+								{
+									giantFire.isShot = false;
+									fireDisappearCount = 1;
+
+									//smallFireを反射した場合の軌道を修正
+									if (giantFire.speed <= 0)
+									{
+										giantFire.speed *= -0.5f;
+									}
 								}
 
 								boss.isCharging = false;
@@ -826,6 +926,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//当たり判定
 			//===========================================================
 
+			//--------------ボスと攻撃の当たり判定---------------//
+
 			//短剣とボス
 			if (shortSword.isAtk)
 			{
@@ -853,6 +955,54 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				boss.hpCount -= longSword.damage; //ボスのHPを攻撃力分減らす
 				longSword.isBossHit = false;
 			}
+
+			//----------------攻撃を反射するときの当たり判定----------------//
+
+			for (int i = 0; i < smallFireMax; i++)
+			{
+				if (longSword.isAtk)
+				{
+					if (!player.isDirections) //右を向いている時、右に攻撃をする
+					{
+						IsHit(longSword.pos, longSword.width, longSword.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, longSword.isSmallFireHit);
+					}
+					if (player.isDirections) //左を向いている時、左に攻撃をする
+					{
+						IsHit(longSword.pos, -longSword.width, longSword.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, longSword.isSmallFireHit);
+					}
+				}
+
+				if (longSword.isSmallFireHit)
+				{
+					longSword.isAtk = false;
+					longSword.durationTime = 30;
+					longSword.isSmallFireHit = false;
+
+					smallFire[i].speed *= -2.0f; //反射
+					smallFire[i].isReflection = true;
+				}
+			}
+
+			//------------------反射した攻撃とボスの当たり判定-----------------//
+
+			for (int i = 0; i < smallFireMax; i++)
+			{
+				if (smallFire[i].isReflection)
+				{
+					IsHit(smallFire[i].pos, smallFire[i].width, smallFire[i].height, boss.pos, boss.width, boss.height, smallFire[i].isBossHit);
+				}
+
+				if (smallFire[i].isBossHit)
+				{
+					boss.hpCount -= smallFire[i].reflectionDamage; //反射した小炎がボスに当たった時にHPを減らす
+					smallFire[i].isBossHit = false;
+					smallFire[i].isReflection = false;
+					smallFire[i].speed *= -0.5;
+				}
+
+			}
+
+			//------------------小炎とプレイヤーの当たり判定----------------//
 
 			// 小炎全体の当たり判定
 			for (int i = 0; i < smallFireMax; i++)
@@ -897,6 +1047,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					smallFire[i].isPlayerHit = false;
 					fireDisappearCount++;
 				}
+			}
+
+			if (giantFire.isShot)
+			{
+				IsHit(player.pos, player.width, player.height, giantFire.pos, giantFire.width, giantFire.height, giantFire.isPlayerHit);
+			}
+
+			if (giantFire.isPlayerHit)
+			{
+				player.hpCount -= 5;
+				giantFire.isShot = false;
+				giantFire.isPlayerHit = false;
+				fireDisappearCount++;
 			}
 		}
 
