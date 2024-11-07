@@ -968,7 +968,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (longSword.isSmallFireHit)
 				{
 					longSword.isAtk = false;
-					longSword.durationTime = 10;
+					longSword.durationTime = 30;
 					longSword.isSmallFireHit = false;
 
 					smallFire[i].speed *= -2.0f; //反射
