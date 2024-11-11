@@ -208,14 +208,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region ボス
 	Boss boss;
-	boss.pos = { 1000.0f, 160.0f }; // 左上座標
+	boss.pos = { 840.0f, 320.0f }; // 左上座標
 	boss.speed = 10.0f; // 移動速度
 	boss.attackCoolTimer = 0; // 攻撃のクールタイム
 	boss.isAlive = true; // 生きているか
 	boss.isChange = false; // 形態変化用のフラグ
 	boss.hpCount = 200; // 体力
-	boss.width = 144.0f; // 横幅(当たり判定用)
-	boss.height = 160.0f; // 縦幅(当たり判定用)
+	boss.width = 288.0f; // 横幅(当たり判定用)
+	boss.height = 320.0f; // 縦幅(当たり判定用)
 
 	//ボス攻撃
 	boss.attackCoolTimer = 60;
@@ -305,12 +305,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	int attackTypeFirst = 0; // 第一形態の技の種類
 
-	int ghBoss1 = Novice::LoadTexture("./Resources/images/Doragon_1.png"); // 第一形態のボスの画像
+	int ghBoss1Left = Novice::LoadTexture("./Resources/images/Doragon_1.png"); // 第一形態のボスの画像
+	int ghBoss1Right = Novice::LoadTexture("./Resources/images/Doragon_1_right.png"); // 第一形態のボスの画像
 
 	int bossAnimeCount = 0; // ボスのアニメーションｎフレームカウント
-	float boss1MaxImageWidth = 2880.0f; // ボスの画像の最大横幅
-	float boss1FrameImageWidth = 320.0f; // ボスの1フレームの画像横幅
-	float boss1ImageHeight = 176.0f; //ボスの画像の縦幅
+	float boss1MaxImageWidth = 5760.0f; // ボスの画像の最大横幅
+	float boss1FrameImageWidth = 640.0f; // ボスの1フレームの画像横幅
+	float boss1ImageHeight = 352.0f; //ボスの画像の縦幅
 #pragma endregion
 
 	int frameCount = 0; // フレーム
@@ -624,29 +625,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					{
 						if (boss.direction == RIGHT)
 						{
-							if (boss.pos.x < 136.0f)
+							if (boss.pos.x < 152.0f)
 							{
 								boss.pos.x += boss.speed;
 							}
 
-							if (boss.pos.x >= 136.0f)
+							if (boss.pos.x >= 152.0f)
 							{
-								boss.pos.x = 136.0f;
+								boss.pos.x = 152.0f;
 								boss.isAttacking = false;
 								boss.isInScreen = true;
-								boss.attackCoolTimer = 90;
+								boss.attackCoolTimer = 20;
 							}
 						}
 						else if (boss.direction == LEFT)
 						{
-							if (boss.pos.x > 1000.0f)
+							if (boss.pos.x > 840.0f)
 							{
 								boss.pos.x -= boss.speed;
 							}
 
-							if (boss.pos.x <= 1000.0f)
+							if (boss.pos.x <= 840.0f)
 							{
-								boss.pos.x = 1000.0f;
+								boss.pos.x = 840.0f;
 								boss.isAttacking = false;
 								boss.isInScreen = true;
 								boss.attackCoolTimer = 20;
@@ -665,8 +666,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								if (!smallFire[i].isShot)
 								{
 									smallFire[i].isShot = true;
-									smallFire[i].pos.x = boss.pos.x - 8.0f;
-									smallFire[i].pos.y = boss.pos.y - 48.0f;
+
+									if (boss.direction == LEFT)
+									{
+										smallFire[i].pos.x = boss.pos.x;
+									}
+									else if (boss.direction == RIGHT)
+									{
+										smallFire[i].pos.x = boss.pos.x + 256.0f;
+									}
+
+									smallFire[i].pos.y = boss.pos.y - 120.0f;
 									fireShootCount++;
 
 									break;
@@ -746,8 +756,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							{
 								if (!smallFire[i].isShot)
 								{
-									smallFire[i].pos.x = boss.pos.x - 8.0f;
-									smallFire[i].pos.y = boss.pos.y - 48.0f;
+									if (boss.direction == LEFT)
+									{
+										smallFire[i].pos.x = boss.pos.x;
+									}
+									else if (boss.direction == RIGHT)
+									{
+										smallFire[i].pos.x = boss.pos.x + 256.0f;
+									}
+
+									smallFire[i].pos.y = boss.pos.y - 120.0f;
 									f2pDistance = sqrtf(powf(player.pos.x - smallFire[i].pos.x, 2) + powf(player.pos.y - smallFire[i].pos.y, 2));
 
 									if (f2pDistance != 0.0f)
@@ -812,87 +830,87 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					{
 						if (boss.fireCoolTimer <= 0)
 						{
-							smallFire[8].pos.x = boss.pos.x - 8.0f;
-							smallFire[8].pos.y = boss.pos.y - 48.0f;
-							f2pDistance = sqrtf(powf(player.pos.x - smallFire[8].pos.x, 2) + powf(player.pos.y - smallFire[8].pos.y, 2));
-							if (f2pDistance != 0.0f)
+							for (int i = 12; i < multiple1Max; i++)
 							{
-								for (int i = 12; i < multiple1Max; i++)
+								if (!smallFire[i].isShot)
 								{
-									if (!smallFire[i].isShot)
+									smallFire[i].isShot = true;
+
+									if (boss.direction == LEFT)
 									{
-										smallFire[i].isShot = true;
 										smallFire[i].pos.x = boss.pos.x;
-										smallFire[i].pos.y = boss.pos.y - 32.0f;
-
-										if (boss.direction == LEFT)
-										{
-											smallFire[i].direction.x = cosf(2.0f / 3.0f * static_cast<float>(M_PI));
-											smallFire[i].direction.y = sinf(2.0f / 3.0f * static_cast<float>(M_PI));
-										}
-										else if (boss.direction == RIGHT)
-										{
-											smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 3.0f);
-											smallFire[i].direction.y = sinf(static_cast<float>(M_PI) / 3.0f);
-										}
-
-										fireShootCount++;
-
-										break;
+										smallFire[i].direction.x = cosf(2.0f / 3.0f * static_cast<float>(M_PI));
+										smallFire[i].direction.y = sinf(2.0f / 3.0f * static_cast<float>(M_PI));
 									}
-								}
-								for (int i = 20; i < multiple2Max; i++)
-								{
-									if (!smallFire[i].isShot)
+									else if (boss.direction == RIGHT)
 									{
-										smallFire[i].isShot = true;
-										smallFire[i].pos.x = boss.pos.x - 8.0f;
-										smallFire[i].pos.y = boss.pos.y - 48.0f;
-
-										if (boss.direction == LEFT)
-										{
-											smallFire[i].direction.x = cosf(5.0f / 6.0f * static_cast<float>(M_PI));
-											smallFire[i].direction.y = sinf(5.0f / 6.0f * static_cast<float>(M_PI));
-										}
-										else if (boss.direction == RIGHT)
-										{
-											smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 6.0f);
-											smallFire[i].direction.y = sinf(static_cast<float>(M_PI) / 6.0f);
-										}
-
-										fireShootCount++;
-
-										break;
+										smallFire[i].pos.x = boss.pos.x + 256.0f;
+										smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 3.0f);
+										smallFire[i].direction.y = sinf(static_cast<float>(M_PI) / 3.0f);
 									}
+
+									smallFire[i].pos.y = boss.pos.y - 120.0f;
+
+									fireShootCount++;
+
+									break;
 								}
-								for (int i = 28; i < multiple3Max; i++)
-								{
-									if (!smallFire[i].isShot)
-									{
-										smallFire[i].isShot = true;
-										smallFire[i].pos.x = boss.pos.x - 8.0f;
-										smallFire[i].pos.y = boss.pos.y - 48.0f;
-
-										if (boss.direction == LEFT)
-										{
-											smallFire[i].direction.x = cosf(static_cast<float>(M_PI));
-											smallFire[i].direction.y = sinf(static_cast<float>(M_PI));
-										}
-
-										if (boss.direction == RIGHT)
-										{
-											smallFire[i].direction.x = cosf(0.0f);
-											smallFire[i].direction.y = sinf(0.0f);
-										}
-
-										fireShootCount++;
-
-										break;
-									}
-								}
-
-								boss.fireCoolTimer = 30;
 							}
+							for (int i = 20; i < multiple2Max; i++)
+							{
+								if (!smallFire[i].isShot)
+								{
+									smallFire[i].isShot = true;
+
+									if (boss.direction == LEFT)
+									{
+										smallFire[i].pos.x = boss.pos.x;
+										smallFire[i].direction.x = cosf(5.0f / 6.0f * static_cast<float>(M_PI));
+										smallFire[i].direction.y = sinf(5.0f / 6.0f * static_cast<float>(M_PI));
+									}
+									else if (boss.direction == RIGHT)
+									{
+										smallFire[i].pos.x = boss.pos.x + 256.0f;
+										smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 6.0f);
+										smallFire[i].direction.y = sinf(static_cast<float>(M_PI) / 6.0f);
+									}
+
+									smallFire[i].pos.y = boss.pos.y - 120.0f;
+
+									fireShootCount++;
+
+									break;
+								}
+							}
+							for (int i = 28; i < multiple3Max; i++)
+							{
+								if (!smallFire[i].isShot)
+								{
+									smallFire[i].isShot = true;
+
+									if (boss.direction == LEFT)
+									{
+										smallFire[i].pos.x = boss.pos.x;
+										smallFire[i].direction.x = cosf(static_cast<float>(M_PI));
+										smallFire[i].direction.y = sinf(static_cast<float>(M_PI));
+									}
+
+									if (boss.direction == RIGHT)
+									{
+										smallFire[i].pos.x = boss.pos.x + 256.0f;
+										smallFire[i].direction.x = cosf(0.0f);
+										smallFire[i].direction.y = sinf(0.0f);
+									}
+
+									smallFire[i].pos.y = boss.pos.y - 120.0f;
+
+									fireShootCount++;
+
+									break;
+								}
+							}
+
+							boss.fireCoolTimer = 30;
 						}
 					}
 
@@ -965,7 +983,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							boss.isHovering = true;//最高地点で飛んでいる
 							boss.isCharging = true;//攻撃のためにはいる
 							boss.chargeTimer = 120;
-							giantFire.pos.x = boss.pos.x;
+
+							if (boss.direction == LEFT)
+							{
+								giantFire.pos.x = boss.pos.x;
+							}
+							if (boss.direction == RIGHT)
+							{
+								giantFire.pos.x = boss.pos.x + boss.width;
+							}
+
 							giantFire.pos.y = boss.pos.y;
 						}
 					}
@@ -1292,6 +1319,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 
+			// ボス
+			if (boss.direction == LEFT)
+			{
+				Novice::DrawSpriteRect
+				(
+					static_cast<int>(boss.pos.x - (boss1FrameImageWidth / 2.0f - boss.width / 2.0f)),
+					static_cast<int>(ToScreen(boss.pos.y + (boss1ImageHeight - boss.height))),
+					640 * bossAnimeCount,
+					0,
+					static_cast<int>(boss1FrameImageWidth),
+					static_cast<int>(boss1ImageHeight),
+					ghBoss1Left,
+					boss1FrameImageWidth / boss1MaxImageWidth, 1,
+					0, 0xFFFFFFFF
+				);
+			}
+			else if (boss.direction == RIGHT)
+			{
+				Novice::DrawSpriteRect
+				(
+					static_cast<int>(boss.pos.x - (boss1FrameImageWidth / 2.0f - boss.width / 2.0f)),
+					static_cast<int>(ToScreen(boss.pos.y + (boss1ImageHeight - boss.height))),
+					5120 - 640 * bossAnimeCount,
+					0,
+					static_cast<int>(boss1FrameImageWidth),
+					static_cast<int>(boss1ImageHeight),
+					ghBoss1Right,
+					boss1FrameImageWidth / boss1MaxImageWidth, 1,
+					0, 0xFFFFFFFF
+				);
+			}
+
 			// 小炎攻撃(連射)
 			for (int i = 0; i < slowFireMax; i++)
 			{
@@ -1355,20 +1414,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					static_cast<int>(explosion.height),
 					0.0f, 0XFF000055, kFillModeSolid);
 			}
-
-			// ボス
-			Novice::DrawSpriteRect
-			(
-				static_cast<int>(boss.pos.x - (boss1FrameImageWidth / 2.0f - boss.width / 2.0f)),
-				static_cast<int>(ToScreen(boss.pos.y + (boss1ImageHeight - boss.height))),
-				320 * bossAnimeCount,
-				0,
-				static_cast<int>(boss1FrameImageWidth),
-				static_cast<int>(boss1ImageHeight),
-				ghBoss1,
-				boss1FrameImageWidth / boss1MaxImageWidth, 1,
-				0, 0xFFFFFFFF
-			);
 
 			Novice::ScreenPrintf(100, 100, "isAttacking: %d", boss.isAttacking);
 			Novice::ScreenPrintf(100, 120, "attack coolTimer: %d", boss.attackCoolTimer);
