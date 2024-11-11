@@ -147,6 +147,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//シーン
 	int scene = GAMEPLAY;
 
+	int phase = 0;
+
 	//コントローラー
 	int padX = 0;	//左スティックの左右値
 	int padY = 0;	//左スティックの上下値
@@ -342,549 +344,428 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		if (scene == GAMEPLAY)
 		{
 
-			//===========================================================
-			//プレイヤー
-			//===========================================================
+
 
 			//スティックの値を取得する
 			Novice::GetAnalogInputLeft(0, &padX, &padY);
 
-			//攻撃時は動けない
-			if (!shortSword.isAtk && !longSword.isAtk)
+			if (phase == 0)
 			{
-				// 吹き飛ばされている間は動けない
-				if (!explosion.isPlayerHit)
+#pragma region プレイヤー
+				//===========================================================
+			    //プレイヤー
+			    //===========================================================
+				
+				//攻撃時は動けない
+				if (!shortSword.isAtk && !longSword.isAtk)
 				{
-					//左右移動(AD or 左スティック)
-					if (keys[DIK_A] || padX <= -1)
+					// 吹き飛ばされている間は動けない
+					if (!explosion.isPlayerHit)
 					{
-						player.pos.x -= player.speed;
-						if (!shortSword.isAtk && !longSword.isAtk)
+						//左右移動(AD or 左スティック)
+						if (keys[DIK_A] || padX <= -1)
 						{
-							player.isDirections = true;
-						}
-					}
-
-					if (keys[DIK_D] || padX >= 1)
-					{
-						player.pos.x += player.speed;
-						if (!shortSword.isAtk && !longSword.isAtk)
-						{
-							player.isDirections = false;
-						}
-					}
-
-					//ジャンプ(SPACE or A)
-					if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsPressButton(0, PadButton::kPadButton10))
-					{
-						player.isJump = true;
-					}
-
-					if (player.isJump)
-					{
-						player.pos.y += player.jump;
-					}
-				}
-			}
-
-			//==============================================================
-			//攻撃
-			//==============================================================
-
-			//攻撃時は動けない
-			if (!shortSword.isAtk && !longSword.isAtk)
-			{
-				// 吹き飛ばされている間は攻撃できない
-				if (!explosion.isPlayerHit)
-				{
-					//短剣(J or X)
-					if (keys[DIK_J] && !preKeys[DIK_J] || Novice::IsPressButton(0, PadButton::kPadButton12))
-					{
-						if (!longSword.isAtk) //大剣攻撃時は使えない
-						{
-							if (shortSword.coolTime <= 0) //クールタイムが０以下の時のみ
+							player.pos.x -= player.speed;
+							if (!shortSword.isAtk && !longSword.isAtk)
 							{
-								shortSword.isAtk = true;
-								shortSword.isReaction = true;
-								shortSword.coolTime = 20;
+								player.isDirections = true;
 							}
 						}
-					}
 
-					//大剣(K or Y)
-					if (keys[DIK_K] && !preKeys[DIK_K] || Novice::IsPressButton(0, PadButton::kPadButton13))
-					{
-						if (!shortSword.isAtk) //短剣攻撃時は使えない
+						if (keys[DIK_D] || padX >= 1)
 						{
-							if (longSword.coolTime <= 0) //クールタイムが０以下の時のみ
+							player.pos.x += player.speed;
+							if (!shortSword.isAtk && !longSword.isAtk)
 							{
-								longSword.isAtk = true;
-								longSword.isReaction = true;
-								longSword.coolTime = 40;
+								player.isDirections = false;
 							}
+						}
+
+						//ジャンプ(SPACE or A)
+						if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsPressButton(0, PadButton::kPadButton10))
+						{
+							player.isJump = true;
+						}
+
+						if (player.isJump)
+						{
+							player.pos.y += player.jump;
 						}
 					}
 				}
-			}
 
-			//--------------クールタイム----------------//
+				//==============================================================
+				//攻撃
+				//==============================================================
 
-			if (shortSword.coolTime >= 0) //短剣
-			{
-				shortSword.coolTime--;
-			}
-
-			if (longSword.coolTime >= 0) //大剣
-			{
-				longSword.coolTime--;
-			}
-
-			//-------------攻撃の持続時間----------------//
-
-			if (shortSword.isAtk) //短剣
-			{
-				if (shortSword.durationTime >= 0)
+				//攻撃時は動けない
+				if (!shortSword.isAtk && !longSword.isAtk)
 				{
-					shortSword.durationTime--;
-				}
-				else
-				{
-					shortSword.isAtk = false;
-					shortSword.durationTime = 30;
-				}
-			}
-
-			if (longSword.isAtk) //大剣
-			{
-				if (longSword.durationTime >= 0)
-				{
-					longSword.durationTime--;
-				}
-				else
-				{
-					longSword.isAtk = false;
-					longSword.durationTime = 30;
-				}
-			}
-
-
-			//------------攻撃時の硬直によって動けない時間------------//
-
-			if (shortSword.isReaction) //短剣
-			{
-				if (shortSword.reactionTime >= 0)
-				{
-					shortSword.reactionTime--;
-					player.gravity = 0.7f;
-					player.speed = 0.0f;
-					player.jump = 0.0f;
-				}
-				else
-				{
-					shortSword.reactionTime = 30;
-					player.speed = 10.0f;
-					shortSword.isReaction = false;
-				}
-			}
-
-			if (longSword.isReaction) //大剣
-			{
-				if (longSword.reactionTime >= 0)
-				{
-					longSword.reactionTime--;
-					player.gravity = 0.7f;
-					player.speed = 0.0f;
-					player.jump = 0.0f;
-				}
-				else
-				{
-					longSword.reactionTime = 30;
-					player.speed = 10.0f;
-					longSword.isReaction = false;
-				}
-			}
-
-			//-----------攻撃の座標--------------//
-
-			//短剣
-			shortSword.pos.y = player.pos.y - player.height / 2.0f + shortSword.height;
-			if (!player.isDirections)//右
-			{
-				shortSword.pos.x = player.pos.x;
-			}
-			else//左
-			{
-				shortSword.pos.x = player.pos.x - shortSword.width;
-			}
-			//大剣
-			longSword.pos.y = player.pos.y - player.height / 2.0f + longSword.height;
-			if (!player.isDirections)//右
-			{
-				longSword.pos.x = player.pos.x;
-			}
-			else//左
-			{
-				longSword.pos.x = player.pos.x - longSword.width;
-			}
-
-			//----------------重力------------------//
-
-			if (player.pos.y - player.height > 0.0f)
-			{
-				player.pos.y += player.gravity -= 0.7f;
-			}
-			else
-			{
-				player.gravity = 0.0f;
-			}
-
-			//地面に着地した時
-			if (player.pos.y - player.height <= 0.0f)
-			{
-				player.pos.y = player.height;
-				player.jump = 15.0f;
-				player.isJump = false;
-			}
-
-			//-----------HP--------------//
-
-			if (player.hpCount <= 0) {
-				player.isAlive = false;
-			}
-
-			//===========================================================
-			//ボスの移動
-			//===========================================================
-
-			if (!boss.isAttacking)
-			{
-				if (boss.attackCoolTimer > 0)
-				{
-					boss.attackCoolTimer--;
-				}
-				else if (boss.attackCoolTimer <= 0)
-				{
-					boss.attackCoolTimer = 0;
-
-					boss.isAttacking = true;
-
-					if (boss.hpCount <= 100)
+					// 吹き飛ばされている間は攻撃できない
+					if (!explosion.isPlayerHit)
 					{
-						attackTypeFirst = rand() % 5;
-					}
-					else if (boss.hpCount <= 180)
-					{
-						attackTypeFirst = rand() % 4;
-					}
-					else if (boss.hpCount <= 200)
-					{
-						attackTypeFirst = rand() % 3;
-					}
-				}
-			}
-
-			if (boss.isAttacking)
-			{
-				switch (attackTypeFirst)
-				{
-				case MOVE:
-					if (boss.isInScreen)
-					{
-						if (boss.direction == LEFT)
+						//短剣(J or X)
+						if (keys[DIK_J] && !preKeys[DIK_J] || Novice::IsPressButton(0, PadButton::kPadButton12))
 						{
-							if (boss.pos.x < 1280.0f + boss1FrameImageWidth)
+							if (!longSword.isAtk) //大剣攻撃時は使えない
 							{
-								boss.pos.x += boss.speed;
-							}
-
-							if (boss.pos.x >= 1280.0f + boss1FrameImageWidth)
-							{
-								boss.pos.x = -200;
-								boss.isInScreen = false;
-								boss.direction = RIGHT;
-							}
-						}
-						else if (boss.direction == RIGHT)
-						{
-							if (boss.pos.x > 0 - boss1FrameImageWidth)
-							{
-								boss.pos.x -= boss.speed;
-							}
-
-							if (boss.pos.x <= 0.0f - boss1FrameImageWidth)
-							{
-								boss.pos.x = 1300;
-								boss.isInScreen = false;
-								boss.direction = LEFT;
-							}
-						}
-					}
-
-					if (!boss.isInScreen)
-					{
-						if (boss.direction == RIGHT)
-						{
-							if (boss.pos.x < 136.0f)
-							{
-								boss.pos.x += boss.speed;
-							}
-
-							if (boss.pos.x >= 136.0f)
-							{
-								boss.pos.x = 136.0f;
-								boss.isAttacking = false;
-								boss.isInScreen = true;
-								boss.attackCoolTimer = 90;
-							}
-						}
-						else if (boss.direction == LEFT)
-						{
-							if (boss.pos.x > 1000.0f)
-							{
-								boss.pos.x -= boss.speed;
-							}
-
-							if (boss.pos.x <= 1000.0f)
-							{
-								boss.pos.x = 1000.0f;
-								boss.isAttacking = false;
-								boss.isInScreen = true;
-								boss.attackCoolTimer = 20;
-							}
-						}
-					}
-
-					break;
-				case SMALLFIRE:
-					if (fireShootCount <= 7)
-					{
-						if (boss.fireCoolTimer <= 0)
-						{
-							for (int i = 0; i < slowFireMax; i++)
-							{
-								if (!smallFire[i].isShot)
+								if (shortSword.coolTime <= 0) //クールタイムが０以下の時のみ
 								{
-									smallFire[i].isShot = true;
-									smallFire[i].pos.x = boss.pos.x - 8.0f;
-									smallFire[i].pos.y = boss.pos.y - 48.0f;
-									fireShootCount++;
-
-									break;
+									shortSword.isAtk = true;
+									shortSword.isReaction = true;
+									shortSword.coolTime = 20;
 								}
 							}
+						}
 
-							boss.fireCoolTimer = 40;
+						//大剣(K or Y)
+						if (keys[DIK_K] && !preKeys[DIK_K] || Novice::IsPressButton(0, PadButton::kPadButton13))
+						{
+							if (!shortSword.isAtk) //短剣攻撃時は使えない
+							{
+								if (longSword.coolTime <= 0) //クールタイムが０以下の時のみ
+								{
+									longSword.isAtk = true;
+									longSword.isReaction = true;
+									longSword.coolTime = 40;
+								}
+							}
 						}
 					}
+				}
 
-					if (boss.fireCoolTimer > 0)
+				//--------------クールタイム----------------//
+
+				if (shortSword.coolTime >= 0) //短剣
+				{
+					shortSword.coolTime--;
+				}
+
+				if (longSword.coolTime >= 0) //大剣
+				{
+					longSword.coolTime--;
+				}
+
+				//-------------攻撃の持続時間----------------//
+
+				if (shortSword.isAtk) //短剣
+				{
+					if (shortSword.durationTime >= 0)
 					{
-						boss.fireCoolTimer--;
+						shortSword.durationTime--;
 					}
-
-					for (int i = 0; i < slowFireMax; i++)
+					else
 					{
-						if (smallFire[i].isShot)
+						shortSword.isAtk = false;
+						shortSword.durationTime = 30;
+					}
+				}
+
+				if (longSword.isAtk) //大剣
+				{
+					if (longSword.durationTime >= 0)
+					{
+						longSword.durationTime--;
+					}
+					else
+					{
+						longSword.isAtk = false;
+						longSword.durationTime = 30;
+					}
+				}
+
+
+				//------------攻撃時の硬直によって動けない時間------------//
+
+				if (shortSword.isReaction) //短剣
+				{
+					if (shortSword.reactionTime >= 0)
+					{
+						shortSword.reactionTime--;
+						player.gravity = 0.7f;
+						player.speed = 0.0f;
+						player.jump = 0.0f;
+					}
+					else
+					{
+						shortSword.reactionTime = 30;
+						player.speed = 10.0f;
+						shortSword.isReaction = false;
+					}
+				}
+
+				if (longSword.isReaction) //大剣
+				{
+					if (longSword.reactionTime >= 0)
+					{
+						longSword.reactionTime--;
+						player.gravity = 0.7f;
+						player.speed = 0.0f;
+						player.jump = 0.0f;
+					}
+					else
+					{
+						longSword.reactionTime = 30;
+						player.speed = 10.0f;
+						longSword.isReaction = false;
+					}
+				}
+
+				//-----------攻撃の座標--------------//
+
+				//短剣
+				shortSword.pos.y = player.pos.y - player.height / 2.0f + shortSword.height;
+				if (!player.isDirections)//右
+				{
+					shortSword.pos.x = player.pos.x;
+				}
+				else//左
+				{
+					shortSword.pos.x = player.pos.x - shortSword.width;
+				}
+				//大剣
+				longSword.pos.y = player.pos.y - player.height / 2.0f + longSword.height;
+				if (!player.isDirections)//右
+				{
+					longSword.pos.x = player.pos.x;
+				}
+				else//左
+				{
+					longSword.pos.x = player.pos.x - longSword.width;
+				}
+
+				//----------------重力------------------//
+
+				if (player.pos.y - player.height > 0.0f)
+				{
+					player.pos.y += player.gravity -= 0.7f;
+				}
+				else
+				{
+					player.gravity = 0.0f;
+				}
+
+				//地面に着地した時
+				if (player.pos.y - player.height <= 0.0f)
+				{
+					player.pos.y = player.height;
+					player.jump = 15.0f;
+					player.isJump = false;
+				}
+
+				//-----------HP--------------//
+
+				if (player.hpCount <= 0) {
+					player.isAlive = false;
+				}
+#pragma endregion
+
+#pragma region ボス
+				//===========================================================
+				//ボスの移動
+				//===========================================================
+
+				if (!boss.isAttacking)
+				{
+					if (boss.attackCoolTimer > 0)
+					{
+						boss.attackCoolTimer--;
+					}
+					else if (boss.attackCoolTimer <= 0)
+					{
+						boss.attackCoolTimer = 0;
+
+						boss.isAttacking = true;
+
+						if (boss.hpCount <= 100)
+						{
+							attackTypeFirst = rand() % 5;
+						}
+						else if (boss.hpCount <= 180)
+						{
+							attackTypeFirst = rand() % 4;
+						}
+						else if (boss.hpCount <= 200)
+						{
+							attackTypeFirst = rand() % 3;
+						}
+					}
+				}
+
+				if (boss.isAttacking)
+				{
+					switch (attackTypeFirst)
+					{
+					case MOVE:
+						if (boss.isInScreen)
 						{
 							if (boss.direction == LEFT)
 							{
-								smallFire[i].pos.x -= smallFire[i].speed;
+								if (boss.pos.x < 1280.0f + boss1FrameImageWidth)
+								{
+									boss.pos.x += boss.speed;
+								}
+
+								if (boss.pos.x >= 1280.0f + boss1FrameImageWidth)
+								{
+									boss.pos.x = -200;
+									boss.isInScreen = false;
+									boss.direction = RIGHT;
+								}
 							}
 							else if (boss.direction == RIGHT)
 							{
-								smallFire[i].pos.x += smallFire[i].speed;
-							}
-
-							//重力
-							if (smallFire[i].pos.y - smallFire[i].width > 0.0f)
-							{
-								smallFire[i].pos.y += smallFire[i].gravity -= 0.8f;
-							}
-							else
-							{
-								smallFire[i].gravity = 0.0f;
-							}
-
-							//地面に着地した時
-							if (smallFire[i].pos.y - smallFire[i].width <= 0.0f)
-							{
-								smallFire[i].pos.y = smallFire[i].width;
-							}
-
-							if (smallFire[i].pos.x <= 0.0f - smallFire[i].width || smallFire[i].pos.x >= 1400.0f || smallFire[i].pos.y >= 800.0f)
-							{
-								smallFire[i].isShot = false;
-								fireDisappearCount++;
-
-								//smallFireを反射した場合の軌道を修正
-								if (smallFire[i].speed <= 0)
+								if (boss.pos.x > 0 - boss1FrameImageWidth)
 								{
-									smallFire[i].speed *= -0.5f;
+									boss.pos.x -= boss.speed;
+								}
+
+								if (boss.pos.x <= 0.0f - boss1FrameImageWidth)
+								{
+									boss.pos.x = 1300;
+									boss.isInScreen = false;
+									boss.direction = LEFT;
 								}
 							}
 						}
-					}
 
-					if (fireDisappearCount == 8)
-					{
-						boss.isAttacking = false;
-						boss.attackCoolTimer = 60;
-						fireDisappearCount = 0;
-						fireShootCount = 0;
+						if (!boss.isInScreen)
+						{
+							if (boss.direction == RIGHT)
+							{
+								if (boss.pos.x < 136.0f)
+								{
+									boss.pos.x += boss.speed;
+								}
+
+								if (boss.pos.x >= 136.0f)
+								{
+									boss.pos.x = 136.0f;
+									boss.isAttacking = false;
+									boss.isInScreen = true;
+									boss.attackCoolTimer = 90;
+								}
+							}
+							else if (boss.direction == LEFT)
+							{
+								if (boss.pos.x > 1000.0f)
+								{
+									boss.pos.x -= boss.speed;
+								}
+
+								if (boss.pos.x <= 1000.0f)
+								{
+									boss.pos.x = 1000.0f;
+									boss.isAttacking = false;
+									boss.isInScreen = true;
+									boss.attackCoolTimer = 20;
+								}
+							}
+						}
 
 						break;
-					}
-
-					break;
-
-				case FASTFIRE:
-					if (fireShootCount <= 3)
-					{
-						if (boss.fireCoolTimer <= 0)
+					case SMALLFIRE:
+						if (fireShootCount <= 7)
 						{
-							for (int i = 8; i < fastFireMax; i++)
+							if (boss.fireCoolTimer <= 0)
 							{
-								if (!smallFire[i].isShot)
-								{
-									smallFire[i].pos.x = boss.pos.x - 8.0f;
-									smallFire[i].pos.y = boss.pos.y - 48.0f;
-									f2pDistance = sqrtf(powf(player.pos.x - smallFire[i].pos.x, 2) + powf(player.pos.y - smallFire[i].pos.y, 2));
-
-									if (f2pDistance != 0.0f)
-									{
-										smallFire[i].direction.x = (player.pos.x - smallFire[i].pos.x) / f2pDistance;
-										smallFire[i].direction.y = (player.pos.y - smallFire[i].pos.y) / f2pDistance;
-									}
-
-									smallFire[i].isShot = true;
-									fireShootCount++;
-
-									break;
-								}
-							}
-
-							boss.fireCoolTimer = 30;
-						}
-					}
-
-					if (boss.fireCoolTimer > 0)
-					{
-						boss.fireCoolTimer--;
-					}
-
-					for (int i = 8; i < fastFireMax; i++)
-					{
-						if (smallFire[i].isShot)
-						{
-							smallFire[i].pos.x += smallFire[i].direction.x * smallFire[i].speed;
-							smallFire[i].pos.y += smallFire[i].direction.y * smallFire[i].speed;
-
-							if (smallFire[i].pos.y <= 0.0f + smallFire[i].height ||
-								smallFire[i].pos.x <= 0.0f - smallFire[i].width || smallFire[i].pos.x >= 1400.0f || smallFire[i].pos.y >= 800.0f)
-							{
-								smallFire[i].isShot = false;
-								fireDisappearCount++;
-
-								//smallFireを反射した場合の軌道を修正
-								if (smallFire[i].speed <= 0)
-								{
-									smallFire[i].speed *= -0.5f;
-								}
-							}
-						}
-					}
-
-					if (fireDisappearCount == 4)
-					{
-						boss.isAttacking = false;
-						boss.attackCoolTimer = 120;
-						fireDisappearCount = 0;
-						fireShootCount = 0;
-						f2pDistance = 0.0f;
-
-						break;
-					}
-
-					break;
-
-				case MULTIPLEFIRE:
-					if (fireShootCount <= 21)
-					{
-						if (boss.fireCoolTimer <= 0)
-						{
-							smallFire[8].pos.x = boss.pos.x - 8.0f;
-							smallFire[8].pos.y = boss.pos.y - 48.0f;
-							f2pDistance = sqrtf(powf(player.pos.x - smallFire[8].pos.x, 2) + powf(player.pos.y - smallFire[8].pos.y, 2));
-							if (f2pDistance != 0.0f)
-							{
-								for (int i = 12; i < multiple1Max; i++)
-								{
-									if (!smallFire[i].isShot)
-									{
-										smallFire[i].isShot = true;
-										smallFire[i].pos.x = boss.pos.x;
-										smallFire[i].pos.y = boss.pos.y - 32.0f;
-
-										if (boss.direction == LEFT)
-										{
-											smallFire[i].direction.x = cosf(2.0f / 3.0f * static_cast<float>(M_PI));
-											smallFire[i].direction.y = sinf(2.0f / 3.0f * static_cast<float>(M_PI));
-										}
-										else if (boss.direction == RIGHT)
-										{
-											smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 3.0f);
-											smallFire[i].direction.y = sinf(static_cast<float>(M_PI) / 3.0f);
-										}
-
-										fireShootCount++;
-
-										break;
-									}
-								}
-								for (int i = 20; i < multiple2Max; i++)
+								for (int i = 0; i < slowFireMax; i++)
 								{
 									if (!smallFire[i].isShot)
 									{
 										smallFire[i].isShot = true;
 										smallFire[i].pos.x = boss.pos.x - 8.0f;
 										smallFire[i].pos.y = boss.pos.y - 48.0f;
-
-										if (boss.direction == LEFT)
-										{
-											smallFire[i].direction.x = cosf(5.0f / 6.0f * static_cast<float>(M_PI));
-											smallFire[i].direction.y = sinf(5.0f / 6.0f * static_cast<float>(M_PI));
-										}
-										else if (boss.direction == RIGHT)
-										{
-											smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 6.0f);
-											smallFire[i].direction.y = sinf(static_cast<float>(M_PI) / 6.0f);
-										}
-
 										fireShootCount++;
 
 										break;
 									}
 								}
-								for (int i = 28; i < multiple3Max; i++)
+
+								boss.fireCoolTimer = 40;
+							}
+						}
+
+						if (boss.fireCoolTimer > 0)
+						{
+							boss.fireCoolTimer--;
+						}
+
+						for (int i = 0; i < slowFireMax; i++)
+						{
+							if (smallFire[i].isShot)
+							{
+								if (boss.direction == LEFT)
+								{
+									smallFire[i].pos.x -= smallFire[i].speed;
+								}
+								else if (boss.direction == RIGHT)
+								{
+									smallFire[i].pos.x += smallFire[i].speed;
+								}
+
+								//重力
+								if (smallFire[i].pos.y - smallFire[i].width > 0.0f)
+								{
+									smallFire[i].pos.y += smallFire[i].gravity -= 0.8f;
+								}
+								else
+								{
+									smallFire[i].gravity = 0.0f;
+								}
+
+								//地面に着地した時
+								if (smallFire[i].pos.y - smallFire[i].width <= 0.0f)
+								{
+									smallFire[i].pos.y = smallFire[i].width;
+								}
+
+								if (smallFire[i].pos.x <= 0.0f - smallFire[i].width || smallFire[i].pos.x >= 1400.0f || smallFire[i].pos.y >= 800.0f)
+								{
+									smallFire[i].isShot = false;
+									fireDisappearCount++;
+
+									//smallFireを反射した場合の軌道を修正
+									if (smallFire[i].speed <= 0)
+									{
+										smallFire[i].speed *= -0.5f;
+									}
+								}
+							}
+						}
+
+						if (fireDisappearCount == 8)
+						{
+							boss.isAttacking = false;
+							boss.attackCoolTimer = 60;
+							fireDisappearCount = 0;
+							fireShootCount = 0;
+
+							break;
+						}
+
+						break;
+
+					case FASTFIRE:
+						if (fireShootCount <= 3)
+						{
+							if (boss.fireCoolTimer <= 0)
+							{
+								for (int i = 8; i < fastFireMax; i++)
 								{
 									if (!smallFire[i].isShot)
 									{
-										smallFire[i].isShot = true;
 										smallFire[i].pos.x = boss.pos.x - 8.0f;
 										smallFire[i].pos.y = boss.pos.y - 48.0f;
+										f2pDistance = sqrtf(powf(player.pos.x - smallFire[i].pos.x, 2) + powf(player.pos.y - smallFire[i].pos.y, 2));
 
-										if (boss.direction == LEFT)
+										if (f2pDistance != 0.0f)
 										{
-											smallFire[i].direction.x = cosf(static_cast<float>(M_PI));
-											smallFire[i].direction.y = sinf(static_cast<float>(M_PI));
+											smallFire[i].direction.x = (player.pos.x - smallFire[i].pos.x) / f2pDistance;
+											smallFire[i].direction.y = (player.pos.y - smallFire[i].pos.y) / f2pDistance;
 										}
 
-										if (boss.direction == RIGHT)
-										{
-											smallFire[i].direction.x = cosf(0.0f);
-											smallFire[i].direction.y = sinf(0.0f);
-										}
-
+										smallFire[i].isShot = true;
 										fireShootCount++;
 
 										break;
@@ -894,180 +775,309 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								boss.fireCoolTimer = 30;
 							}
 						}
-					}
 
-					if (boss.fireCoolTimer > 0)
-					{
-						boss.fireCoolTimer--;
-					}
-
-					for (int i = 12; i < multipleFireMax; i++)
-					{
-						if (smallFire[i].isShot)
+						if (boss.fireCoolTimer > 0)
 						{
-							smallFire[i].pos.x += smallFire[i].speed * smallFire[i].direction.x;
+							boss.fireCoolTimer--;
+						}
 
-							//重力
-							if (smallFire[i].pos.y - smallFire[i].width > 0.0f)
+						for (int i = 8; i < fastFireMax; i++)
+						{
+							if (smallFire[i].isShot)
 							{
-								smallFire[i].pos.y += smallFire[i].speed * smallFire[i].direction.y;
-								smallFire[i].pos.y += smallFire[i].gravity -= 0.16f;
-							}
-							else
-							{
-								smallFire[i].gravity = 0.0f;
-							}
+								smallFire[i].pos.x += smallFire[i].direction.x * smallFire[i].speed;
+								smallFire[i].pos.y += smallFire[i].direction.y * smallFire[i].speed;
 
-							if (smallFire[i].pos.x <= 0.0f - smallFire[i].width ||
-								smallFire[i].pos.y <= 0.0f + smallFire[i].height || smallFire[i].pos.x >= 1400.0f || smallFire[i].pos.y >= 800.0f)
-							{
-								smallFire[i].isShot = false;
-								fireDisappearCount++;
-
-								//smallFireを反射した場合の軌道を修正
-								if (smallFire[i].speed <= 0)
+								if (smallFire[i].pos.y <= 0.0f + smallFire[i].height ||
+									smallFire[i].pos.x <= 0.0f - smallFire[i].width || smallFire[i].pos.x >= 1400.0f || smallFire[i].pos.y >= 800.0f)
 								{
-									smallFire[i].speed *= -0.5f;
-								}
-							}
-						}
-					}
+									smallFire[i].isShot = false;
+									fireDisappearCount++;
 
-					if (fireDisappearCount == 24)
-					{
-						boss.isAttacking = false;
-						boss.attackCoolTimer = 120;
-						fireDisappearCount = 0;
-						fireShootCount = 0;
-
-						for (int i = 12; i < multipleFireMax; i++)
-						{
-							smallFire[i].gravity = 0.0f;
-						}
-
-						break;
-					}
-
-					break;
-
-				case GIANTFIRE:
-					if (!boss.isHovering && fireDisappearCount <= 0)//ボスが滞空していないとき&攻撃が1発も撃たれていないとき
-
-					{
-						//ボスが上にいく処理
-						if (boss.pos.y < 500.0f)
-						{
-							boss.pos.y += boss.speed;
-						}
-						//ボスが上に上がりきったときの処理
-						if (boss.pos.y >= 500.0f)
-						{
-							boss.isHovering = true;//最高地点で飛んでいる
-							boss.isCharging = true;//攻撃のためにはいる
-							boss.chargeTimer = 120;
-							giantFire.pos.x = boss.pos.x;
-							giantFire.pos.y = boss.pos.y;
-						}
-					}
-
-					if (boss.isHovering)//滞空しているとき
-					{
-						if (boss.isCharging)//攻撃をためているとき
-						{
-							if (boss.chargeTimer > 0)
-							{
-								boss.chargeTimer--;
-							}
-							else//チャージ完了
-							{
-								//この時点でのプレイヤーの位置に攻撃を飛ばすためのベクトルの計算
-								f2pDistance = sqrtf(powf(player.pos.x - giantFire.pos.x, 2) + powf(player.pos.y - giantFire.pos.y, 2));
-								//正規化
-								if (f2pDistance != 0.0f)
-								{
-									giantFire.direction.x = (player.pos.x - giantFire.pos.x) / f2pDistance;
-									giantFire.direction.y = (player.pos.y - giantFire.pos.y + giantFire.height) / f2pDistance;
-
-									boss.isCharging = false;
-									giantFire.isShot = true;
+									//smallFireを反射した場合の軌道を修正
+									if (smallFire[i].speed <= 0)
+									{
+										smallFire[i].speed *= -0.5f;
+									}
 								}
 							}
 						}
 
-						if (giantFire.isShot)
-						{
-							giantFire.pos.x += giantFire.speed * giantFire.direction.x;
-							giantFire.pos.y += giantFire.speed * giantFire.direction.y;
-
-							if (giantFire.pos.x <= 0.0f - giantFire.width ||
-								giantFire.pos.y <= 0.0f + giantFire.height || giantFire.pos.x >= 1400.0f || giantFire.pos.y >= 800.0f)
-							{
-								giantFire.isShot = false;
-
-								//smallFireを反射した場合の軌道を修正
-								if (giantFire.speed <= 0)
-								{
-									giantFire.speed *= -0.5f;
-								}
-
-								explosion.pos.x = giantFire.pos.x - 192.0f;
-								explosion.pos.y = giantFire.pos.y;
-								explosion.isShot = true;
-								explosion.duration = 30;
-							}
-						}
-
-						if (explosion.isShot)
-						{
-							explosion.duration--;
-
-							if (explosion.width < 512.0f)
-							{
-								explosion.width += 128;
-							}
-
-							if (explosion.height < 256.0f)
-							{
-								explosion.height += 64;
-								explosion.pos.y += 64;
-							}
-
-							if (explosion.duration <= 0)
-							{
-								explosion.isShot = false;
-								explosion.width = 128.0f;
-								explosion.height = 128.0f;
-								fireDisappearCount = 1;
-							}
-						}
-
-						if (!giantFire.isShot && fireDisappearCount == 1)
-						{
-							if (boss.pos.y > 160.0f)
-							{
-								boss.pos.y -= boss.speed;
-							}
-							else
-							{
-								boss.isHovering = false;
-							}
-						}
-
-						if (!boss.isHovering && fireDisappearCount == 1)
+						if (fireDisappearCount == 4)
 						{
 							boss.isAttacking = false;
-							boss.chargeTimer = 0;
-							boss.attackCoolTimer = 180;
+							boss.attackCoolTimer = 120;
 							fireDisappearCount = 0;
+							fireShootCount = 0;
+							f2pDistance = 0.0f;
 
 							break;
 						}
 
 						break;
+
+					case MULTIPLEFIRE:
+						if (fireShootCount <= 21)
+						{
+							if (boss.fireCoolTimer <= 0)
+							{
+								smallFire[8].pos.x = boss.pos.x - 8.0f;
+								smallFire[8].pos.y = boss.pos.y - 48.0f;
+								f2pDistance = sqrtf(powf(player.pos.x - smallFire[8].pos.x, 2) + powf(player.pos.y - smallFire[8].pos.y, 2));
+								if (f2pDistance != 0.0f)
+								{
+									for (int i = 12; i < multiple1Max; i++)
+									{
+										if (!smallFire[i].isShot)
+										{
+											smallFire[i].isShot = true;
+											smallFire[i].pos.x = boss.pos.x;
+											smallFire[i].pos.y = boss.pos.y - 32.0f;
+
+											if (boss.direction == LEFT)
+											{
+												smallFire[i].direction.x = cosf(2.0f / 3.0f * static_cast<float>(M_PI));
+												smallFire[i].direction.y = sinf(2.0f / 3.0f * static_cast<float>(M_PI));
+											}
+											else if (boss.direction == RIGHT)
+											{
+												smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 3.0f);
+												smallFire[i].direction.y = sinf(static_cast<float>(M_PI) / 3.0f);
+											}
+
+											fireShootCount++;
+
+											break;
+										}
+									}
+									for (int i = 20; i < multiple2Max; i++)
+									{
+										if (!smallFire[i].isShot)
+										{
+											smallFire[i].isShot = true;
+											smallFire[i].pos.x = boss.pos.x - 8.0f;
+											smallFire[i].pos.y = boss.pos.y - 48.0f;
+
+											if (boss.direction == LEFT)
+											{
+												smallFire[i].direction.x = cosf(5.0f / 6.0f * static_cast<float>(M_PI));
+												smallFire[i].direction.y = sinf(5.0f / 6.0f * static_cast<float>(M_PI));
+											}
+											else if (boss.direction == RIGHT)
+											{
+												smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 6.0f);
+												smallFire[i].direction.y = sinf(static_cast<float>(M_PI) / 6.0f);
+											}
+
+											fireShootCount++;
+
+											break;
+										}
+									}
+									for (int i = 28; i < multiple3Max; i++)
+									{
+										if (!smallFire[i].isShot)
+										{
+											smallFire[i].isShot = true;
+											smallFire[i].pos.x = boss.pos.x - 8.0f;
+											smallFire[i].pos.y = boss.pos.y - 48.0f;
+
+											if (boss.direction == LEFT)
+											{
+												smallFire[i].direction.x = cosf(static_cast<float>(M_PI));
+												smallFire[i].direction.y = sinf(static_cast<float>(M_PI));
+											}
+
+											if (boss.direction == RIGHT)
+											{
+												smallFire[i].direction.x = cosf(0.0f);
+												smallFire[i].direction.y = sinf(0.0f);
+											}
+
+											fireShootCount++;
+
+											break;
+										}
+									}
+
+									boss.fireCoolTimer = 30;
+								}
+							}
+						}
+
+						if (boss.fireCoolTimer > 0)
+						{
+							boss.fireCoolTimer--;
+						}
+
+						for (int i = 12; i < multipleFireMax; i++)
+						{
+							if (smallFire[i].isShot)
+							{
+								smallFire[i].pos.x += smallFire[i].speed * smallFire[i].direction.x;
+
+								//重力
+								if (smallFire[i].pos.y - smallFire[i].width > 0.0f)
+								{
+									smallFire[i].pos.y += smallFire[i].speed * smallFire[i].direction.y;
+									smallFire[i].pos.y += smallFire[i].gravity -= 0.16f;
+								}
+								else
+								{
+									smallFire[i].gravity = 0.0f;
+								}
+
+								if (smallFire[i].pos.x <= 0.0f - smallFire[i].width ||
+									smallFire[i].pos.y <= 0.0f + smallFire[i].height || smallFire[i].pos.x >= 1400.0f || smallFire[i].pos.y >= 800.0f)
+								{
+									smallFire[i].isShot = false;
+									fireDisappearCount++;
+
+									//smallFireを反射した場合の軌道を修正
+									if (smallFire[i].speed <= 0)
+									{
+										smallFire[i].speed *= -0.5f;
+									}
+								}
+							}
+						}
+
+						if (fireDisappearCount == 24)
+						{
+							boss.isAttacking = false;
+							boss.attackCoolTimer = 120;
+							fireDisappearCount = 0;
+							fireShootCount = 0;
+
+							for (int i = 12; i < multipleFireMax; i++)
+							{
+								smallFire[i].gravity = 0.0f;
+							}
+
+							break;
+						}
+
+						break;
+
+					case GIANTFIRE:
+						if (!boss.isHovering && fireDisappearCount <= 0)//ボスが滞空していないとき&攻撃が1発も撃たれていないとき
+
+						{
+							//ボスが上にいく処理
+							if (boss.pos.y < 500.0f)
+							{
+								boss.pos.y += boss.speed;
+							}
+							//ボスが上に上がりきったときの処理
+							if (boss.pos.y >= 500.0f)
+							{
+								boss.isHovering = true;//最高地点で飛んでいる
+								boss.isCharging = true;//攻撃のためにはいる
+								boss.chargeTimer = 120;
+								giantFire.pos.x = boss.pos.x;
+								giantFire.pos.y = boss.pos.y;
+							}
+						}
+
+						if (boss.isHovering)//滞空しているとき
+						{
+							if (boss.isCharging)//攻撃をためているとき
+							{
+								if (boss.chargeTimer > 0)
+								{
+									boss.chargeTimer--;
+								}
+								else//チャージ完了
+								{
+									//この時点でのプレイヤーの位置に攻撃を飛ばすためのベクトルの計算
+									f2pDistance = sqrtf(powf(player.pos.x - giantFire.pos.x, 2) + powf(player.pos.y - giantFire.pos.y, 2));
+									//正規化
+									if (f2pDistance != 0.0f)
+									{
+										giantFire.direction.x = (player.pos.x - giantFire.pos.x) / f2pDistance;
+										giantFire.direction.y = (player.pos.y - giantFire.pos.y + giantFire.height) / f2pDistance;
+
+										boss.isCharging = false;
+										giantFire.isShot = true;
+									}
+								}
+							}
+
+							if (giantFire.isShot)
+							{
+								giantFire.pos.x += giantFire.speed * giantFire.direction.x;
+								giantFire.pos.y += giantFire.speed * giantFire.direction.y;
+
+								if (giantFire.pos.x <= 0.0f - giantFire.width ||
+									giantFire.pos.y <= 0.0f + giantFire.height || giantFire.pos.x >= 1400.0f || giantFire.pos.y >= 800.0f)
+								{
+									giantFire.isShot = false;
+
+									//smallFireを反射した場合の軌道を修正
+									if (giantFire.speed <= 0)
+									{
+										giantFire.speed *= -0.5f;
+									}
+
+									explosion.pos.x = giantFire.pos.x - 192.0f;
+									explosion.pos.y = giantFire.pos.y;
+									explosion.isShot = true;
+									explosion.duration = 30;
+								}
+							}
+
+							if (explosion.isShot)
+							{
+								explosion.duration--;
+
+								if (explosion.width < 512.0f)
+								{
+									explosion.width += 128;
+								}
+
+								if (explosion.height < 256.0f)
+								{
+									explosion.height += 64;
+									explosion.pos.y += 64;
+								}
+
+								if (explosion.duration <= 0)
+								{
+									explosion.isShot = false;
+									explosion.width = 128.0f;
+									explosion.height = 128.0f;
+									fireDisappearCount = 1;
+								}
+							}
+
+							if (!giantFire.isShot && fireDisappearCount == 1)
+							{
+								if (boss.pos.y > 160.0f)
+								{
+									boss.pos.y -= boss.speed;
+								}
+								else
+								{
+									boss.isHovering = false;
+								}
+							}
+
+							if (!boss.isHovering && fireDisappearCount == 1)
+							{
+								boss.isAttacking = false;
+								boss.chargeTimer = 0;
+								boss.attackCoolTimer = 180;
+								fireDisappearCount = 0;
+
+								break;
+							}
+
+							break;
+						}
 					}
 				}
+#pragma endregion
 			}
-
 			//ボスのアニメーション
 			if (frameCount >= 60)
 			{
