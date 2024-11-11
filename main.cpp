@@ -764,22 +764,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							{
 								for (int i = 8; i < fastFireMax; i++)
 								{
-									if (boss.direction == LEFT)
+									if (!smallFire[i].isShot)
 									{
-										smallFire[i].pos.x = boss.pos.x;
-									}
-									else if (boss.direction == RIGHT)
-									{
-										smallFire[i].pos.x = boss.pos.x + 256.0f;
-									}
+										if (boss.direction == LEFT)
+										{
+											smallFire[i].pos.x = boss.pos.x;
+										}
+										else if (boss.direction == RIGHT)
+										{
+											smallFire[i].pos.x = boss.pos.x + 256.0f;
+										}
 
-									smallFire[i].pos.y = boss.pos.y - 120.0f;
-									f2pDistance = sqrtf(powf(player.pos.x - smallFire[i].pos.x, 2) + powf(player.pos.y - smallFire[i].pos.y, 2));
-
-									if (f2pDistance != 0.0f)
-									{
-										smallFire[i].pos.x = boss.pos.x - 8.0f;
-										smallFire[i].pos.y = boss.pos.y - 48.0f;
+										smallFire[i].pos.y = boss.pos.y - 120.0f;
 										f2pDistance = sqrtf(powf(player.pos.x - smallFire[i].pos.x, 2) + powf(player.pos.y - smallFire[i].pos.y, 2));
 
 										if (f2pDistance != 0.0f)
@@ -896,36 +892,36 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 										break;
 									}
 								}
-							}
-							for (int i = 28; i < multiple3Max; i++)
-							{
-								if (!smallFire[i].isShot)
+								for (int i = 28; i < multiple3Max; i++)
 								{
-								  smallFire[i].isShot = true;
+									if (!smallFire[i].isShot)
+									{
+										smallFire[i].isShot = true;
 
-								  if (boss.direction == LEFT)
-								  {
-									smallFire[i].pos.x = boss.pos.x;
-									smallFire[i].direction.x = cosf(static_cast<float>(M_PI));
-									smallFire[i].direction.y = sinf(static_cast<float>(M_PI));
-								  }
+										if (boss.direction == LEFT)
+										{
+											smallFire[i].pos.x = boss.pos.x;
+											smallFire[i].direction.x = cosf(static_cast<float>(M_PI));
+											smallFire[i].direction.y = sinf(static_cast<float>(M_PI));
+										}
 
-								  if (boss.direction == RIGHT)
-								  {
-									smallFire[i].pos.x = boss.pos.x + 256.0f;
-									smallFire[i].direction.x = cosf(0.0f);
-									smallFire[i].direction.y = sinf(0.0f);
-								  }
+										if (boss.direction == RIGHT)
+										{
+											smallFire[i].pos.x = boss.pos.x + 256.0f;
+											smallFire[i].direction.x = cosf(0.0f);
+											smallFire[i].direction.y = sinf(0.0f);
+										}
 
-								  smallFire[i].pos.y = boss.pos.y - 120.0f;
+										smallFire[i].pos.y = boss.pos.y - 120.0f;
 
-								  fireShootCount++;
+										fireShootCount++;
 
-								  break;
+										break;
+									}
 								}
-							}
 
-							  boss.fireCoolTimer = 30;
+								boss.fireCoolTimer = 30;
+							}
 						}
 
 						if (boss.fireCoolTimer > 0)
@@ -1436,6 +1432,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Novice::ScreenPrintf(100, 160, "boss hp: %d", boss.hpCount);
 			Novice::ScreenPrintf(100, 180, "player hp: %d", player.hpCount);
 			Novice::ScreenPrintf(100, 200, "isShot: %d", explosion.isShot);
+			Novice::ScreenPrintf(100, 220, "disappearcount: %d", fireDisappearCount);
 
 			Novice::DrawBox(static_cast<int>(boss.pos.x),
 				static_cast<int>(ToScreen(boss.pos.y)),
