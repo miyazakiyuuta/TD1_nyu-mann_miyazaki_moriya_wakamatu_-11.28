@@ -632,66 +632,68 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 						if (!boss.isInScreen)
 						{
-              if (boss.direction == RIGHT)
-              {
-							  if (boss.pos.x < 152.0f)
-							  {
+							if (boss.direction == RIGHT)
+							{
+								if (boss.pos.x < 152.0f)
+								{
 									boss.pos.x += boss.speed;
 								}
-                
-                if (boss.pos.x >= 152.0f)
-                {
-                  boss.pos.x = 152.0f;
-                  boss.isAttacking = false;
-                  boss.isInScreen = true;
-                  boss.attackCoolTimer = 20;
-                }
-              }
-              else if (boss.direction == LEFT)
-              {
-                if (boss.pos.x > 840.0f)
-                {
-                  boss.pos.x -= boss.speed;
-                }
 
-                if (boss.pos.x <= 840.0f)
-                {
-                  boss.pos.x = 840.0f;
-                  boss.isAttacking = false;
-                  boss.isInScreen = true;
-                  boss.attackCoolTimer = 20;
-                }
+								if (boss.pos.x >= 152.0f)
+								{
+									boss.pos.x = 152.0f;
+									boss.isAttacking = false;
+									boss.isInScreen = true;
+									boss.attackCoolTimer = 20;
+								}
+							}
+							else if (boss.direction == LEFT)
+							{
+								if (boss.pos.x > 840.0f)
+								{
+									boss.pos.x -= boss.speed;
+								}
+
+								if (boss.pos.x <= 840.0f)
+								{
+									boss.pos.x = 840.0f;
+									boss.isAttacking = false;
+									boss.isInScreen = true;
+									boss.attackCoolTimer = 20;
+								}
+							}
 						}
 
-						break;
-					case SMALLFIRE:
+							break;
+						case SMALLFIRE:
 						if (fireShootCount <= 7)
 						{
 							if (boss.fireCoolTimer <= 0)
 							{
 								for (int i = 0; i < slowFireMax; i++)
 								{
-                  if (!smallFire[i].isShot)
-                  {
-                    smallFire[i].isShot = true;
+									if (!smallFire[i].isShot)
+									{
+										smallFire[i].isShot = true;
 
-                    if (boss.direction == LEFT)
-                    {
-                      smallFire[i].pos.x = boss.pos.x;
-                    }
-                    else if (boss.direction == RIGHT)
-                    {
-                      smallFire[i].pos.x = boss.pos.x + 256.0f;
-                    }
+										if (boss.direction == LEFT)
+										{
+											smallFire[i].pos.x = boss.pos.x;
+										}
+										else if (boss.direction == RIGHT)
+										{
+											smallFire[i].pos.x = boss.pos.x + 256.0f;
+										}
 
-                    smallFire[i].pos.y = boss.pos.y - 120.0f;
-                    fireShootCount++;
+										smallFire[i].pos.y = boss.pos.y - 120.0f;
+										fireShootCount++;
 
-                    break;
-								  }
-                }
+										break;
+									}
+								}
 
-                boss.fireCoolTimer = 40;
+								boss.fireCoolTimer = 40;
+
 							}
 						}
 
@@ -840,91 +842,91 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					case MULTIPLEFIRE:
 						if (fireShootCount <= 21)
 						{
-              if (boss.fireCoolTimer)
-              {
-							for (int i = 12; i < multiple1Max; i++)
+							if (boss.fireCoolTimer <= 0)
 							{
-								if (!smallFire[i].isShot)
+								for (int i = 12; i < multiple1Max; i++)
 								{
-									smallFire[i].isShot = true;
-
-									if (boss.direction == LEFT)
+									if (!smallFire[i].isShot)
 									{
-										smallFire[i].pos.x = boss.pos.x;
-										smallFire[i].direction.x = cosf(2.0f / 3.0f * static_cast<float>(M_PI));
-										smallFire[i].direction.y = sinf(2.0f / 3.0f * static_cast<float>(M_PI));
+										smallFire[i].isShot = true;
+
+										if (boss.direction == LEFT)
+										{
+											smallFire[i].pos.x = boss.pos.x;
+											smallFire[i].direction.x = cosf(2.0f / 3.0f * static_cast<float>(M_PI));
+											smallFire[i].direction.y = sinf(2.0f / 3.0f * static_cast<float>(M_PI));
+										}
+										else if (boss.direction == RIGHT)
+										{
+											smallFire[i].pos.x = boss.pos.x + 256.0f;
+											smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 3.0f);
+											smallFire[i].direction.y = sinf(static_cast<float>(M_PI) / 3.0f);
+										}
+
+										smallFire[i].pos.y = boss.pos.y - 120.0f;
+
+										fireShootCount++;
+
+										break;
 									}
-									else if (boss.direction == RIGHT)
-									{
-										smallFire[i].pos.x = boss.pos.x + 256.0f;
-										smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 3.0f);
-										smallFire[i].direction.y = sinf(static_cast<float>(M_PI) / 3.0f);
-									}
-
-									smallFire[i].pos.y = boss.pos.y - 120.0f;
-
-									fireShootCount++;
-
-									break;
 								}
-							}
-							for (int i = 20; i < multiple2Max; i++)
-							{
-								if (!smallFire[i].isShot)
+								for (int i = 20; i < multiple2Max; i++)
 								{
-									smallFire[i].isShot = true;
-
-									if (boss.direction == LEFT)
+									if (!smallFire[i].isShot)
 									{
-										smallFire[i].pos.x = boss.pos.x;
-										smallFire[i].direction.x = cosf(5.0f / 6.0f * static_cast<float>(M_PI));
-										smallFire[i].direction.y = sinf(5.0f / 6.0f * static_cast<float>(M_PI));
+										smallFire[i].isShot = true;
+
+										if (boss.direction == LEFT)
+										{
+											smallFire[i].pos.x = boss.pos.x;
+											smallFire[i].direction.x = cosf(5.0f / 6.0f * static_cast<float>(M_PI));
+											smallFire[i].direction.y = sinf(5.0f / 6.0f * static_cast<float>(M_PI));
+										}
+										else if (boss.direction == RIGHT)
+										{
+											smallFire[i].pos.x = boss.pos.x + 256.0f;
+											smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 6.0f);
+											smallFire[i].direction.y = sinf(static_cast<float>(M_PI) / 6.0f);
+										}
+
+										smallFire[i].pos.y = boss.pos.y - 120.0f;
+
+										fireShootCount++;
+
+										break;
 									}
-									else if (boss.direction == RIGHT)
-									{
-										smallFire[i].pos.x = boss.pos.x + 256.0f;
-										smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 6.0f);
-										smallFire[i].direction.y = sinf(static_cast<float>(M_PI) / 6.0f);
-									}
-
-									smallFire[i].pos.y = boss.pos.y - 120.0f;
-
-									fireShootCount++;
-
-									break;
 								}
 							}
 							for (int i = 28; i < multiple3Max; i++)
 							{
-                if (!smallFire[i].isShot)
-                {
-                  smallFire[i].isShot = true;
+								if (!smallFire[i].isShot)
+								{
+								  smallFire[i].isShot = true;
 
-                  if (boss.direction == LEFT)
-                  {
-                    smallFire[i].pos.x = boss.pos.x;
-                    smallFire[i].direction.x = cosf(static_cast<float>(M_PI));
-                    smallFire[i].direction.y = sinf(static_cast<float>(M_PI));
-                  }
+								  if (boss.direction == LEFT)
+								  {
+									smallFire[i].pos.x = boss.pos.x;
+									smallFire[i].direction.x = cosf(static_cast<float>(M_PI));
+									smallFire[i].direction.y = sinf(static_cast<float>(M_PI));
+								  }
 
-                  if (boss.direction == RIGHT)
-                  {
-                    smallFire[i].pos.x = boss.pos.x + 256.0f;
-                    smallFire[i].direction.x = cosf(0.0f);
-                    smallFire[i].direction.y = sinf(0.0f);
-                  }
+								  if (boss.direction == RIGHT)
+								  {
+									smallFire[i].pos.x = boss.pos.x + 256.0f;
+									smallFire[i].direction.x = cosf(0.0f);
+									smallFire[i].direction.y = sinf(0.0f);
+								  }
 
-                  smallFire[i].pos.y = boss.pos.y - 120.0f;
+								  smallFire[i].pos.y = boss.pos.y - 120.0f;
 
-                  fireShootCount++;
+								  fireShootCount++;
 
-                  break;
-                 }
-               }
+								  break;
+								}
+							}
 
 							  boss.fireCoolTimer = 30;
-						  }
-            }
+						}
 
 						if (boss.fireCoolTimer > 0)
 						{
@@ -996,7 +998,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								boss.isCharging = true;//攻撃のためにはいる
 								boss.chargeTimer = 120;
                 
-                if (boss.direction == LEFT)
+							if (boss.direction == LEFT)
 							{
 								giantFire.pos.x = boss.pos.x;
 							}
