@@ -110,7 +110,7 @@ enum SCENE
 enum ATTACK
 {
 	MOVE,
-	SMALLFIRE,
+	SLOWFIRE,
 	FASTFIRE,
 	MULTIPLEFIRE,
 	GIANTFIRE
@@ -145,7 +145,7 @@ void IsHit(Vector2 leftTopA, float widthA, float heightA, Vector2 leftTopB, floa
 	}
 }
 
-void MultipleFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCount)
+void MultipleFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCount, float speed)
 {
 	if (boss->fireCoolTimer > 0)
 	{
@@ -159,6 +159,7 @@ void MultipleFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCoun
 			{
 				if (!smallFire[i].isShot)//falseのとき
 				{
+					smallFire[i].speed = speed;
 					smallFire[i].isShot = true;
 					smallFire[i].pos.y = boss->pos.y;
 					if (boss->direction == LEFT)
@@ -350,7 +351,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Attack smallFire[36];
 
-	for (int i = 0; i < slowFireMax; i++)
+	for (int i = 0; i < kMaxSmallFire; i++)
 	{
 		smallFire[i].pos = { 0.0f }; // 座標
 		smallFire[i].width = 32.0f; // 横幅
@@ -358,36 +359,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		smallFire[i].speed = 5.0f; // 速度
 		smallFire[i].isShot = false; // 撃たれたか
 		smallFire[i].gravity = 0.0f; //重力
-	}
-
-	for (int i = 8; i < fastFireMax; i++)
-	{
-		smallFire[i].pos = { 0.0f }; // 座標
-		smallFire[i].width = 32.0f; // 横幅
-		smallFire[i].height = 32.0f; // 縦幅
-		smallFire[i].speed = 5.0f; // 速度20.0f
-		smallFire[i].isShot = false; // 撃たれたか
 		smallFire[i].direction = { 0.0f };
-	}
-
-	for (int i = 12; i < multipleFireMax; i++)
-	{
-		smallFire[i].pos = { 0.0f }; // 座標
-		smallFire[i].width = 32.0f; // 横幅
-		smallFire[i].height = 32.0f; // 縦幅
-		smallFire[i].speed = 12.0f; // 速度
-		smallFire[i].isShot = false; // 撃たれたか
-		smallFire[i].direction = { 0.0f };
-		smallFire[i].gravity = 0.0f;
-	}
-
-	for (int i = 0; i < kMaxSmallFire; i++)
-	{
 		smallFire[i].isPlayerHit = false; //プレイヤーに当たったか
 		smallFire[i].isBossHit = false; // 反射された攻撃がボスに当たったか 
 		smallFire[i].isReflection = false; // 反射されたか 
 		smallFire[i].reflectionDamage = 5; // 反射された攻撃がボスに当たった時のダメージ
 	}
+
+	float slowFireSpeed = 5.0f;
+	float fastFireSpeed = 20.0f;
+	float multipleFireSpeed = 12.0f;
 
 	Attack giantFire;
 
@@ -754,7 +735,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						}
 						else if (boss.hpCount <= 200)
 						{
-							attackTypeFirst = 3;//rand() % 3;
+							attackTypeFirst = rand() % 3;
 						}
 					}
 				}
@@ -832,7 +813,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						}
 
 						break;
-					case SMALLFIRE:
+					case SLOWFIRE:
 						if (fireShootCount <= 7)
 						{
 							if (boss.fireCoolTimer <= 0)
@@ -853,6 +834,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 										}
 
 										smallFire[i].pos.y = boss.pos.y - 120.0f;
+										smallFire[i].speed = slowFireSpeed;
 										fireShootCount++;
 
 
@@ -948,6 +930,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 											smallFire[i].direction.y = (player.pos.y - smallFire[i].pos.y) / f2pDistance;
 										}
 
+										smallFire[i].speed = fastFireSpeed;
 										smallFire[i].isShot = true;
 										fireShootCount++;
 
@@ -996,7 +979,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 					case MULTIPLEFIRE:
 
-						MultipleFire(kMaxMultiple, smallFire, &boss, fireShootCount);
+						MultipleFire(kMaxMultiple, smallFire, &boss, fireShootCount, multipleFireSpeed);
 
 						break;
 
@@ -1201,7 +1184,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//小炎軌道修正
 			for (int i = 0; i < slowFireMax; i++) {
 				if (!smallFire[i].isShot) {
-					smallFire[i].speed = 5.0f;
+					smallFire[i].speed = slowFireSpeed;
 				}
 			}
 
