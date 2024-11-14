@@ -161,7 +161,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.posW.x = 100.0f; //ｘ座標(ワールド)
 	player.posW.y = 100.0f; //ｙ座標(ワールド)
 	player.width = 32.0f; //縦幅
-	player.height = 32.0f; //横幅
+	player.height = 64.0f; //横幅
 	player.speed = 10.0f; //移動速度
 	player.jump = 15.0f; //ジャンプ速度
 	player.gravity = 0.0f; //重力
@@ -199,6 +199,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	longSword.reactionTime = 30; //硬直で動けない時間 
 	longSword.isBossHit = false; //攻撃が当たっているか(ボスに) 
 	longSword.isSmallFireHit = false; //攻撃が当たっているか(smallFireに)
+
+	int ghPlayerLeft = Novice::LoadTexture("./Resources/images/player-left.png"); // 第一形態のボスの画像
+	int ghPlayerRight = Novice::LoadTexture("./Resources/images/player-right.png"); // 第一形態のボスの画像
+
+	int playerAnimeCount = 0; // ボスのアニメーションｎフレームカウント
+	float playerMaxImageWidth = 320.0f; // ボスの画像の最大横幅
+	float playerFrameImageWidth = 64.0f; // ボスの1フレームの画像横幅
+	float playerImageHeight = 64.0f; //ボスの画像の縦幅
+
 #pragma endregion
 
 	// キー入力結果を受け取る箱
@@ -1072,12 +1081,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			{
 				frameCount = 0;
 				bossAnimeCount = 0;
+				playerAnimeCount = 0;
 			}
 			frameCount++;
 
 			if (frameCount % (60 / 8) == 0)
 			{
 				bossAnimeCount++;
+			}
+
+			if (frameCount % (60 / 4) == 0)
+			{
+				playerAnimeCount++;
 			}
 
 
@@ -1268,15 +1283,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//地面
 			Novice::DrawLine(0, 620, 1280, 620, RED);
 
-			//プレイヤー
-			Novice::DrawBox
-			(
-				static_cast<int>(player.pos.x),
-				static_cast<int>(ToScreen(player.pos.y)),
-				static_cast<int>(player.width),
-				static_cast<int>(player.height),
-				0.0f, WHITE, kFillModeSolid
-			);
+			if (!player.isDirections)
+			{
+				//プレイヤー
+				Novice::DrawSpriteRect
+				(
+					static_cast<int>(player.pos.x),
+					static_cast<int>(ToScreen(player.pos.y)),
+					64 * playerAnimeCount,
+					0,
+					static_cast<int>(playerFrameImageWidth),
+					static_cast<int>(playerImageHeight),
+					ghPlayerRight,
+					playerFrameImageWidth / playerMaxImageWidth, 1,
+					0, 0xFFFFFFFF
+				);
+			}
+			else if (player.isDirections)
+			{
+				//プレイヤー
+				Novice::DrawSpriteRect
+				(
+					static_cast<int>(player.pos.x),
+					static_cast<int>(ToScreen(player.pos.y)),
+					256 - 64 * playerAnimeCount,
+					0,
+					static_cast<int>(playerFrameImageWidth),
+					static_cast<int>(playerImageHeight),
+					ghPlayerLeft,
+					playerFrameImageWidth / playerMaxImageWidth, 1,
+					0, 0xFFFFFFFF
+				);
+			}
 
 			if (shortSword.isAtk) //短剣の判定(持続時)
 			{
