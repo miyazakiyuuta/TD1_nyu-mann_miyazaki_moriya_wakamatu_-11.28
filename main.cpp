@@ -145,6 +145,91 @@ void IsHit(Vector2 leftTopA, float widthA, float heightA, Vector2 leftTopB, floa
 	}
 }
 
+void SlowFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCount, int& disappearCount, float speed)
+{
+	if (shootCount <= 7)
+	{
+		if (boss->fireCoolTimer <= 0)
+		{
+			for (int i = 0; i < kMax; i++)
+			{
+				if (!smallFire[i].isShot)
+				{
+					smallFire[i].isShot = true;
+
+					if (boss->direction == LEFT)
+					{
+						smallFire[i].pos.x = boss->pos.x;
+					}
+					else if (boss->direction == RIGHT)
+					{
+						smallFire[i].pos.x = boss->pos.x + 256.0f;
+					}
+
+					smallFire[i].pos.y = boss->pos.y - 120.0f;
+					smallFire[i].speed = speed;
+					shootCount++;
+
+					break;
+				}
+			}
+
+			boss->fireCoolTimer = 40;
+
+		}
+	}
+
+	if (boss->fireCoolTimer > 0)
+	{
+		boss->fireCoolTimer--;
+	}
+
+	for (int i = 0; i < kMax; i++)
+	{
+		if (smallFire[i].isShot)
+		{
+			if (boss->direction == LEFT)
+			{
+				smallFire[i].pos.x -= smallFire[i].speed;
+			}
+			else if (boss->direction == RIGHT)
+			{
+				smallFire[i].pos.x += smallFire[i].speed;
+			}
+
+			//重力
+			if (smallFire[i].pos.y - smallFire[i].width > 0.0f)
+			{
+				smallFire[i].pos.y += smallFire[i].gravity -= 0.8f;
+			}
+			else
+			{
+				smallFire[i].gravity = 0.0f;
+			}
+
+			//地面に着地した時
+			if (smallFire[i].pos.y - smallFire[i].width <= 0.0f)
+			{
+				smallFire[i].pos.y = smallFire[i].width;
+			}
+
+			if (smallFire[i].pos.x <= 0.0f - smallFire[i].width || smallFire[i].pos.x >= 1400.0f || smallFire[i].pos.y >= 800.0f)
+			{
+				smallFire[i].isShot = false;
+				disappearCount++;
+			}
+		}
+	}
+
+	if (disappearCount == 8)
+	{
+		boss->isAttacking = false;
+		boss->attackCoolTimer = 60;
+		disappearCount = 0;
+		shootCount = 0;
+	}
+}
+
 void MultipleFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCount, float speed)
 {
 	if (boss->fireCoolTimer > 0)
@@ -814,91 +899,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 						break;
 					case SLOWFIRE:
-						if (fireShootCount <= 7)
-						{
-							if (boss.fireCoolTimer <= 0)
-							{
-								for (int i = 0; i < slowFireMax; i++)
-								{
-									if (!smallFire[i].isShot)
-									{
-										smallFire[i].isShot = true;
-
-										if (boss.direction == LEFT)
-										{
-											smallFire[i].pos.x = boss.pos.x;
-										}
-										else if (boss.direction == RIGHT)
-										{
-											smallFire[i].pos.x = boss.pos.x + 256.0f;
-										}
-
-										smallFire[i].pos.y = boss.pos.y - 120.0f;
-										smallFire[i].speed = slowFireSpeed;
-										fireShootCount++;
-
-
-										break;
-									}
-								}
-
-								boss.fireCoolTimer = 40;
-
-							}
-						}
-
-						if (boss.fireCoolTimer > 0)
-						{
-							boss.fireCoolTimer--;
-						}
-
-						for (int i = 0; i < slowFireMax; i++)
-						{
-							if (smallFire[i].isShot)
-							{
-								if (boss.direction == LEFT)
-								{
-									smallFire[i].pos.x -= smallFire[i].speed;
-								}
-								else if (boss.direction == RIGHT)
-								{
-									smallFire[i].pos.x += smallFire[i].speed;
-								}
-
-								//重力
-								if (smallFire[i].pos.y - smallFire[i].width > 0.0f)
-								{
-									smallFire[i].pos.y += smallFire[i].gravity -= 0.8f;
-								}
-								else
-								{
-									smallFire[i].gravity = 0.0f;
-								}
-
-								//地面に着地した時
-								if (smallFire[i].pos.y - smallFire[i].width <= 0.0f)
-								{
-									smallFire[i].pos.y = smallFire[i].width;
-								}
-
-								if (smallFire[i].pos.x <= 0.0f - smallFire[i].width || smallFire[i].pos.x >= 1400.0f || smallFire[i].pos.y >= 800.0f)
-								{
-									smallFire[i].isShot = false;
-									fireDisappearCount++;
-
-								}
-							}
-						}
-
-						if (fireDisappearCount == 8)
-						{
-							boss.isAttacking = false;
-							boss.attackCoolTimer = 60;
-							fireDisappearCount = 0;
-							fireShootCount = 0;
-
-							break;
-						}
+						
+						SlowFire(slowFireMax, smallFire, &boss, fireShootCount, fireDisappearCount, slowFireSpeed);
 
 						break;
 
