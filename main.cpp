@@ -749,7 +749,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 										if (boss.direction == LEFT)
 										{
 											smallFire[i].pos.x = boss.pos.x;
-										} else if (boss.direction == RIGHT)
+
+										}
+                    else if (boss.direction == RIGHT)
 										{
 											smallFire[i].pos.x = boss.pos.x + 256.0f;
 										}
