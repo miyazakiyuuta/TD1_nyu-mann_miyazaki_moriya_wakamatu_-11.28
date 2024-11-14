@@ -188,8 +188,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Sword longSword;
 	longSword.pos.x = 100.0f; //ｘ座標
 	longSword.pos.y = 100.0f; //ｙ座標
-	longSword.width = 64.0f; //縦幅
-	longSword.height = 64.0f; //横幅
+	longSword.width = 96.0f; //縦幅
+	longSword.height = 96.0f; //横幅
 	longSword.coolTime = 0; //攻撃クールタイム
 	longSword.durationTime = 30; //攻撃の持続時間
 	longSword.isAtk = false; //攻撃しているか
@@ -481,7 +481,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					if (shortSword.reactionTime >= 0)
 					{
 						shortSword.reactionTime--;
-						player.gravity = 0.7f;
+						player.gravity = 0.5f;
 						player.speed = 0.0f;
 						player.jump = 0.0f;
 					} else
@@ -497,7 +497,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					if (longSword.reactionTime >= 0)
 					{
 						longSword.reactionTime--;
-						player.gravity = 0.7f;
+						player.gravity = 0.5f;
 						player.speed = 0.0f;
 						player.jump = 0.0f;
 					} else
@@ -511,22 +511,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				//-----------攻撃の座標--------------//
 
 				//短剣
-				shortSword.pos.y = player.pos.y - player.height / 2.0f + shortSword.height;
+				shortSword.pos.y = player.pos.y - player.height + shortSword.height;
 				if (!player.isDirections)//右
 				{
-					shortSword.pos.x = player.pos.x;
+					shortSword.pos.x = player.pos.x + player.width / 2.0f;
 				} else//左
 				{
-					shortSword.pos.x = player.pos.x - shortSword.width;
+					shortSword.pos.x = player.pos.x + player.width / 2.0f - shortSword.width;
 				}
+
 				//大剣
-				longSword.pos.y = player.pos.y - player.height / 2.0f + longSword.height;
+				longSword.pos.y = player.pos.y - player.height + longSword.height;
 				if (!player.isDirections)//右
 				{
-					longSword.pos.x = player.pos.x;
+					longSword.pos.x = player.pos.x + player.width / 2.0f;
 				} else//左
 				{
-					longSword.pos.x = player.pos.x - longSword.width;
+					longSword.pos.x = player.pos.x + player.width / 2.0f - longSword.width;
 				}
 
 				//----------------重力------------------//
@@ -1133,15 +1134,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					smallFire[i].speed *= -2.0f; //反射
 					smallFire[i].isReflection = true;
 				}
+			}
 
-				//smallFireを反射した場合の軌道を修正
-				if (!smallFire[i].isShot)
-				{
-					if (smallFire[i].isReflection)
-					{
-						smallFire[i].speed *= -0.5f;
-						smallFire[i].isReflection = false;
-					}
+			//小炎軌道修正
+			for (int i = 0; i < slowFireMax; i++) {
+				if (!smallFire[i].isShot) {
+					smallFire[i].speed = 5.0f;
+				}
+			}
+
+			for (int i = 8; i < fastFireMax; i++) {
+				if (!smallFire[i].isShot) {
+					smallFire[i].speed = 20.0f;
+				}
+			}
+
+			for (int i = 12; i < multipleFireMax; i++) {
+				if (!smallFire[i].isShot) {
+					smallFire[i].speed = 12.0f;
 				}
 			}
 
