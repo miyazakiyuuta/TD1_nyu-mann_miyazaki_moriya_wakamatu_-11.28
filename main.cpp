@@ -79,6 +79,18 @@ struct Attack
 	int duration;
 	float playerMove;
 };
+
+//パーティクル
+struct Particle
+{
+	Vector2 pos;
+	float width;
+	float height;
+	float rotation;
+	int color;
+	int isDisplay;
+};
+
 #pragma endregion
 
 enum DIRECTION
@@ -284,13 +296,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	longSword.isBossHit = false; //攻撃が当たっているか(ボスに) 
 	longSword.isSmallFireHit = false; //攻撃が当たっているか(smallFireに)
 
-	int ghPlayerLeft = Novice::LoadTexture("./Resources/images/player-left.png"); // 第一形態のボスの画像
-	int ghPlayerRight = Novice::LoadTexture("./Resources/images/player-right.png"); // 第一形態のボスの画像
 
-	int playerAnimeCount = 0; // ボスのアニメーションｎフレームカウント
-	float playerMaxImageWidth = 320.0f; // ボスの画像の最大横幅
-	float playerFrameImageWidth = 64.0f; // ボスの1フレームの画像横幅
-	float playerImageHeight = 64.0f; //ボスの画像の縦幅
+	int ghPlayerLeft = Novice::LoadTexture("./Resources/images/player_left.png"); // プレイヤー左向きの待機画像 
+	int ghPlayerRight = Novice::LoadTexture("./Resources/images/player_right.png"); // プレイヤー右向きの待機画像
+
+	int playerAnimeCount = 0; // プレイヤーのアニメーションｎフレームカウント 
+	float playerMaxImageWidth = 320.0f; // プレイヤーの画像の最大横幅 
+	float playerFrameImageWidth = 64.0f; // プレイヤーの1フレームの画像横幅
+	float playerImageHeight = 64.0f; //プレイヤーの画像の縦幅
+
+
 
 #pragma endregion
 
@@ -405,6 +420,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	float boss1MaxImageWidth = 5760.0f; // ボスの画像の最大横幅
 	float boss1FrameImageWidth = 640.0f; // ボスの1フレームの画像横幅
 	float boss1ImageHeight = 352.0f; //ボスの画像の縦幅
+
+
+	//パーティクル
+	int playerLocusMax = 50; //最大表示数
+	Particle playerLocus[50];
+	for (int i = 0; i < playerLocusMax; i++) {
+		playerLocus[i].pos.x = 0.0f; //ｘ座標
+		playerLocus[i].pos.y = 0.0f; //ｙ座標
+		playerLocus[i].width = 16.0f; //横幅
+		playerLocus[i].height = 16.0f; //縦幅
+		playerLocus[i].rotation = 0.0f; //回転角
+		playerLocus[i].color = WHITE; //色
+		playerLocus[i].isDisplay = false; //表示されているか
+	}
+	int playerLocusCoolTime = 240;//表示のクールタイム
+
 #pragma endregion
 
 	int frameCount = 0; // フレーム
@@ -458,20 +489,44 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						if (keys[DIK_A] || padX <= -1)
 						{
 							player.pos.x -= player.speed;
+
+							//パーティクル軌跡
+							for (int i = 0; i < playerLocusMax; i++) {
+								if (playerLocusCoolTime >= 0) {
+									playerLocusCoolTime--;
+								} else {
+									playerLocus[i].isDisplay = true;
+									playerLocusCoolTime = 240;
+								}
+							}
+
 							if (!shortSword.isAtk && !longSword.isAtk)
 							{
 								player.isDirections = true;
 							}
 						}
+						
 
 						if (keys[DIK_D] || padX >= 1)
 						{
 							player.pos.x += player.speed;
+
+							//パーティクル軌跡
+							for (int i = 0; i < playerLocusMax; i++) {
+								if (playerLocusCoolTime >= 0) {
+									playerLocusCoolTime--;
+								} else {
+									playerLocus[i].isDisplay = true;
+									playerLocusCoolTime = 240;
+								}
+							}
+
 							if (!shortSword.isAtk && !longSword.isAtk)
 							{
 								player.isDirections = false;
 							}
-						}
+						} 
+						
 
 						//ジャンプ(SPACE or A)
 						if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsPressButton(0, PadButton::kPadButton10))
@@ -482,6 +537,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						if (player.isJump)
 						{
 							player.pos.y += player.jump;
+
+							//パーティクル軌跡
+							for (int i = 0; i < playerLocusMax; i++) {
+								if (playerLocusCoolTime >= 0) {
+									playerLocusCoolTime--;
+								} else {
+									playerLocus[i].isDisplay = true;
+									playerLocusCoolTime = 240;
+								}
+							}
 						}
 					}
 				}
@@ -720,6 +785,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								if (boss.pos.x > 0 - boss1FrameImageWidth)
 								{
 									boss.pos.x -= boss.speed;
+
 								}
 
 								if (boss.pos.x <= 0.0f - boss1FrameImageWidth)
@@ -788,6 +854,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 										smallFire[i].pos.y = boss.pos.y - 120.0f;
 										fireShootCount++;
+
 
 										break;
 									}
@@ -1056,6 +1123,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 			}
 			//ボスのアニメーション
+
 			if (frameCount >= 60)
 			{
 				frameCount = 0;
@@ -1249,6 +1317,49 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 		}
 
+
+		//==============================================================
+		//パーティクル
+		//==============================================================
+
+		//--------------------プレイヤーの軌跡---------------------//
+		for (int i = 0; i < playerLocusMax; i++) {
+			
+			if (playerLocus[i].isDisplay) {
+				//段々小さくなる
+				if (playerLocus[i].width >= 0.0f && playerLocus[i].height >= 0.0f) {
+					playerLocus[i].width -= 0.5f;
+					playerLocus[i].height -= 0.5f;
+				} else {
+					playerLocus[i].width = 16.0f;
+					playerLocus[i].height = 16.0f;
+					playerLocus[i].isDisplay = false;
+				}
+
+				//回転させる
+				playerLocus[i].rotation += 0.02f;
+
+				//移動させる
+				if (!player.isDirections) {
+					//右
+					playerLocus[i].pos.x -= 0.5f;
+					playerLocus[i].pos.y += 0.01f;
+				}
+				else 
+				{
+					//左
+					playerLocus[i].pos.x += 0.5f;
+					playerLocus[i].pos.y += 0.01f;
+				}
+			}
+
+			if (!playerLocus[i].isDisplay) {
+				//ランダムな位置に表示させる
+				playerLocus[i].pos.x = rand() % 32 - 16 + player.pos.x + player.width / 2.0f;
+				playerLocus[i].pos.y = rand() % 32 - 16 + ToScreen(player.pos.y) + player.height / 2.0f;
+			}
+		}
+
 		///
 		/// ↑更新処理ここまで
 		///
@@ -1257,9 +1368,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		if (scene == GAMEPLAY)
+		if (scene == GAMEPLAY) 
 		{
-			//地面
+
+			//---------------------パーティクル-----------------------//
+
+		    //プレイヤーの軌跡
+			for (int i = 0; i < playerLocusMax; i++) {
+				if (playerLocus[i].isDisplay) {
+					Novice::DrawBox(
+						static_cast<int>(playerLocus[i].pos.x),
+						static_cast<int>(playerLocus[i].pos.y),
+						static_cast<int>(playerLocus[i].width),
+						static_cast<int>(playerLocus[i].height),
+						playerLocus[i].rotation, playerLocus[i].color, kFillModeWireFrame);
+				}
+			}
+
+			//地面 
 			Novice::DrawLine(0, 620, 1280, 620, RED);
 
 			if (!player.isDirections)
@@ -1429,6 +1555,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				static_cast<int>(boss.width),
 				static_cast<int>(boss.height),
 				0.0f, 0xFFFFFFFF, kFillModeWireFrame);
+
+			
 		}
 
 		///
