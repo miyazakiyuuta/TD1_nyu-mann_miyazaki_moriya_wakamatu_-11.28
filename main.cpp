@@ -145,13 +145,13 @@ void IsHit(Vector2 leftTopA, float widthA, float heightA, Vector2 leftTopB, floa
 	}
 }
 
-void SlowFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCount, int& disappearCount, float speed)
+void SlowFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCount, int& disappearCount)
 {
 	if (shootCount <= 7)
 	{
 		if (boss->fireCoolTimer <= 0)
 		{
-			for (int i = 0; i < kMax; i++)
+			for (int i = 0; i < kMax; ++i)
 			{
 				if (!smallFire[i].isShot)
 				{
@@ -167,7 +167,6 @@ void SlowFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCount, i
 					}
 
 					smallFire[i].pos.y = boss->pos.y - 120.0f;
-					smallFire[i].speed = speed;
 					shootCount++;
 
 					break;
@@ -184,7 +183,7 @@ void SlowFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCount, i
 		boss->fireCoolTimer--;
 	}
 
-	for (int i = 0; i < kMax; i++)
+	for (int i = 0; i < kMax; ++i)
 	{
 		if (smallFire[i].isShot)
 		{
@@ -230,7 +229,7 @@ void SlowFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCount, i
 	}
 }
 
-void MultipleFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCount, float speed)
+void MultipleFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCount)
 {
 	if (boss->fireCoolTimer > 0)
 	{
@@ -244,7 +243,6 @@ void MultipleFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCoun
 			{
 				if (!smallFire[i].isShot)//falseのとき
 				{
-					smallFire[i].speed = speed;
 					smallFire[i].isShot = true;
 					smallFire[i].pos.y = boss->pos.y;
 					if (boss->direction == LEFT)
@@ -256,8 +254,8 @@ void MultipleFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCoun
 					else if (boss->direction == RIGHT)
 					{
 						smallFire[i].pos.x = boss->pos.x + boss->width;
-						smallFire[i].direction.x = cosf((i % 3) / 6 * static_cast<float>(M_PI));
-						smallFire[i].direction.y = sinf((i % 3) / 6 * static_cast<float>(M_PI));
+						smallFire[i].direction.x = cosf((i % 3) / 6.0f * static_cast<float>(M_PI));
+						smallFire[i].direction.y = sinf((i % 3) / 6.0f * static_cast<float>(M_PI));
 					}
 					if (i % 3 == 2)
 					{
@@ -441,7 +439,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		smallFire[i].pos = { 0.0f }; // 座標
 		smallFire[i].width = 32.0f; // 横幅
 		smallFire[i].height = 32.0f; // 縦幅
-		smallFire[i].speed = 5.0f; // 速度
+		smallFire[i].speed = 0.0f; // 速度
 		smallFire[i].isShot = false; // 撃たれたか
 		smallFire[i].gravity = 0.0f; //重力
 		smallFire[i].direction = { 0.0f };
@@ -801,7 +799,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						for (int i = 0; i < kMaxSmallFire; ++i)
 						{
 							smallFire[i].isShot = false;
-							smallFire[i].speed = 5.0f;
 							smallFire[i].gravity = 0.0f;
 							fireShootCount = 0;
 						}
@@ -810,17 +807,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 						boss.isAttacking = true;
 
-						if (boss.hpCount <= 100)
+						if (boss.hpCount <= 150)
 						{
 							attackTypeFirst = rand() % 5;
 						}
-						else if (boss.hpCount <= 180)
+						else if (boss.hpCount <= 190)
 						{
 							attackTypeFirst = rand() % 4;
 						}
 						else if (boss.hpCount <= 200)
 						{
 							attackTypeFirst = rand() % 3;
+						}
+
+						for (int i = 0; i < kMaxSmallFire; i++)
+						{
+							if (attackTypeFirst == 1)
+							{
+								smallFire[i].speed = slowFireSpeed;
+							}
+							else if (attackTypeFirst == 2)
+							{
+								smallFire[i].speed = fastFireSpeed;
+							}
+							else if (attackTypeFirst == 3)
+							{
+								smallFire[i].speed = multipleFireSpeed;
+							}
 						}
 					}
 				}
@@ -900,7 +913,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						break;
 					case SLOWFIRE:
 						
-						SlowFire(slowFireMax, smallFire, &boss, fireShootCount, fireDisappearCount, slowFireSpeed);
+						SlowFire(slowFireMax, smallFire, &boss, fireShootCount, fireDisappearCount);
 
 						break;
 
@@ -932,7 +945,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 											smallFire[i].direction.y = (player.pos.y - smallFire[i].pos.y) / f2pDistance;
 										}
 
-										smallFire[i].speed = fastFireSpeed;
 										smallFire[i].isShot = true;
 										fireShootCount++;
 
@@ -981,7 +993,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 					case MULTIPLEFIRE:
 
-						MultipleFire(kMaxMultiple, smallFire, &boss, fireShootCount, multipleFireSpeed);
+						MultipleFire(kMaxMultiple, smallFire, &boss, fireShootCount);
 
 						break;
 
