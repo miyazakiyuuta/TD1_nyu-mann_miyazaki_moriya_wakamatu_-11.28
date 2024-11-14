@@ -229,6 +229,69 @@ void MultipleFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCoun
 	}
 }
 
+void FastFire(const int kMax, Attack smallFire[], Boss* boss, Player player, int& shootCount, int& disappearCount)
+{
+	if (shootCount < 4)
+	{
+		if (boss->fireCoolTimer > 0)
+		{
+			boss->fireCoolTimer--;
+		}
+		if (boss->fireCoolTimer <= 0)
+		{
+			for (int i = 0; i < kMax; ++i)
+			{
+				if (!smallFire[i].isShot)
+				{
+					smallFire[i].isShot = true;
+					smallFire[i].pos.y = boss->pos.y + 120.0f;
+					if (boss->direction == LEFT)
+					{
+						smallFire[i].pos.x = boss->pos.x;
+					}
+					else if (boss->direction == RIGHT)
+					{
+						smallFire[i].pos.x = boss->pos.x + boss->width;
+					}
+					float fireToPlayerV = sqrtf(powf(player.pos.x - smallFire[i].pos.x, 2) + powf(player.pos.y - smallFire[i].pos.y, 2));
+					if (fireToPlayerV != 0.0f)
+					{
+						smallFire[i].direction.x = (player.pos.x - smallFire[i].pos.x) / fireToPlayerV;
+						smallFire[i].direction.y = (player.pos.y - smallFire[i].pos.y) / fireToPlayerV;
+					}
+					shootCount++;
+					boss->fireCoolTimer = 30;
+					break;
+				}
+			}
+		}
+	}
+	for (int i = 0; i < kMax; ++i)
+	{
+		if (smallFire[i].isShot)
+		{
+			smallFire[i].pos.x += smallFire[i].direction.x * smallFire[i].speed;
+			smallFire[i].pos.y += smallFire[i].direction.y * smallFire[i].speed;
+			//画面外にでたとき
+			if (smallFire[i].pos.x + smallFire[i].width < 0.0f ||
+				smallFire[i].pos.x>1280.0f ||
+				smallFire[i].pos.y - smallFire[i].height < 0.0f)
+			{
+				smallFire[i].isShot = false;
+				disappearCount++;
+			}
+		}
+	}
+
+	if (disappearCount == 4)
+	{
+		boss->isAttacking = false;
+		boss->attackCoolTimer = 120;
+		disappearCount = 0;
+	}
+
+}
+
 #pragma endregion
 
 // Windowsアプリでのエントリーポイント(main関数)
@@ -367,7 +430,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 
 	float slowFireSpeed = 5.0f;
-	float fastFireSpeed = 20.0f;
+	//float fastFireSpeed = 20.0f;
 	float multipleFireSpeed = 12.0f;
 
 	Attack giantFire;
@@ -475,7 +538,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							for (int i = 0; i < playerLocusMax; i++) {
 								if (playerLocusCoolTime >= 0) {
 									playerLocusCoolTime--;
-								} else {
+								}
+								else {
 									playerLocus[i].isDisplay = true;
 									playerLocusCoolTime = 240;
 								}
@@ -486,7 +550,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								player.isDirections = true;
 							}
 						}
-						
+
 
 						if (keys[DIK_D] || padX >= 1)
 						{
@@ -496,7 +560,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							for (int i = 0; i < playerLocusMax; i++) {
 								if (playerLocusCoolTime >= 0) {
 									playerLocusCoolTime--;
-								} else {
+								}
+								else {
 									playerLocus[i].isDisplay = true;
 									playerLocusCoolTime = 240;
 								}
@@ -506,8 +571,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							{
 								player.isDirections = false;
 							}
-						} 
-						
+						}
+
 
 						//ジャンプ(SPACE or A)
 						if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsPressButton(0, PadButton::kPadButton10))
@@ -523,7 +588,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							for (int i = 0; i < playerLocusMax; i++) {
 								if (playerLocusCoolTime >= 0) {
 									playerLocusCoolTime--;
-								} else {
+								}
+								else {
 									playerLocus[i].isDisplay = true;
 									playerLocusCoolTime = 240;
 								}
@@ -735,7 +801,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						}
 						else if (boss.hpCount <= 200)
 						{
-							attackTypeFirst = rand() % 3;
+							attackTypeFirst = 2;// rand() % 3;
 						}
 					}
 				}
@@ -903,77 +969,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						break;
 
 					case FASTFIRE:
-						if (fireShootCount <= 3)
-						{
-							if (boss.fireCoolTimer <= 0)
-							{
-								for (int i = 8; i < fastFireMax; i++)
-								{
-									if (!smallFire[i].isShot)
-									{
-										if (boss.direction == LEFT)
-										{
-											smallFire[i].pos.x = boss.pos.x;
 
-										}
-										else if (boss.direction == RIGHT)
-										{
-											smallFire[i].pos.x = boss.pos.x + 256.0f;
-										}
-
-										smallFire[i].pos.y = boss.pos.y - 120.0f;
-										f2pDistance = sqrtf(powf(player.pos.x - smallFire[i].pos.x, 2) + powf(player.pos.y - smallFire[i].pos.y, 2));
-
-										if (f2pDistance != 0.0f)
-										{
-											smallFire[i].direction.x = (player.pos.x - smallFire[i].pos.x) / f2pDistance;
-											smallFire[i].direction.y = (player.pos.y - smallFire[i].pos.y) / f2pDistance;
-										}
-
-										smallFire[i].speed = fastFireSpeed;
-										smallFire[i].isShot = true;
-										fireShootCount++;
-
-										break;
-									}
-								}
-
-								boss.fireCoolTimer = 30;
-							}
-						}
-
-						if (boss.fireCoolTimer > 0)
-						{
-							boss.fireCoolTimer--;
-						}
-
-						for (int i = 8; i < fastFireMax; i++)
-						{
-							if (smallFire[i].isShot)
-							{
-								smallFire[i].pos.x += smallFire[i].direction.x * smallFire[i].speed;
-								smallFire[i].pos.y += smallFire[i].direction.y * smallFire[i].speed;
-
-								if (smallFire[i].pos.y <= 0.0f + smallFire[i].height ||
-									smallFire[i].pos.x <= 0.0f - smallFire[i].width || smallFire[i].pos.x >= 1400.0f || smallFire[i].pos.y >= 800.0f)
-								{
-									smallFire[i].isShot = false;
-									fireDisappearCount++;
-
-								}
-							}
-						}
-
-						if (fireDisappearCount == 4)
-						{
-							boss.isAttacking = false;
-							boss.attackCoolTimer = 120;
-							fireDisappearCount = 0;
-							fireShootCount = 0;
-							f2pDistance = 0.0f;
-
-							break;
-						}
+						FastFire(kMaxSmallFire, smallFire, &boss, player, fireShootCount, fireDisappearCount);
 
 						break;
 
@@ -1307,13 +1304,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		//--------------------プレイヤーの軌跡---------------------//
 		for (int i = 0; i < playerLocusMax; i++) {
-			
+
 			if (playerLocus[i].isDisplay) {
 				//段々小さくなる
 				if (playerLocus[i].width >= 0.0f && playerLocus[i].height >= 0.0f) {
 					playerLocus[i].width -= 0.5f;
 					playerLocus[i].height -= 0.5f;
-				} else {
+				}
+				else {
 					playerLocus[i].width = 16.0f;
 					playerLocus[i].height = 16.0f;
 					playerLocus[i].isDisplay = false;
@@ -1328,7 +1326,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					playerLocus[i].pos.x -= 0.5f;
 					playerLocus[i].pos.y += 0.01f;
 				}
-				else 
+				else
 				{
 					//左
 					playerLocus[i].pos.x += 0.5f;
@@ -1351,12 +1349,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		/// ↓描画処理ここから
 		///
 
-		if (scene == GAMEPLAY) 
+		if (scene == GAMEPLAY)
 		{
 
 			//---------------------パーティクル-----------------------//
 
-		    //プレイヤーの軌跡
+			//プレイヤーの軌跡
 			for (int i = 0; i < playerLocusMax; i++) {
 				if (playerLocus[i].isDisplay) {
 					Novice::DrawBox(
@@ -1539,7 +1537,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				static_cast<int>(boss.height),
 				0.0f, 0xFFFFFFFF, kFillModeWireFrame);
 
-			
+
 		}
 
 		///
