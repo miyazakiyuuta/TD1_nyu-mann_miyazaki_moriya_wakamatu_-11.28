@@ -212,6 +212,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	longSword.isBossHit = false; //攻撃が当たっているか(ボスに) 
 	longSword.isSmallFireHit = false; //攻撃が当たっているか(smallFireに)
 
+
 	int ghPlayerLeft = Novice::LoadTexture("./Resources/images/player_left.png"); // プレイヤー左向きの待機画像 
 	int ghPlayerRight = Novice::LoadTexture("./Resources/images/player_right.png"); // プレイヤー右向きの待機画像
 
@@ -219,6 +220,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	float playerMaxImageWidth = 320.0f; // プレイヤーの画像の最大横幅 
 	float playerFrameImageWidth = 64.0f; // プレイヤーの1フレームの画像横幅
 	float playerImageHeight = 64.0f; //プレイヤーの画像の縦幅
+
 
 
 #pragma endregion
@@ -826,7 +828,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 											smallFire[i].pos.x = boss.pos.x;
 
 										}
-                    else if (boss.direction == RIGHT)
+										else if (boss.direction == RIGHT)
 										{
 											smallFire[i].pos.x = boss.pos.x + 256.0f;
 										}
@@ -1142,22 +1144,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 			}
 			//ボスのアニメーション
-			if (frameCount >= 60) 
-			{ 
-				frameCount = 0; 
-				bossAnimeCount = 0; 
-				playerAnimeCount = 0; 
-			} 
 
-			frameCount++; 
+			if (frameCount >= 60)
+			{
+				frameCount = 0;
+				bossAnimeCount = 0;
+				playerAnimeCount = 0;
+			}
+			frameCount++;
 
-			if (frameCount % (60 / 8) == 0) 
-			{ 
-				bossAnimeCount++; 
-			} 
-			
-			if (frameCount % (60 / 4) == 0) 
-			{ 
+			if (frameCount % (60 / 8) == 0)
+			{
+				bossAnimeCount++;
+			}
+
+			if (frameCount % (60 / 4) == 0)
+			{
 				playerAnimeCount++;
 			}
 
@@ -1405,31 +1407,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 
 			//地面 
-			Novice::DrawLine(0, 620, 1280, 620, RED); 
+			Novice::DrawLine(0, 620, 1280, 620, RED);
 
 			if (!player.isDirections)
 			{
-				//プレイヤー 
-				Novice::DrawSpriteRect(
-					static_cast<int>(player.pos.x),
-					static_cast<int>(ToScreen(player.pos.y)),
-					64 * playerAnimeCount, 0,
-					static_cast<int>(playerFrameImageWidth),
-					static_cast<int>(playerImageHeight),
-					ghPlayerRight, playerFrameImageWidth / playerMaxImageWidth,
-					1, 0, 0xFFFFFFFF);
-			} else if (player.isDirections)
-			{
-				//プレイヤー 
+				//プレイヤー
 				Novice::DrawSpriteRect
 				(
 					static_cast<int>(player.pos.x),
 					static_cast<int>(ToScreen(player.pos.y)),
-					256 - 64 * playerAnimeCount, 0,
+					64 * playerAnimeCount,
+					0,
 					static_cast<int>(playerFrameImageWidth),
 					static_cast<int>(playerImageHeight),
-					ghPlayerLeft, playerFrameImageWidth / playerMaxImageWidth,
-					1, 0, 0xFFFFFFFF
+					ghPlayerRight,
+					playerFrameImageWidth / playerMaxImageWidth, 1,
+					0, 0xFFFFFFFF
+				);
+			}
+			else if (player.isDirections)
+			{
+				//プレイヤー
+				Novice::DrawSpriteRect
+				(
+					static_cast<int>(player.pos.x),
+					static_cast<int>(ToScreen(player.pos.y)),
+					256 - 64 * playerAnimeCount,
+					0,
+					static_cast<int>(playerFrameImageWidth),
+					static_cast<int>(playerImageHeight),
+					ghPlayerLeft,
+					playerFrameImageWidth / playerMaxImageWidth, 1,
+					0, 0xFFFFFFFF
 				);
 			}
 
