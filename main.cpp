@@ -354,9 +354,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			{
 #pragma region プレイヤー
 				//===========================================================
-			    //プレイヤー
-			    //===========================================================
-				
+				//プレイヤー
+				//===========================================================
+
 				//攻撃時は動けない
 				if (!shortSword.isAtk && !longSword.isAtk)
 				{
@@ -454,8 +454,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					if (shortSword.durationTime >= 0)
 					{
 						shortSword.durationTime--;
-					}
-					else
+					} else
 					{
 						shortSword.isAtk = false;
 						shortSword.durationTime = 30;
@@ -467,8 +466,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					if (longSword.durationTime >= 0)
 					{
 						longSword.durationTime--;
-					}
-					else
+					} else
 					{
 						longSword.isAtk = false;
 						longSword.durationTime = 30;
@@ -486,8 +484,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						player.gravity = 0.7f;
 						player.speed = 0.0f;
 						player.jump = 0.0f;
-					}
-					else
+					} else
 					{
 						shortSword.reactionTime = 30;
 						player.speed = 10.0f;
@@ -503,8 +500,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						player.gravity = 0.7f;
 						player.speed = 0.0f;
 						player.jump = 0.0f;
-					}
-					else
+					} else
 					{
 						longSword.reactionTime = 30;
 						player.speed = 10.0f;
@@ -519,8 +515,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (!player.isDirections)//右
 				{
 					shortSword.pos.x = player.pos.x;
-				}
-				else//左
+				} else//左
 				{
 					shortSword.pos.x = player.pos.x - shortSword.width;
 				}
@@ -529,8 +524,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (!player.isDirections)//右
 				{
 					longSword.pos.x = player.pos.x;
-				}
-				else//左
+				} else//左
 				{
 					longSword.pos.x = player.pos.x - longSword.width;
 				}
@@ -540,8 +534,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (player.pos.y - player.height > 0.0f)
 				{
 					player.pos.y += player.gravity -= 0.7f;
-				}
-				else
+				} else
 				{
 					player.gravity = 0.0f;
 				}
@@ -571,8 +564,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					if (boss.attackCoolTimer > 0)
 					{
 						boss.attackCoolTimer--;
-					}
-					else if (boss.attackCoolTimer <= 0)
+					} else if (boss.attackCoolTimer <= 0)
 					{
 						boss.attackCoolTimer = 0;
 
@@ -581,12 +573,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						if (boss.hpCount <= 100)
 						{
 							attackTypeFirst = rand() % 5;
-						}
-						else if (boss.hpCount <= 180)
+						} else if (boss.hpCount <= 180)
 						{
 							attackTypeFirst = rand() % 4;
-						}
-						else if (boss.hpCount <= 200)
+						} else if (boss.hpCount <= 200)
 						{
 							attackTypeFirst = rand() % 3;
 						}
@@ -613,8 +603,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 									boss.isInScreen = false;
 									boss.direction = RIGHT;
 								}
-							}
-							else if (boss.direction == RIGHT)
+							} else if (boss.direction == RIGHT)
 							{
 								if (boss.pos.x > 0 - boss1FrameImageWidth)
 								{
@@ -646,8 +635,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 									boss.isInScreen = true;
 									boss.attackCoolTimer = 20;
 								}
-							}
-							else if (boss.direction == LEFT)
+							} else if (boss.direction == LEFT)
 							{
 								if (boss.pos.x > 840.0f)
 								{
@@ -664,8 +652,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							}
 						}
 
-							break;
-						case SMALLFIRE:
+						break;
+					case SMALLFIRE:
 						if (fireShootCount <= 7)
 						{
 							if (boss.fireCoolTimer <= 0)
@@ -679,8 +667,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 										if (boss.direction == LEFT)
 										{
 											smallFire[i].pos.x = boss.pos.x;
-										}
-										else if (boss.direction == RIGHT)
+										} else if (boss.direction == RIGHT)
 										{
 											smallFire[i].pos.x = boss.pos.x + 256.0f;
 										}
@@ -709,8 +696,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								if (boss.direction == LEFT)
 								{
 									smallFire[i].pos.x -= smallFire[i].speed;
-								}
-								else if (boss.direction == RIGHT)
+								} else if (boss.direction == RIGHT)
 								{
 									smallFire[i].pos.x += smallFire[i].speed;
 								}
@@ -719,8 +705,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								if (smallFire[i].pos.y - smallFire[i].width > 0.0f)
 								{
 									smallFire[i].pos.y += smallFire[i].gravity -= 0.8f;
-								}
-								else
+								} else
 								{
 									smallFire[i].gravity = 0.0f;
 								}
@@ -736,11 +721,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 									smallFire[i].isShot = false;
 									fireDisappearCount++;
 
-									//smallFireを反射した場合の軌道を修正
-									if (smallFire[i].speed <= 0)
-									{
-										smallFire[i].speed *= -0.5f;
-									}
 								}
 							}
 						}
@@ -769,8 +749,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 										if (boss.direction == LEFT)
 										{
 											smallFire[i].pos.x = boss.pos.x;
+
 										}
-										else if (boss.direction == RIGHT)
+                    else if (boss.direction == RIGHT)
 										{
 											smallFire[i].pos.x = boss.pos.x + 256.0f;
 										}
@@ -813,11 +794,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 									smallFire[i].isShot = false;
 									fireDisappearCount++;
 
-									//smallFireを反射した場合の軌道を修正
-									if (smallFire[i].speed <= 0)
-									{
-										smallFire[i].speed *= -0.5f;
-									}
 								}
 							}
 						}
@@ -851,8 +827,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 											smallFire[i].pos.x = boss.pos.x;
 											smallFire[i].direction.x = cosf(2.0f / 3.0f * static_cast<float>(M_PI));
 											smallFire[i].direction.y = sinf(2.0f / 3.0f * static_cast<float>(M_PI));
-										}
-										else if (boss.direction == RIGHT)
+										} else if (boss.direction == RIGHT)
 										{
 											smallFire[i].pos.x = boss.pos.x + 256.0f;
 											smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 3.0f);
@@ -877,8 +852,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 											smallFire[i].pos.x = boss.pos.x;
 											smallFire[i].direction.x = cosf(5.0f / 6.0f * static_cast<float>(M_PI));
 											smallFire[i].direction.y = sinf(5.0f / 6.0f * static_cast<float>(M_PI));
-										}
-										else if (boss.direction == RIGHT)
+										} else if (boss.direction == RIGHT)
 										{
 											smallFire[i].pos.x = boss.pos.x + 256.0f;
 											smallFire[i].direction.x = cosf(static_cast<float>(M_PI) / 6.0f);
@@ -940,8 +914,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								{
 									smallFire[i].pos.y += smallFire[i].speed * smallFire[i].direction.y;
 									smallFire[i].pos.y += smallFire[i].gravity -= 0.16f;
-								}
-								else
+								} else
 								{
 									smallFire[i].gravity = 0.0f;
 								}
@@ -952,11 +925,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 									smallFire[i].isShot = false;
 									fireDisappearCount++;
 
-									//smallFireを反射した場合の軌道を修正
-									if (smallFire[i].speed <= 0)
-									{
-										smallFire[i].speed *= -0.5f;
-									}
 								}
 							}
 						}
@@ -993,16 +961,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								boss.isHovering = true;//最高地点で飛んでいる
 								boss.isCharging = true;//攻撃のためにはいる
 								boss.chargeTimer = 120;
-                
-							if (boss.direction == LEFT)
-							{
-								giantFire.pos.x = boss.pos.x;
-							}
-							if (boss.direction == RIGHT)
-							{
-								giantFire.pos.x = boss.pos.x + boss.width;
-							}
-                
+
+								if (boss.direction == LEFT)
+								{
+									giantFire.pos.x = boss.pos.x;
+								}
+								if (boss.direction == RIGHT)
+								{
+									giantFire.pos.x = boss.pos.x + boss.width;
+								}
+
 								giantFire.pos.y = boss.pos.y;
 							}
 						}
@@ -1014,8 +982,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								if (boss.chargeTimer > 0)
 								{
 									boss.chargeTimer--;
-								}
-								else//チャージ完了
+								} else//チャージ完了
 								{
 									//この時点でのプレイヤーの位置に攻撃を飛ばすためのベクトルの計算
 									f2pDistance = sqrtf(powf(player.pos.x - giantFire.pos.x, 2) + powf(player.pos.y - giantFire.pos.y, 2));
@@ -1040,12 +1007,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 									giantFire.pos.y <= 0.0f + giantFire.height || giantFire.pos.x >= 1400.0f || giantFire.pos.y >= 800.0f)
 								{
 									giantFire.isShot = false;
-
-									//smallFireを反射した場合の軌道を修正
-									if (giantFire.speed <= 0)
-									{
-										giantFire.speed *= -0.5f;
-									}
 
 									explosion.pos.x = giantFire.pos.x - 192.0f;
 									explosion.pos.y = giantFire.pos.y;
@@ -1083,8 +1044,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								if (boss.pos.y > 160.0f)
 								{
 									boss.pos.y -= boss.speed;
-								}
-								else
+								} else
 								{
 									boss.isHovering = false;
 								}
@@ -1161,14 +1121,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			{
 				if (longSword.isAtk)
 				{
-					if (!player.isDirections) //右を向いている時、右に攻撃をする
-					{
-						IsHit(longSword.pos, longSword.width, longSword.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, longSword.isSmallFireHit);
-					}
-					if (player.isDirections) //左を向いている時、左に攻撃をする
-					{
-						IsHit(longSword.pos, -longSword.width, longSword.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, longSword.isSmallFireHit);
-					}
+					IsHit(longSword.pos, longSword.width, longSword.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, longSword.isSmallFireHit);
 				}
 
 				if (longSword.isSmallFireHit)
@@ -1179,6 +1132,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 					smallFire[i].speed *= -2.0f; //反射
 					smallFire[i].isReflection = true;
+				}
+
+				//smallFireを反射した場合の軌道を修正
+				if (!smallFire[i].isShot)
+				{
+					if (smallFire[i].isReflection)
+					{
+						smallFire[i].speed *= -0.5f;
+						smallFire[i].isReflection = false;
+					}
 				}
 			}
 
@@ -1196,7 +1159,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					boss.hpCount -= smallFire[i].reflectionDamage; //反射した小炎がボスに当たった時にHPを減らす
 					smallFire[i].isBossHit = false;
 					smallFire[i].isReflection = false;
-					smallFire[i].speed *= -0.5;
 				}
 
 			}
@@ -1345,8 +1307,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					boss1FrameImageWidth / boss1MaxImageWidth, 1,
 					0, 0xFFFFFFFF
 				);
-			}
-			else if (boss.direction == RIGHT)
+			} else if (boss.direction == RIGHT)
 			{
 				Novice::DrawSpriteRect
 				(
