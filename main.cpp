@@ -146,6 +146,76 @@ void IsHit(Vector2 leftTopA, float widthA, float heightA, Vector2 leftTopB, floa
 	}
 }
 
+void BossMove(Boss* boss, float imageWidth)
+{
+	if (boss->isInScreen) // スクリーン上にいるときスクリーン外まで移動
+	{
+		if (boss->direction == LEFT)
+		{
+			if (boss->pos.x < 1280.0f + imageWidth)
+			{
+				boss->pos.x += boss->speed;
+			}
+
+			if (boss->pos.x >= 1280.0f + imageWidth)
+			{
+				boss->pos.x = -612.0f;
+				boss->isInScreen = false;
+				boss->direction = RIGHT;
+			}
+		}
+		else if (boss->direction == RIGHT)
+		{
+			if (boss->pos.x > 0 - imageWidth)
+			{
+				boss->pos.x -= boss->speed;
+
+			}
+
+			if (boss->pos.x <= 0.0f - imageWidth)
+			{
+				boss->pos.x = 1456.0f;
+				boss->isInScreen = false;
+				boss->direction = LEFT;
+			}
+		}
+	}
+
+	if (!boss->isInScreen) // スクリーン外にいるとき反対側に移動して向きを反転し、画面内まで移動
+	{
+		if (boss->direction == RIGHT)
+		{
+			if (boss->pos.x < 160.0f)
+			{
+				boss->pos.x += boss->speed;
+			}
+
+			if (boss->pos.x >= 160.0f)
+			{
+				boss->pos.x = 160.0f;
+				boss->isAttacking = false;
+				boss->isInScreen = true;
+				boss->attackCoolTimer = 20;
+			}
+		}
+		else if (boss->direction == LEFT)
+		{
+			if (boss->pos.x > 840.0f)
+			{
+				boss->pos.x -= boss->speed;
+			}
+
+			if (boss->pos.x <= 840.0f)
+			{
+				boss->pos.x = 840.0f;
+				boss->isAttacking = false;
+				boss->isInScreen = true;
+				boss->attackCoolTimer = 20;
+			}
+		}
+	}
+}
+
 void SlowFire(const int kMax, Attack smallFire[], Boss* boss, int& shootCount, int& disappearCount)
 {
 	if (shootCount <= 7)
@@ -374,7 +444,123 @@ void FastFire(const int kMax, Attack smallFire[], Boss* boss, Player player, int
 		boss->attackCoolTimer = 120;
 		disappearCount = 0;
 	}
+}
 
+void GiantFire(Attack* giantFire, Attack* explosion, Boss* boss, Player player, int& disappearCount)
+{
+	if (!boss->isHovering && disappearCount <= 0)//ボスが滞空していないとき&攻撃が1発も撃たれていないとき
+
+	{
+		//ボスが上にいく処理
+		if (boss->pos.y < 600.0f)
+		{
+			boss->pos.y += boss->speed;
+		}
+		//ボスが上に上がりきったときの処理
+		if (boss->pos.y >= 600.0f)
+		{
+			boss->isHovering = true;//最高地点で飛んでいる
+			boss->isCharging = true;//攻撃のためにはいる
+			boss->chargeTimer = 120;
+
+			if (boss->direction == LEFT)
+			{
+				giantFire->pos.x = boss->pos.x;
+			}
+			if (boss->direction == RIGHT)
+			{
+				giantFire->pos.x = boss->pos.x + boss->width;
+			}
+
+			giantFire->pos.y = boss->pos.y;
+		}
+	}
+
+	if (boss->isHovering)//滞空しているとき
+	{
+		if (boss->isCharging)//攻撃をためているとき
+		{
+			if (boss->chargeTimer > 0)
+			{
+				boss->chargeTimer--;
+			}
+			else//チャージ完了
+			{
+				//この時点でのプレイヤーの位置に攻撃を飛ばすためのベクトルの計算
+				float f2pDistance = sqrtf(powf(player.pos.x - giantFire->pos.x, 2) + powf(player.pos.y - giantFire->pos.y, 2));
+				//正規化
+				if (f2pDistance != 0.0f)
+				{
+					giantFire->direction.x = (player.pos.x - giantFire->pos.x) / f2pDistance;
+					giantFire->direction.y = (player.pos.y - giantFire->pos.y + giantFire->height) / f2pDistance;
+
+					boss->isCharging = false;
+					giantFire->isShot = true;
+				}
+			}
+		}
+
+		if (giantFire->isShot) // 火球が撃たれた時
+		{
+			giantFire->pos.x += giantFire->speed * giantFire->direction.x;
+			giantFire->pos.y += giantFire->speed * giantFire->direction.y;
+
+			if (giantFire->pos.x <= 0.0f - giantFire->width ||
+				giantFire->pos.y <= 0.0f + giantFire->height || giantFire->pos.x >= 1400.0f || giantFire->pos.y >= 800.0f)
+			{
+				giantFire->isShot = false;
+
+				explosion->pos.x = giantFire->pos.x - 192.0f;
+				explosion->pos.y = giantFire->pos.y;
+				explosion->isShot = true;
+				explosion->duration = 30;
+			}
+		}
+
+		if (explosion->isShot) // 爆発が起きたとき
+		{
+			explosion->duration--;
+
+			if (explosion->width < 512.0f)
+			{
+				explosion->width += 128;
+			}
+
+			if (explosion->height < 256.0f)
+			{
+				explosion->height += 64;
+				explosion->pos.y += 64;
+			}
+
+			if (explosion->duration <= 0)
+			{
+				explosion->isShot = false;
+				explosion->width = 128.0f;
+				explosion->height = 128.0f;
+				disappearCount = 1;
+			}
+		}
+
+		if (!giantFire->isShot && disappearCount == 1) // 攻撃し終わって、爆発も消えたとき
+		{
+			if (boss->pos.y > 320.0f)
+			{
+				boss->pos.y -= boss->speed;
+			}
+			else
+			{
+				boss->isHovering = false;
+			}
+		}
+
+		if (!boss->isHovering && disappearCount == 1) // 攻撃し終わって滞空していないとき
+		{
+			boss->isAttacking = false;
+			boss->chargeTimer = 0;
+			boss->attackCoolTimer = 180;
+			disappearCount = 0;
+		}
+	}
 }
 
 #pragma endregion
@@ -537,8 +723,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	explosion.duration = 0; // 持続時間
 	explosion.isPlayerHit = false; // プレイヤーに当たったか
 	explosion.isShot = false; // 撃たれたか
-
-	float f2pDistance = 0.0f; // 炎とプレイヤーの距離
 
 	int attackTypeFirst = 0; // 第一形態の技の種類
 
@@ -882,17 +1066,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							attackTypeFirst = rand() % 3;
 						}
 
-						for (int i = 0; i < kMaxSmallFire; i++) // 攻撃の種類によって炎のスピードを変える
+						if (attackTypeFirst == 1)
 						{
-							if (attackTypeFirst == 1)
+							for (int i = 0; i < kMaxSlowFire; i++) // 攻撃の種類によって炎のスピードを変える
 							{
 								smallFire[i].speed = slowFireSpeed;
 							}
-							else if (attackTypeFirst == 2)
+						}
+						else if (attackTypeFirst == 2)
+						{
+							for (int i = 0; i < kMaxFastFire; i++) // 攻撃の種類によって炎のスピードを変える
 							{
 								smallFire[i].speed = fastFireSpeed;
 							}
-							else if (attackTypeFirst == 3)
+						}
+						else if (attackTypeFirst == 3)
+						{
+							for (int i = 0; i < kMaxMultiple; i++) // 攻撃の種類によって炎のスピードを変える
 							{
 								smallFire[i].speed = multipleFireSpeed;
 							}
@@ -905,76 +1095,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					switch (attackTypeFirst)
 					{
 					case MOVE:
-						if (boss.isInScreen) // スクリーン上にいるときスクリーン外まで移動
-						{
-							if (boss.direction == LEFT)
-							{
-								if (boss.pos.x < 1280.0f + boss1FrameImageWidth)
-								{
-									boss.pos.x += boss.speed;
-								}
-
-								if (boss.pos.x >= 1280.0f + boss1FrameImageWidth)
-								{
-									boss.pos.x = -612.0f;
-									boss.isInScreen = false;
-									boss.direction = RIGHT;
-								}
-							}
-							else if (boss.direction == RIGHT)
-							{
-								if (boss.pos.x > 0 - boss1FrameImageWidth)
-								{
-									boss.pos.x -= boss.speed;
-
-								}
-
-								if (boss.pos.x <= 0.0f - boss1FrameImageWidth)
-								{
-									boss.pos.x = 1456.0f;
-									boss.isInScreen = false;
-									boss.direction = LEFT;
-								}
-							}
-						}
-
-						if (!boss.isInScreen) // スクリーン外にいるとき反対側に移動して向きを反転し、画面内まで移動
-						{
-							if (boss.direction == RIGHT)
-							{
-								if (boss.pos.x < 160.0f)
-								{
-									boss.pos.x += boss.speed;
-								}
-
-								if (boss.pos.x >= 160.0f)
-								{
-									boss.pos.x = 160.0f;
-									boss.isAttacking = false;
-									boss.isInScreen = true;
-									boss.attackCoolTimer = 20;
-								}
-							}
-							else if (boss.direction == LEFT)
-							{
-								if (boss.pos.x > 840.0f)
-								{
-									boss.pos.x -= boss.speed;
-								}
-
-								if (boss.pos.x <= 840.0f)
-								{
-									boss.pos.x = 840.0f;
-									boss.isAttacking = false;
-									boss.isInScreen = true;
-									boss.attackCoolTimer = 20;
-								}
-							}
-						}
+						
+						BossMove(&boss, boss1FrameImageWidth);
 
 						break;
+
 					case SLOWFIRE:
-						
+
 						SlowFire(kMaxSlowFire, smallFire, &boss, fireShootCount, fireDisappearCount);
 
 						break;
@@ -992,123 +1119,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						break;
 
 					case GIANTFIRE:
-						if (!boss.isHovering && fireDisappearCount <= 0)//ボスが滞空していないとき&攻撃が1発も撃たれていないとき
 
-						{
-							//ボスが上にいく処理
-							if (boss.pos.y < 600.0f)
-							{
-								boss.pos.y += boss.speed;
-							}
-							//ボスが上に上がりきったときの処理
-							if (boss.pos.y >= 600.0f)
-							{
-								boss.isHovering = true;//最高地点で飛んでいる
-								boss.isCharging = true;//攻撃のためにはいる
-								boss.chargeTimer = 120;
-
-								if (boss.direction == LEFT)
-								{
-									giantFire.pos.x = boss.pos.x;
-								}
-								if (boss.direction == RIGHT)
-								{
-									giantFire.pos.x = boss.pos.x + boss.width;
-								}
-
-								giantFire.pos.y = boss.pos.y;
-							}
-						}
-
-						if (boss.isHovering)//滞空しているとき
-						{
-							if (boss.isCharging)//攻撃をためているとき
-							{
-								if (boss.chargeTimer > 0)
-								{
-									boss.chargeTimer--;
-								}
-								else//チャージ完了
-								{
-									//この時点でのプレイヤーの位置に攻撃を飛ばすためのベクトルの計算
-									f2pDistance = sqrtf(powf(player.pos.x - giantFire.pos.x, 2) + powf(player.pos.y - giantFire.pos.y, 2));
-									//正規化
-									if (f2pDistance != 0.0f)
-									{
-										giantFire.direction.x = (player.pos.x - giantFire.pos.x) / f2pDistance;
-										giantFire.direction.y = (player.pos.y - giantFire.pos.y + giantFire.height) / f2pDistance;
-
-										boss.isCharging = false;
-										giantFire.isShot = true;
-									}
-								}
-							}
-
-							if (giantFire.isShot) // 火球が撃たれた時
-							{
-								giantFire.pos.x += giantFire.speed * giantFire.direction.x;
-								giantFire.pos.y += giantFire.speed * giantFire.direction.y;
-
-								if (giantFire.pos.x <= 0.0f - giantFire.width ||
-									giantFire.pos.y <= 0.0f + giantFire.height || giantFire.pos.x >= 1400.0f || giantFire.pos.y >= 800.0f)
-								{
-									giantFire.isShot = false;
-
-									explosion.pos.x = giantFire.pos.x - 192.0f;
-									explosion.pos.y = giantFire.pos.y;
-									explosion.isShot = true;
-									explosion.duration = 30;
-								}
-							}
-
-							if (explosion.isShot) // 爆発したとき
-							{
-								explosion.duration--;
-
-								if (explosion.width < 512.0f)
-								{
-									explosion.width += 128;
-								}
-
-								if (explosion.height < 256.0f)
-								{
-									explosion.height += 64;
-									explosion.pos.y += 64;
-								}
-
-								if (explosion.duration <= 0)
-								{
-									explosion.isShot = false;
-									explosion.width = 128.0f;
-									explosion.height = 128.0f;
-									fireDisappearCount = 1;
-								}
-							}
-
-							if (!giantFire.isShot && fireDisappearCount == 1) // 攻撃し終わって、爆発も消えたとき
-							{
-								if (boss.pos.y > 320.0f)
-								{
-									boss.pos.y -= boss.speed;
-								}
-								else
-								{
-									boss.isHovering = false;
-								}
-							}
-
-							if (!boss.isHovering && fireDisappearCount == 1) // 攻撃し終わって滞空していないとき
-							{
-								boss.isAttacking = false;
-								boss.chargeTimer = 0;
-								boss.attackCoolTimer = 180;
-								fireDisappearCount = 0;
-
-								break;
-							}
-
-							break;
-						}
+						GiantFire(&giantFire, &explosion, &boss, player, fireDisappearCount);
+						
+						break;
 					}
 				}
 #pragma endregion
