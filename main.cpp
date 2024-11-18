@@ -1364,7 +1364,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 
 			//小炎軌道修正
-			for (int i = 0; i < slowFireMax; i++) 
+			for (int i = 0; i < kMaxSlowFire; i++)
 			{
 				if (!smallFire[i].isShot) 
 				{
@@ -1375,7 +1375,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 			}
 
-			for (int i = 8; i < fastFireMax; i++) {
+			for (int i = 8; i < kMaxFastFire; i++) {
 				if (!smallFire[i].isShot)
 				{
 					if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 21.0f)
@@ -1385,7 +1385,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 			}
 
-			for (int i = 12; i < multipleFireMax; i++) {
+			for (int i = 12; i < kMaxMultiple; i++) {
 				if (!smallFire[i].isShot)
 				{
 					if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 13.0f)
@@ -2014,38 +2014,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						0, 0xFFFFFFFF
 					);
 				}
-			if (!player.isDirections)
-			{
-				//プレイヤー
-				Novice::DrawSpriteRect
-				(
-					static_cast<int>(player.pos.x - 24.0f),
-					static_cast<int>(ToScreen(player.pos.y + (playerImageHeight - player.height))),
-					64 * playerAnimeCount,
-					0,
-					static_cast<int>(playerFrameImageWidth),
-					static_cast<int>(playerImageHeight),
-					ghPlayerRight,
-					playerFrameImageWidth / playerMaxImageWidth, 1,
-					0, 0xFFFFFFFF
-				);
-			}
-			else if (player.isDirections)
-			{
-				//プレイヤー
-				Novice::DrawSpriteRect
-				(
-					static_cast<int>(player.pos.x - 24.0f),
-					static_cast<int>(ToScreen(player.pos.y + (playerImageHeight - player.height))),
-					256 - 64 * playerAnimeCount,
-					0,
-					static_cast<int>(playerFrameImageWidth),
-					static_cast<int>(playerImageHeight),
-					ghPlayerLeft,
-					playerFrameImageWidth / playerMaxImageWidth, 1,
-					0, 0xFFFFFFFF
-				);
-			}
 
 			if (shortSword.isReaction) //短剣の判定(持続時)
 			{
