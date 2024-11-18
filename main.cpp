@@ -567,7 +567,8 @@ void GiantFire(Attack* giantFire, Attack* explosion, Boss* boss, Player player, 
 #pragma endregion
 
 // Windowsアプリでのエントリーポイント(main関数)
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) 
+{
 
 	// ライブラリの初期化
 	Novice::Initialize(kWindowTitle, kWindowWidth, kWindowHeight);
@@ -864,6 +865,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					if (keys[DIK_A] || padX <= -1)
 					{
 						player.pos.x -= player.speed;
+						player.isDirections = true;
 
 						//パーティクル軌跡
 						for (int i = 0; i < playerLocusMax; i++) {
@@ -874,11 +876,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								playerLocus[i].isDisplay = true;
 								playerLocusCoolTime = 240;
 							}
-						}
-
-						if (!shortSword.isAtk && !longSword.isAtk)
-						{
-							player.isDirections = true;
 						}
 					}
 
@@ -886,6 +883,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					if (keys[DIK_D] || padX >= 1)
 					{
 						player.pos.x += player.speed;
+						player.isDirections = false;
 
 						//パーティクル軌跡
 						for (int i = 0; i < playerLocusMax; i++) {
@@ -896,12 +894,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 								playerLocus[i].isDisplay = true;
 								playerLocusCoolTime = 240;
 							}
-						}
-
-						if (!shortSword.isAtk && !longSword.isAtk)
-						{
-							player.isJump = true;
-							player.isDirections = false;
 						}
 					}
 
@@ -1060,7 +1052,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				{
 					shortSword.pos.x = player.pos.x + player.width;
 				} 
-        else//左
+                else//左
 				{
 					shortSword.pos.x = player.pos.x + player.width - shortSword.width;
 				}
@@ -1097,7 +1089,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 				//-----------HP--------------//
 
-				if (player.hpCount <= 0) {
+				if (player.hpCount <= 0) 
+				{
 					player.isAlive = false;
 				}
 #pragma endregion
@@ -2014,6 +2007,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						0, 0xFFFFFFFF
 					);
 				}
+			}
 
 			if (shortSword.isReaction) //短剣の判定(持続時)
 			{
