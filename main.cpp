@@ -1329,7 +1329,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				bossAnimeCount = 0;
 				bossSkyAnimeCount = 0;
 				bossFlyAnimeCount = 0;
-				playerAnimeCount = 0;
 				ghPlayerFrameCount = 0;
 				ghPlayerWalkFrameCount = 0;
 				ghPlayerJumpFrameCount = 0;
