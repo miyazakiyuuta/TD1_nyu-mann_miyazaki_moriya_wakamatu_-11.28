@@ -28,6 +28,7 @@ struct Player
 	int isAlive;
 	int isDirections;
 	int hpCount;
+	int isWalk;
 	int isNoDamage;
 	int noDamageTime;
 };
@@ -591,8 +592,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.pos.y = 100.0f; //ｙ座標
 	player.posW.x = 100.0f; //ｘ座標(ワールド)
 	player.posW.y = 100.0f; //ｙ座標(ワールド)
-	player.width = 28.0f; //縦幅
-	player.height = 56.0f; //横幅
+	player.width = 64.0f; //縦幅
+	player.height = 128.0f; //横幅
 	player.speed = 10.0f; //移動速度
 	player.jump = 15.0f; //ジャンプ速度
 	player.gravity = 0.0f; //重力
@@ -600,6 +601,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.isAlive; //生存
 	player.isDirections = false; //プレイヤーの向いている方向(false = 右,true = 左)
 	player.hpCount = 10; //hp
+	player.isWalk = false; //移動しているか(モーション切り替えに使う)
 	player.isNoDamage = false;
 	player.noDamageTime = 0; // 無敵時間
 
@@ -607,41 +609,103 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Sword shortSword;
 	shortSword.pos.x = 100.0f; //ｘ座標
 	shortSword.pos.y = 100.0f; //ｙ座標
-	shortSword.width = 64.0f; //縦幅
-	shortSword.height = 64.0f; //横幅
+	shortSword.width = 128.0f; //縦幅
+	shortSword.height = 128.0f; //横幅
 	shortSword.coolTime = 0; //攻撃クールタイム
 	shortSword.durationTime = 30; //攻撃の持続時間
 	shortSword.isAtk = false; //攻撃しているか
 	shortSword.isBossHit = false; //攻撃が当たっているか(ボスに)
 	shortSword.damage = 3; //攻撃力
-	shortSword.isReaction = false; //硬直が起きているか 
+	shortSword.isReaction = false; //硬直が起きているか(アニメーション切り替えにも使う)
 	shortSword.reactionTime = 30; //硬直で動けない時間
 
 	//大剣
 	Sword longSword;
 	longSword.pos.x = 100.0f; //ｘ座標
 	longSword.pos.y = 100.0f; //ｙ座標
-	longSword.width = 96.0f; //縦幅
-	longSword.height = 96.0f; //横幅
+	longSword.width = 192.0f; //縦幅
+	longSword.height = 192.0f; //横幅
 	longSword.coolTime = 0; //攻撃クールタイム
 	longSword.durationTime = 30; //攻撃の持続時間
 	longSword.isAtk = false; //攻撃しているか
 	longSword.isBossHit = false; //攻撃が当たっているか(ボスに)
 	longSword.damage = 5; //攻撃力
-	longSword.isReaction = false; //硬直が起きているか 
+	longSword.isReaction = false; //硬直が起きているか(アニメーション切り替えにも使う) 
 	longSword.reactionTime = 30; //硬直で動けない時間 
 	longSword.isBossHit = false; //攻撃が当たっているか(ボスに) 
 	longSword.isSmallFireHit = false; //攻撃が当たっているか(smallFireに)
 
+	//待機画像
+	int ghPlayer[2] =
+	{
+		Novice::LoadTexture("./Resources/images/player_right.png"), // プレイヤー左向きの待機画像 
+		Novice::LoadTexture("./Resources/images/player_left.png"), // プレイヤー右向きの待機画像
+	};
 
-	int ghPlayerLeft = Novice::LoadTexture("./Resources/images/player_left.png"); // プレイヤー左向きの待機画像 
-	int ghPlayerRight = Novice::LoadTexture("./Resources/images/player_right.png"); // プレイヤー右向きの待機画像
+	int ghPlayerFrameCount = 0; // プレイヤーのアニメーションｎフレームカウント 
+	float ghPlayerMaxWidth = 768.0f; // プレイヤーの画像の最大横幅 
+	float ghPlayerWidth = 128.0f; // プレイヤーの1フレームの画像横幅
+	float ghPlayerHeight = 128.0f; //プレイヤーの画像の縦幅
 
-	int playerAnimeCount = 0; // プレイヤーのアニメーションｎフレームカウント 
-	float playerMaxImageWidth = 320.0f; // プレイヤーの画像の最大横幅 
-	float playerFrameImageWidth = 64.0f; // プレイヤーの1フレームの画像横幅
-	float playerImageHeight = 64.0f; //プレイヤーの画像の縦幅
+	//移動画像
+	int ghPlayerWalk[2] =
+	{
+		Novice::LoadTexture("./Resources/images/player_walk_R.png"), // プレイヤー移動画像
+		Novice::LoadTexture("./Resources/images/player_walk_L.png"), // プレイヤー移動画像
+	};
 
+	int ghPlayerWalkFrameCount = 0; // プレイヤーのアニメーションｎフレームカウント 
+	float ghPlayerWalkMaxWidth = 512.0f; // プレイヤーの画像の最大横幅 
+	float ghPlayerWalkWidth = 128.0f; // プレイヤーの1フレームの画像横幅
+	float ghPlayerWalkHeight = 128.0f; //プレイヤーの画像の縦幅
+
+	//ジャンプ
+	int ghPlayerJump[2] =
+	{
+		Novice::LoadTexture("./Resources/images/player_jump_R.png"), // プレイヤー移動画像
+		Novice::LoadTexture("./Resources/images/player_jump_L.png"), // プレイヤー移動画像
+	};
+
+	int ghPlayerJumpFrameCount = 0; // プレイヤーのアニメーションｎフレームカウント 
+	float ghPlayerJumpMaxWidth = 640.0f; // プレイヤーの画像の最大横幅 
+	float ghPlayerJumpWidth = 128.0f; // プレイヤーの1フレームの画像横幅
+	float ghPlayerJumpHeight = 128.0f; //プレイヤーの画像の縦幅
+
+	//弱攻撃
+	int ghPlayerAtkS[2]=
+	{
+		Novice::LoadTexture("./Resources/images/player_Attack_R.png"), // プレイヤー移動画像
+		Novice::LoadTexture("./Resources/images/player_Attack_L.png"), // プレイヤー移動画像
+	};
+
+	int ghPlayerAtkSFrameCount = 0; // プレイヤーのアニメーションｎフレームカウント 
+	float ghPlayerAtkSMaxWidth = 256.0f; // プレイヤーの画像の最大横幅 
+	float ghPlayerAtkSWidth = 128.0f; // プレイヤーの1フレームの画像横幅
+	float ghPlayerAtkSHeight = 128.0f; //プレイヤーの画像の縦幅
+
+	//強攻撃
+	int ghPlayerAtkL[2] =
+	{
+		Novice::LoadTexture("./Resources/images/Player_strong_attack_R.png"), // プレイヤー移動画像
+		Novice::LoadTexture("./Resources/images/Player_strong_attack_L.png"), // プレイヤー移動画像
+	};
+
+	int ghPlayerAtkLFrameCount = 0; // プレイヤーのアニメーションｎフレームカウント 
+	float ghPlayerAtkLMaxWidth = 800.0f; // プレイヤーの画像の最大横幅 
+	float ghPlayerAtkLWidth = 160.0f; // プレイヤーの1フレームの画像横幅
+	float ghPlayerAtkLHeight = 160.0f; //プレイヤーの画像の縦幅
+
+	//ジャンプ強攻撃
+	int ghPlayerJumpAtkL[2] =
+	{
+		Novice::LoadTexture("./Resources/images/Player_strong_attack_sky_R.png"), // プレイヤー移動画像
+		Novice::LoadTexture("./Resources/images/Player_strong_attack_sky_L.png"), // プレイヤー移動画像
+	};
+
+	int ghPlayerJumpAtkLFrameCount = 0; // プレイヤーのアニメーションｎフレームカウント 
+	float ghPlayerJumpAtkLMaxWidth = 800.0f; // プレイヤーの画像の最大横幅 
+	float ghPlayerJumpAtkLWidth = 160.0f; // プレイヤーの1フレームの画像横幅
+	float ghPlayerJumpAtkLHeight = 160.0f; //プレイヤーの画像の縦幅
 
 
 #pragma endregion
@@ -752,6 +816,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 	int frameCount = 0; // フレーム
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
 		// フレームの開始
@@ -835,6 +900,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 						if (!shortSword.isAtk && !longSword.isAtk)
 						{
+							player.isJump = true;
 							player.isDirections = false;
 						}
 					}
@@ -861,6 +927,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 							}
 						}
 					}
+				}
+
+				//移動モーションと待機モーション切り替え
+				if (keys[DIK_A] || keys[DIK_D] || padX >= 1 || padX <= -1)
+				{
+					player.isWalk = true;
+				}
+				else
+				{
+					player.isWalk = false;
 				}
 
 				//==============================================================
@@ -967,7 +1043,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						player.gravity = 0.5f;
 						player.speed = 0.0f;
 						player.jump = 0.0f;
-					}
+					} 
 					else
 					{
 						longSword.reactionTime = 30;
@@ -982,22 +1058,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				shortSword.pos.y = player.pos.y - player.height + shortSword.height;
 				if (!player.isDirections)//右
 				{
-					shortSword.pos.x = player.pos.x + player.width / 2.0f;
-				}
-				else//左
+					shortSword.pos.x = player.pos.x + player.width;
+				} 
+        else//左
 				{
-					shortSword.pos.x = player.pos.x + player.width / 2.0f - shortSword.width;
+					shortSword.pos.x = player.pos.x + player.width - shortSword.width;
 				}
 
 				//大剣
 				longSword.pos.y = player.pos.y - player.height + longSword.height;
 				if (!player.isDirections)//右
 				{
-					longSword.pos.x = player.pos.x + player.width / 2.0f;
+					longSword.pos.x = player.pos.x + player.width;
 				}
 				else//左
 				{
-					longSword.pos.x = player.pos.x + player.width / 2.0f - longSword.width;
+					longSword.pos.x = player.pos.x + player.width - longSword.width;
 				}
 
 				//----------------重力------------------//
@@ -1133,7 +1209,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			{
 				frameCount = 0;
 				bossAnimeCount = 0;
-				playerAnimeCount = 0;
+				ghPlayerFrameCount = 0;
+				ghPlayerWalkFrameCount = 0;
+				ghPlayerJumpFrameCount = 0;
+				ghPlayerAtkSFrameCount = 0;
+				ghPlayerAtkLFrameCount = 0;
+				ghPlayerJumpAtkLFrameCount = 0;
 			}
 			frameCount++;
 
@@ -1142,11 +1223,90 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				bossAnimeCount++;
 			}
 
-			if (frameCount % (60 / 4) == 0)
-			{
-				playerAnimeCount++;
+			if (!player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction) 
+			{ //止まっている時
+				if (frameCount % (60 / 5) == 0)
+				{
+					ghPlayerFrameCount++;
+				}
+			} 
+			else if(player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			{ //移動してる時
+				if (frameCount % (60 / 3) == 0)
+				{
+					ghPlayerWalkFrameCount++;
+				}
 			}
-
+			else if (!player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			{ //ジャンプしてる時
+				if (frameCount % (60 / 4) == 0)
+				{
+					ghPlayerJumpFrameCount++;
+				}
+			} 
+			else if (player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			{ //移動中にジャンプしてる時
+				if (frameCount % (60 / 4) == 0)
+				{
+					ghPlayerJumpFrameCount++;
+				}
+			}
+			else if (!player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
+			{ //弱攻撃をしてる時
+				if (frameCount % (30 / 1) == 0)
+				{
+					ghPlayerAtkSFrameCount++;
+				}
+			}
+			else if (player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
+			{ //移動中に弱攻撃をしてる時
+				if (frameCount % (30 / 1) == 0)
+				{
+					ghPlayerAtkSFrameCount++;
+				}
+			}
+			else if (!player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
+			{ //強攻撃をしてる時
+				if (frameCount % (30 / 4) == 0)
+				{
+					ghPlayerAtkLFrameCount++;
+				}
+			}
+			else if (player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
+			{ //移動中に強攻撃をしてる時
+				if (frameCount % (30 / 4) == 0)
+				{
+					ghPlayerAtkLFrameCount++;
+				}
+			}
+			else if (!player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
+			{ //ジャンプ弱攻撃をしてる時
+				if (frameCount % (30 / 1) == 0)
+				{
+					ghPlayerAtkSFrameCount++;
+				}
+			}
+			else if (player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
+			{ //移動中にジャンプ弱攻撃をしてる時
+				if (frameCount % (30 / 1) == 0)
+				{
+					ghPlayerAtkSFrameCount++;
+				}
+			}
+			else if (!player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
+			{ //ジャンプ強攻撃をしてる時
+				if (frameCount % (30 / 4) == 0)
+				{
+					ghPlayerJumpAtkLFrameCount++;
+				}
+			}
+			else if (player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
+			{ //移動中にジャンプ強攻撃をしてる時
+				if (frameCount % (30 / 4) == 0)
+				{
+					ghPlayerJumpAtkLFrameCount++;
+				}
+			}
 
 
 			//===========================================================
@@ -1204,21 +1364,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 
 			//小炎軌道修正
-			for (int i = 0; i < kMaxSlowFire; i++) {
-				if (!smallFire[i].isShot) {
-					//smallFire[i].speed = slowFireSpeed;
+			for (int i = 0; i < slowFireMax; i++) 
+			{
+				if (!smallFire[i].isShot) 
+				{
+					if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 6.0f)
+					{
+						smallFire[i].speed = 5.0f;
+					}
 				}
 			}
 
-			for (int i = 0; i < kMaxFastFire; i++) {
-				if (!smallFire[i].isShot) {
-					//smallFire[i].speed = 20.0f;
+			for (int i = 8; i < fastFireMax; i++) {
+				if (!smallFire[i].isShot)
+				{
+					if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 21.0f)
+					{
+						smallFire[i].speed = 20.0f;
+					}
 				}
 			}
 
-			for (int i = 0; i < kMaxMultiple; i++) {
-				if (!smallFire[i].isShot) {
-					//smallFire[i].speed = 12.0f;
+			for (int i = 12; i < multipleFireMax; i++) {
+				if (!smallFire[i].isShot)
+				{
+					if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 13.0f)
+					{
+						smallFire[i].speed = 12.0f;
+					}
 				}
 			}
 
@@ -1365,8 +1538,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				if (playerLocus[i].width >= 0.0f && playerLocus[i].height >= 0.0f) {
 					playerLocus[i].width -= 0.5f;
 					playerLocus[i].height -= 0.5f;
-				}
-				else {
+				} 
+				else 
+				{
 					playerLocus[i].width = 16.0f;
 					playerLocus[i].height = 16.0f;
 					playerLocus[i].isDisplay = false;
@@ -1389,7 +1563,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 			}
 
-			if (!playerLocus[i].isDisplay) {
+			if (!playerLocus[i].isDisplay) 
+			{
 				//ランダムな位置に表示させる
 				playerLocus[i].pos.x = rand() % 32 - 16 + player.pos.x + player.width / 2.0f;
 				playerLocus[i].pos.y = rand() % 32 - 16 + ToScreen(player.pos.y) + player.height / 2.0f;
@@ -1424,6 +1599,421 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//地面 
 			Novice::DrawLine(0, 620, 1280, 620, RED);
 
+			if (!player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction) //止まっている時のみ
+			{ //止まっている時のみ
+				if (!player.isDirections)
+				{
+					//プレイヤー右
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerFrameCount,
+						0,
+						static_cast<int>(ghPlayerWidth),
+						static_cast<int>(ghPlayerHeight),
+						ghPlayer[0],
+						ghPlayerWidth / ghPlayerMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				} 
+				else if (player.isDirections)
+				{
+					//プレイヤー左
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerFrameCount,
+						0,
+						static_cast<int>(ghPlayerWidth),
+						static_cast<int>(ghPlayerHeight),
+						ghPlayer[1],
+						ghPlayerWidth / ghPlayerMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+			}
+			else if(player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			{ //移動している時のみ
+				if (!player.isDirections) 
+				{
+					//プレイヤー右
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerWalkFrameCount,
+						0,
+						static_cast<int>(ghPlayerWalkWidth),
+						static_cast<int>(ghPlayerWalkHeight),
+						ghPlayerWalk[0],
+						ghPlayerWalkWidth / ghPlayerWalkMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+				else
+				{
+					//プレイヤー左
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerWalkFrameCount,
+						0,
+						static_cast<int>(ghPlayerWalkWidth),
+						static_cast<int>(ghPlayerWalkHeight),
+						ghPlayerWalk[1],
+						ghPlayerWalkWidth / ghPlayerWalkMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+			} 
+			else if(!player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			{ //ジャンプしている時のみ
+				if (!player.isDirections) 
+				{
+					//プレイヤー右
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerJumpFrameCount,
+						0,
+						static_cast<int>(ghPlayerJumpWidth),
+						static_cast<int>(ghPlayerJumpHeight),
+						ghPlayerJump[0],
+						ghPlayerJumpWidth / ghPlayerJumpMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+				else
+				{
+					//プレイヤー左
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerJumpFrameCount,
+						0,
+						static_cast<int>(ghPlayerJumpWidth),
+						static_cast<int>(ghPlayerJumpHeight),
+						ghPlayerJump[1],
+						ghPlayerJumpWidth / ghPlayerJumpMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+			}
+			else if (player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			{ //移動中にジャンプしている時のみ
+				if (!player.isDirections)
+				{
+					//プレイヤー右
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerJumpFrameCount,
+						0,
+						static_cast<int>(ghPlayerJumpWidth),
+						static_cast<int>(ghPlayerJumpHeight),
+						ghPlayerJump[0],
+						ghPlayerJumpWidth / ghPlayerJumpMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				} 
+				else
+				{
+					//プレイヤー左
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerJumpFrameCount,
+						0,
+						static_cast<int>(ghPlayerJumpWidth),
+						static_cast<int>(ghPlayerJumpHeight),
+						ghPlayerJump[1],
+						ghPlayerJumpWidth / ghPlayerJumpMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+			}
+			else if(!player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
+			{ //弱攻撃している時のみ
+				if (!player.isDirections)
+				{
+					//プレイヤー右
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerAtkSFrameCount,
+						0,
+						static_cast<int>(ghPlayerAtkSWidth),
+						static_cast<int>(ghPlayerAtkSHeight),
+						ghPlayerAtkS[0],
+						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				} 
+				else
+				{
+					//プレイヤー左
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerAtkSFrameCount,
+						0,
+						static_cast<int>(ghPlayerAtkSWidth),
+						static_cast<int>(ghPlayerAtkSHeight),
+						ghPlayerAtkS[1],
+						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+			} 
+			else if (player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
+			{ //移動中に弱攻撃している時のみ
+				if (!player.isDirections)
+				{
+					//プレイヤー右
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerAtkSFrameCount,
+						0,
+						static_cast<int>(ghPlayerAtkSWidth),
+						static_cast<int>(ghPlayerAtkSHeight),
+						ghPlayerAtkS[0],
+						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				} else
+				{
+					//プレイヤー左
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerAtkSFrameCount,
+						0,
+						static_cast<int>(ghPlayerAtkSWidth),
+						static_cast<int>(ghPlayerAtkSHeight),
+						ghPlayerAtkS[1],
+						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+			}
+			else if(!player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
+			{ //強攻撃している時のみ
+				if (!player.isDirections) 
+				{
+					//プレイヤー右
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y) - 32.0f),
+						160 * ghPlayerAtkLFrameCount,
+						0,
+						static_cast<int>(ghPlayerAtkLWidth),
+						static_cast<int>(ghPlayerAtkLHeight),
+						ghPlayerAtkL[0],
+						ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				} 
+				else
+				{
+					//プレイヤー左
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y) - 32.0f),
+						160 * ghPlayerAtkLFrameCount,
+						0,
+						static_cast<int>(ghPlayerAtkLWidth),
+						static_cast<int>(ghPlayerAtkLHeight),
+						ghPlayerAtkL[1],
+						ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+			} 
+			else if (player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
+			{ //移動中に強攻撃している時のみ
+				if (!player.isDirections)
+				{
+					//プレイヤー右
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y) - 32.0f),
+						160 * ghPlayerAtkLFrameCount,
+						0,
+						static_cast<int>(ghPlayerAtkLWidth),
+						static_cast<int>(ghPlayerAtkLHeight),
+						ghPlayerAtkL[0],
+						ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+				else
+				{
+					//プレイヤー左
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y) - 32.0f),
+						160 * ghPlayerAtkLFrameCount,
+						0,
+						static_cast<int>(ghPlayerAtkLWidth),
+						static_cast<int>(ghPlayerAtkLHeight),
+						ghPlayerAtkL[1],
+						ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+			}
+			else if (!player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
+			{ //ジャンプ弱攻撃している時のみ
+				if (!player.isDirections)
+				{
+					//プレイヤー右
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerAtkSFrameCount,
+						0,
+						static_cast<int>(ghPlayerAtkSWidth),
+						static_cast<int>(ghPlayerAtkSHeight),
+						ghPlayerAtkS[0],
+						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				} else
+				{
+					//プレイヤー左
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerAtkSFrameCount,
+						0,
+						static_cast<int>(ghPlayerAtkSWidth),
+						static_cast<int>(ghPlayerAtkSHeight),
+						ghPlayerAtkS[1],
+						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+			}
+			else if (player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
+			{ //移動中にジャンプ弱攻撃している時のみ
+				if (!player.isDirections)
+				{
+					//プレイヤー右
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerAtkSFrameCount,
+						0,
+						static_cast<int>(ghPlayerAtkSWidth),
+						static_cast<int>(ghPlayerAtkSHeight),
+						ghPlayerAtkS[0],
+						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				} else
+				{
+					//プレイヤー左
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						128 * ghPlayerAtkSFrameCount,
+						0,
+						static_cast<int>(ghPlayerAtkSWidth),
+						static_cast<int>(ghPlayerAtkSHeight),
+						ghPlayerAtkS[1],
+						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+				}
+			else if (!player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
+			{ //ジャンプ強攻撃している時のみ
+				if (!player.isDirections) 
+				{
+					//プレイヤー右
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						160 * ghPlayerJumpAtkLFrameCount,
+						0,
+						static_cast<int>(ghPlayerJumpAtkLWidth),
+						static_cast<int>(ghPlayerJumpAtkLHeight),
+						ghPlayerJumpAtkL[0],
+						ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+				else
+				{
+					//プレイヤー左
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						160 * ghPlayerJumpAtkLFrameCount,
+						0,
+						static_cast<int>(ghPlayerJumpAtkLWidth),
+						static_cast<int>(ghPlayerJumpAtkLHeight),
+						ghPlayerJumpAtkL[1],
+						ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
+			}
+			else if (player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
+			{ //移動中にジャンプ強攻撃している時のみ
+				if (!player.isDirections)
+				{
+					//プレイヤー右
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						160 * ghPlayerJumpAtkLFrameCount,
+						0,
+						static_cast<int>(ghPlayerJumpAtkLWidth),
+						static_cast<int>(ghPlayerJumpAtkLHeight),
+						ghPlayerJumpAtkL[0],
+						ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				} else
+				{
+					//プレイヤー左
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(player.pos.x),
+						static_cast<int>(ToScreen(player.pos.y)),
+						160 * ghPlayerJumpAtkLFrameCount,
+						0,
+						static_cast<int>(ghPlayerJumpAtkLWidth),
+						static_cast<int>(ghPlayerJumpAtkLHeight),
+						ghPlayerJumpAtkL[1],
+						ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
 			if (!player.isDirections)
 			{
 				//プレイヤー
@@ -1457,7 +2047,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 
-			if (shortSword.isAtk) //短剣の判定(持続時)
+			if (shortSword.isReaction) //短剣の判定(持続時)
 			{
 				Novice::DrawBox
 				(
@@ -1469,7 +2059,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				);
 			}
 
-			if (longSword.isAtk) //大剣の判定(持続時)
+			if (longSword.isReaction) //大剣の判定(持続時)
 			{
 				Novice::DrawBox
 				(
