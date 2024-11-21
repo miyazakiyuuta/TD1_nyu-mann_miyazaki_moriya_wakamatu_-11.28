@@ -1834,30 +1834,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			if (boss.isPlayerHit)
 			{
-				if (attackTypeFirst == 0)
-				{
-					if (boss.changedDirection)
-					{
-						if (!player.isFlying)
-						{
-							if (boss.direction == RIGHT)
-							{
-								player.flySpeed = 32.0f;
-							}
-							else if (boss.direction == LEFT)
-							{
-								player.flySpeed = -32.0f;
-							}
-
-							player.hpCount -= 2;
-							player.isNoDamage = true;
-							player.noDamageTime = 60;
-							boss.isPlayerHit = false;
-							player.isFlying = true;
-						}
-					}
-				}
-				else
+				if (!boss.changedDirection)
 				{
 					if (player.pos.x > boss.pos.x)
 					{
@@ -1868,6 +1845,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					{
 						player.pos.x = boss.pos.x - player.width;
 						boss.isPlayerHit = false;
+					}
+				}
+				else if (boss.changedDirection)
+				{
+					if (!player.isFlying)
+					{
+						if (boss.direction == RIGHT)
+						{
+							player.flySpeed = 32.0f;
+						}
+						else if (boss.direction == LEFT)
+						{
+							player.flySpeed = -32.0f;
+						}
+
+						player.hpCount -= 2;
+						player.isNoDamage = true;
+						player.noDamageTime = 60;
+						boss.isPlayerHit = false;
+						player.isFlying = true;
 					}
 				}
 			}
