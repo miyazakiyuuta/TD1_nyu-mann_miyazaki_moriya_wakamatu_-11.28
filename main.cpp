@@ -519,8 +519,12 @@ void GiantFire(Attack* giantFire, Attack* explosion, Boss* boss, Player player, 
 			if (giantFire->pos.x <= 0.0f - giantFire->width ||
 				giantFire->pos.y <= 0.0f + giantFire->height || giantFire->pos.x >= 1400.0f || giantFire->pos.y >= 800.0f)
 			{
-				giantFire->isShot = false;
+				if (giantFire->pos.y <= 0.0f + giantFire->height)
+				{
+					giantFire->pos.y = 0.0f + giantFire->height;
+				}
 
+				giantFire->isShot = false;
 				explosion->pos.x = giantFire->pos.x - 192.0f;
 				explosion->pos.y = giantFire->pos.y;
 				explosion->isShot = true;
@@ -532,22 +536,11 @@ void GiantFire(Attack* giantFire, Attack* explosion, Boss* boss, Player player, 
 		{
 			explosion->duration--;
 
-			if (explosion->width < 512.0f)
-			{
-				explosion->width += 128;
-			}
-
-			if (explosion->height < 256.0f)
-			{
-				explosion->height += 64;
-				explosion->pos.y += 64;
-			}
-
 			if (explosion->duration <= 0)
 			{
 				explosion->isShot = false;
-				explosion->width = 128.0f;
-				explosion->height = 128.0f;
+				explosion->width = 512.0f;
+				explosion->height = 512.0f;
 				disappearCount = 1;
 			}
 		}
@@ -804,8 +797,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Attack explosion;
 
 	explosion.pos = { 0.0f }; // 座標
-	explosion.width = 128.0f; // 横幅
-	explosion.height = 128.0f; // 縦幅
+	explosion.width = 512.0f; // 横幅
+	explosion.height = 512.0f; // 縦幅
 	explosion.duration = 0; // 持続時間
 	explosion.isPlayerHit = false; // プレイヤーに当たったか
 	explosion.isShot = false; // 撃たれたか
@@ -829,6 +822,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	int ghBoss2Temp = Novice::LoadTexture("./Resources/images/boss_temporary.png");
 	int ghBoss2Fall = Novice::LoadTexture("./Resources/images/boss_ground.png");
 
+	int ghExplosion = Novice::LoadTexture("./Resources/images/flame_explosion.png");
+
 	int bossAnimeCount = 0; // ボスのアニメーションｎフレームカウント
 	float boss1MaxImageWidth = 5760.0f; // ボスの画像の最大横幅
 	float boss1FrameImageWidth = 640.0f; // ボスの1フレームの画像横幅
@@ -849,6 +844,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	float boss2FallWidth = 336.0f;
 	float boss2FallHeight = 192.0f;
+
+	int explosionAnimeCount = 0;
+	float explosionMaxImageWidth = 2048.0f;
+	float explosionFrameWidth = 512.0f;
+	float explosionImageHeight = 512.0f;
 
 #pragma endregion
 
@@ -893,8 +893,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	{
 		giantFireLocus[i].pos.x = 0.0f; //ｘ座標
 		giantFireLocus[i].pos.y = 0.0f; //ｙ座標
-		giantFireLocus[i].width = 128.0f; //横幅
-		giantFireLocus[i].height = 128.0f; //縦幅
+		giantFireLocus[i].width = 256.0f; //横幅
+		giantFireLocus[i].height = 256.0f; //縦幅
 		giantFireLocus[i].rotation = 0.0f; //回転角
 		giantFireLocus[i].color = 0xFF0000FF; //色
 		giantFireLocus[i].isDisplay = false; //表示されているか
@@ -1478,6 +1478,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				bossAnimeCount = 0;
 				bossSkyAnimeCount = 0;
 				bossFlyAnimeCount = 0;
+				explosionAnimeCount = 0;
 
 				//プレイヤー
 				ghPlayerFrameCount = 0; //待機
@@ -1509,6 +1510,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					{
 						bossSkyAnimeCount++;
 					}
+				}
+			}
+
+			if (explosion.isShot)
+			{
+				if (frameCount % (59 / 4) == 0)
+				{
+					explosionAnimeCount++;
 				}
 			}
 
@@ -2826,12 +2835,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			// 爆発
 			if (explosion.isShot)
 			{
-				Novice::DrawBox(
+				Novice::DrawSpriteRect
+				(
 					static_cast<int>(explosion.pos.x),
-					static_cast<int>(ToScreen(explosion.pos.y)),
-					static_cast<int>(explosion.width),
-					static_cast<int>(explosion.height),
-					0.0f, 0XFF000055, kFillModeSolid);
+					static_cast<int>(ToScreen(explosion.pos.y + 384.0f)),
+					512 * explosionAnimeCount,
+					0,
+					static_cast<int>(explosionFrameWidth),
+					static_cast<int>(explosionImageHeight),
+					ghExplosion,
+					explosionFrameWidth / explosionMaxImageWidth, 1,
+					0, 0xFFFFFFFF
+				);
 			}
 
 			if (shortSword.isReaction) //短剣の判定(持続時)
@@ -2879,17 +2894,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			Novice::ScreenPrintf(100, 260, "player.isNodamage : %d", player.isNoDamage);
 			Novice::ScreenPrintf(100, 280, "player.noDamageTime : %d", player.noDamageTime);
 			Novice::ScreenPrintf(100, 300, "boss.isInScreen : %d", boss.isInScreen);
+			Novice::ScreenPrintf(100, 320, "explosion.pos.y : %f", explosion.pos.y);
+			Novice::ScreenPrintf(100, 340, "giantFire.pos.y : %f", giantFire.pos.y);
 
 			Novice::DrawBox(static_cast<int>(boss.pos.x),
 				static_cast<int>(ToScreen(boss.pos.y)),
 				static_cast<int>(boss.width),
 				static_cast<int>(boss.height),
-				0.0f, 0xFFFFFFFF, kFillModeWireFrame);
-
-			Novice::DrawBox(static_cast<int>(player.pos.x),
-				static_cast<int>(ToScreen(player.pos.y)),
-				static_cast<int>(player.width),
-				static_cast<int>(player.height),
 				0.0f, 0xFFFFFFFF, kFillModeWireFrame);
 		}
 
