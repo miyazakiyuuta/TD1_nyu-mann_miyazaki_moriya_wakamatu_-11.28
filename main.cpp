@@ -1433,7 +1433,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				//smallFireのクールタイム
 				boss.fireCoolTimer--;
 
-				//画面外にいったらfales
+				//画面外にいったらfalse
 				for (int i = 0; i < kMaxSmallFire; ++i)
 				{
 					if (smallFire[i].isShot)
