@@ -54,7 +54,7 @@ struct Boss
 	int isInScreen;
 	int direction;
 	int form;
-	int isfalling;
+	int isFalling;
 	int fallTimer;
 	float fallSpeed;
 	int isPlayerHit;
@@ -127,6 +127,29 @@ enum ATTACKFIRST
 	MULTIPLEFIRE,
 	GIANTFIRE,
 	FLY
+};
+
+enum ATTACKTHIRD
+{
+	SLOWFIRE2,
+	FASTFIRE2,
+	MULTIPLEFIRE2,
+	GIANTFIREMULTI,
+	KICK,
+	FLAMERAIN
+};
+
+enum PHASE
+{
+	ONE,
+	TWO,
+	THREE
+};
+
+enum FORM
+{
+	DRAGON,
+	HUMAN
 };
 
 #pragma region 自作関数
@@ -454,7 +477,7 @@ void FastFire(const int kMax, Attack smallFire[], Boss* boss, Player player, int
 	}
 }
 
-void GiantFire(Attack* giantFire, Attack* explosion, Boss* boss, Player player, int& disappearCount)
+void GiantFire(Attack* giantFire, Attack* explosion, Boss* boss, Player player, int& disappearCount, int& tempFrameCount, int& tempAnimeCount, int& flyFrameCount, int& flyAnimeCount, int& exFrameCount, int& exAnimeCount)
 {
 	if (!boss->isHovering && disappearCount <= 0)//ボスが滞空していないとき&攻撃が1発も撃たれていないとき
 
@@ -542,6 +565,8 @@ void GiantFire(Attack* giantFire, Attack* explosion, Boss* boss, Player player, 
 				explosion->width = 512.0f;
 				explosion->height = 512.0f;
 				disappearCount = 1;
+				exFrameCount = 0;
+				exAnimeCount = 0;
 			}
 		}
 
@@ -564,6 +589,10 @@ void GiantFire(Attack* giantFire, Attack* explosion, Boss* boss, Player player, 
 		boss->chargeTimer = 0;
 		boss->attackCoolTimer = 180;
 		disappearCount = 0;
+		tempFrameCount = 0;
+		tempAnimeCount = 0;
+		flyFrameCount = 0;
+		flyAnimeCount = 0;
 	}
 }
 
@@ -583,7 +612,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//シーン
 	int scene = GAMEPLAY;
 
-	int phase = 0;
+	int phase = ONE;
 
 	//コントローラー
 	int padX = 0;	//左スティックの左右値
@@ -728,7 +757,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Boss boss;
 	boss.pos = { 840.0f, 320.0f }; // 左上座標
 	boss.speed = 8.0f; // 移動速度
-	boss.attackCoolTimer = 0; // 攻撃のクールタイム
 	boss.isAlive = true; // 生きているか
 	boss.isChange = false; // 形態変化用のフラグ
 	boss.hpCount = 200; // 体力
@@ -745,8 +773,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	boss.isHovering = false; // 滞空しているか
 	boss.isFlying = false;
 	boss.direction = LEFT; // 方向
-	boss.form = 0;
-	boss.isfalling = false;
+	boss.form = DRAGON;
+	boss.isFalling = false;
 	boss.fallTimer = 0;
 	boss.isPlayerHit = false;
 	boss.changedDirection = false;
@@ -813,31 +841,39 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	flash.duration = 0;
 
 	int attackTypeFirst = 0; // 第一形態の技の種類
+	int attackTypeThird = 0; // 第三形態の技の種類
 
 	int ghBoss1Left = Novice::LoadTexture("./Resources/images/Doragon_1.png"); // 第一形態のボスの画像
 	int ghBoss1Right = Novice::LoadTexture("./Resources/images/Doragon_1_right.png"); // 第一形態のボスの画像
 	int ghBoss1Sky = Novice::LoadTexture("./Resources/images/sky_Dragon.png");
 	int ghBoss1FlyLeft = Novice::LoadTexture("./Resources/images/sky_Dragonx.png");
 	int ghBoss1FlyRight = Novice::LoadTexture("./Resources/images/sky_Dragony.png");
+
 	int ghBoss2Temp = Novice::LoadTexture("./Resources/images/boss_temporary.png");
 	int ghBoss2Fall = Novice::LoadTexture("./Resources/images/boss_ground.png");
+	int ghBoss2TempBig = Novice::LoadTexture("./Resources/images/boss_temporary2.png");
 
 	int ghExplosion = Novice::LoadTexture("./Resources/images/flame_explosion.png");
 
+	int bossFrameCount = 0;
 	int bossAnimeCount = 0; // ボスのアニメーションｎフレームカウント
 	float boss1MaxImageWidth = 5760.0f; // ボスの画像の最大横幅
 	float boss1FrameImageWidth = 640.0f; // ボスの1フレームの画像横幅
 	float boss1ImageHeight = 352.0f; //ボスの画像の縦幅
 
+	int bossSkyFrameCount = 0;
 	int bossSkyAnimeCount = 0; // ボスのアニメーションｎフレームカウント
 	float boss1SkyFrameWidth = 576.0f; // ボスの1フレームの画像横幅
 	float boss1SkyImageHeight = 320.0f; //ボスの画像の縦幅
 
+	int bossFlyFrameCount = 0;
 	int bossFlyAnimeCount = 0; // ボスのアニメーションｎフレームカウント
 	float boss1FlyFrameWidth = 640.0f; // ボスの画像の最大横幅
 	float boss1FlyImageHeight = 448.0f; // ボスの1フレームの画像横幅
 	float boss1FlyMaxWidth = 5120.0f; //ボスの画像の縦幅
 
+	int boss2TempFrameCount = 0;
+	int boss2TempAnimeCount = 0;
 	float boss2TempFrameWidth = 384.0f;
 	float boss2TempMaxImageWidth = 3072.0f;
 	float boss2TempImageHeight = 240.0f;
@@ -845,6 +881,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	float boss2FallWidth = 336.0f;
 	float boss2FallHeight = 192.0f;
 
+	int explosionFrameCount = 0;
 	int explosionAnimeCount = 0;
 	float explosionMaxImageWidth = 2048.0f;
 	float explosionFrameWidth = 512.0f;
@@ -957,7 +994,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			//プレイヤー
 			//===========================================================
 
-			if (phase == 0)
+			if (phase == ONE || phase == THREE)
 			{
 				//攻撃時は動けない
 				if (!shortSword.isAtk && !longSword.isAtk)
@@ -1196,19 +1233,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				{
 					player.isAlive = false;
 				}
-			}
 #pragma endregion
 
 #pragma region ボス
-			//===========================================================
-			//ボスの移動 
-			//===========================================================
+				//===========================================================
+				//ボスの移動 
+				//===========================================================
 
-			if (phase == 0 || phase == 2)
-			{
-				if (!boss.isChange)
+				if (!boss.isChange) // 形態変化していないとき
 				{
-					if (!boss.isAttacking)
+					if (!boss.isAttacking) // 攻撃していないとき
 					{
 						if (boss.attackCoolTimer > 0)
 						{
@@ -1231,7 +1265,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							// 使う技の種類をランダムで決める
 							// 残り体力によって変わる
 
-							if (phase == 0)
+							if (phase == ONE) // フェーズが1のとき
 							{
 								if (boss.hpCount <= 0)
 								{
@@ -1253,180 +1287,231 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 										attackTypeFirst = rand() % 3;
 									}
 								}
-							}
 
-							if (attackTypeFirst == 1)
-							{
-								for (int i = 0; i < kMaxSlowFire; i++) // 攻撃の種類によって炎のスピードを変える
+								// 攻撃の種類によって炎のスピードを変える
+								if (attackTypeFirst == SLOWFIRE)
 								{
-									smallFire[i].speed = slowFireSpeed;
+									for (int i = 0; i < kMaxSlowFire; i++)
+									{
+										smallFire[i].speed = slowFireSpeed;
+									}
+								}
+								else if (attackTypeFirst == FASTFIRE)
+								{
+									for (int i = 0; i < kMaxFastFire; i++)
+									{
+										smallFire[i].speed = fastFireSpeed;
+									}
+								}
+								else if (attackTypeFirst == MULTIPLEFIRE)
+								{
+									for (int i = 0; i < kMaxMultiple; i++)
+									{
+										smallFire[i].speed = multipleFireSpeed;
+									}
+								}
+								else if (attackTypeFirst == FLY)
+								{
+									smallFire[0].speed = dropSpeed;
 								}
 							}
-							else if (attackTypeFirst == 2)
+							else if (phase == THREE) // フェーズが3のとき
 							{
-								for (int i = 0; i < kMaxFastFire; i++) // 攻撃の種類によって炎のスピードを変える
+								if (boss.hpCount <= 150)
 								{
-									smallFire[i].speed = fastFireSpeed;
+									attackTypeThird = rand() % 4;
 								}
-							}
-							else if (attackTypeFirst == 3)
-							{
-								for (int i = 0; i < kMaxMultiple; i++) // 攻撃の種類によって炎のスピードを変える
+								else if (boss.hpCount <= 190)
 								{
-									smallFire[i].speed = multipleFireSpeed;
+									attackTypeThird = rand() % 4;
 								}
-							}
-							else if (attackTypeFirst == 5)
-							{
-								smallFire[0].speed = multipleFireSpeed;
+								else if (boss.hpCount <= 200)
+								{
+									attackTypeThird = GIANTFIREMULTI;
+								}
+
+								// 攻撃の種類によって炎のスピードを変える
+								if (attackTypeThird == SLOWFIRE2)
+								{
+									for (int i = 0; i < kMaxSlowFire; i++)
+									{
+										smallFire[i].speed = slowFireSpeed;
+									}
+								}
+								else if (attackTypeThird == FASTFIRE2)
+								{
+									for (int i = 0; i < kMaxFastFire; i++)
+									{
+										smallFire[i].speed = fastFireSpeed;
+									}
+								}
+								else if (attackTypeThird == MULTIPLEFIRE2)
+								{
+									for (int i = 0; i < kMaxMultiple; i++)
+									{
+										smallFire[i].speed = multipleFireSpeed;
+									}
+								}
 							}
 						}
 					}
+				}
+			}
+			
 
-					if (boss.isAttacking)
+			// フェーズが1の時
+			if (phase == ONE)
+			{
+				if (boss.isAttacking)
+				{
+					switch (attackTypeFirst)
 					{
-						switch (attackTypeFirst)
+					case MOVE: BossMove(&boss, boss1FrameImageWidth);
+						break;
+					case SLOWFIRE:
+						SlowFire(kMaxSlowFire, smallFire, &boss, fireShootCount, fireDisappearCount);
+						break;
+					case FASTFIRE: FastFire(kMaxFastFire, smallFire, &boss, player, fireShootCount, fireDisappearCount);
+						break;
+					case MULTIPLEFIRE: MultipleFire(kMaxMultiple, smallFire, &boss, fireShootCount, fireDisappearCount);
+						break;
+					case GIANTFIRE: GiantFire(&giantFire, &explosion, &boss, player, fireDisappearCount, bossFrameCount, bossAnimeCount, bossFlyFrameCount, bossFlyAnimeCount, explosionFrameCount, explosionAnimeCount);
+						break;
+					case FLY:
+						if (!boss.isHovering)
 						{
-						case MOVE: BossMove(&boss, boss1FrameImageWidth);
-							break;
-						case SLOWFIRE:
-							SlowFire(kMaxSlowFire, smallFire, &boss, fireShootCount, fireDisappearCount);
-							break;
-						case FASTFIRE: FastFire(kMaxFastFire, smallFire, &boss, player, fireShootCount, fireDisappearCount);
-							break;
-						case MULTIPLEFIRE: MultipleFire(kMaxMultiple, smallFire, &boss, fireShootCount, fireDisappearCount);
-							break;
-						case GIANTFIRE: GiantFire(&giantFire, &explosion, &boss, player, fireDisappearCount);
-							break;
-						case FLY:
-							if (!boss.isHovering)
+							if (boss.isInScreen)
 							{
-								if (boss.isInScreen)
+								if (!boss.isFlying)
 								{
-									if (!boss.isFlying)
-									{
-										boss.isFlying = true;
-									}
-
-									if (boss.pos.y < 620.0f + boss1FrameImageWidth)
-									{
-										boss.pos.y += boss.speed;
-									}
-
-									if (boss.pos.y >= 620.0f + boss1FrameImageWidth)
-									{
-										boss.isInScreen = false;
-									}
+									boss.isFlying = true;
+									bossFrameCount = 0;
 								}
 
-								if (!boss.isInScreen)
+								if (boss.pos.y < 620.0f + boss1FrameImageWidth)
 								{
-									if (boss.direction == LEFT)
-									{
-										if (boss.pos.x > 500)
-										{
-											boss.pos.x -= boss.pos.x;
-										}
+									boss.pos.y += boss.speed;
+								}
 
-										if (boss.pos.x <= 500)
-										{
-											boss.pos.x = 500;
-											boss.isHovering = true;
-											boss.isFlying = false;
-										}
-									}
-									else if (boss.direction == RIGHT)
-									{
-										if (boss.pos.x < 500)
-										{
-											boss.pos.x += boss.pos.x;
-										}
-
-										if (boss.pos.x >= 500)
-										{
-											boss.pos.x = 500;
-											boss.isHovering = true;
-											boss.isFlying = false;
-										}
-									}
+								if (boss.pos.y >= 620.0f + boss1FrameImageWidth)
+								{
+									boss.isInScreen = false;
 								}
 							}
 
-							if (boss.isHovering)
+							if (!boss.isInScreen)
 							{
-								if (!boss.isInScreen)
+								if (boss.direction == LEFT)
 								{
-									if (boss.pos.y > 600.0f)
+									if (boss.pos.x > 500)
 									{
-										boss.pos.y -= boss.speed;
+										boss.pos.x -= boss.pos.x;
 									}
 
-									if (boss.pos.y <= 600.0f)
+									if (boss.pos.x <= 500)
 									{
-										boss.pos.y = 600.0f;
-										boss.isInScreen = true;
+										boss.pos.x = 500;
+										boss.isHovering = true;
+										boss.isFlying = false;
+										bossFlyFrameCount = 0;
+										bossFlyAnimeCount = 0;
+									}
+								}
+								else if (boss.direction == RIGHT)
+								{
+									if (boss.pos.x < 500)
+									{
+										boss.pos.x += boss.pos.x;
+									}
+
+									if (boss.pos.x >= 500)
+									{
+										boss.pos.x = 500;
+										boss.isHovering = true;
+										boss.isFlying = false;
+										bossFlyFrameCount = 0;
+										bossFlyAnimeCount = 0;
+									}
+								}
+							}
+						}
+
+						if (boss.isHovering)
+						{
+							if (!boss.isInScreen)
+							{
+								if (boss.pos.y > 600.0f)
+								{
+									boss.pos.y -= boss.speed;
+								}
+
+								if (boss.pos.y <= 600.0f)
+								{
+									boss.pos.y = 600.0f;
+									boss.isInScreen = true;
+								}
+							}
+
+							if (boss.isInScreen)
+							{
+								if (fireDisappearCount < 1)
+								{
+									if (!smallFire[0].isShot)
+									{
+										smallFire[0].pos.x = boss.pos.x + 128.0f;
+										smallFire[0].pos.y = boss.pos.y - 96.0f;
+										smallFire[0].isShot = true;
 									}
 								}
 
-								if (boss.isInScreen)
+								if (smallFire[0].isShot)
 								{
-									if (fireDisappearCount < 1)
+									smallFire[0].pos.y -= dropSpeed;
+
+									if (smallFire[0].pos.y <= 0.0f + smallFire[0].width)
 									{
-										if (!smallFire[0].isShot)
-										{
-											smallFire[0].pos.x = boss.pos.x + 128.0f;
-											smallFire[0].pos.y = boss.pos.y - 96.0f;
-											smallFire[0].isShot = true;
-										}
+										smallFire[0].isShot = false;
+										fireDisappearCount = 1;
+									}
+								}
+
+								if (fireDisappearCount == 1 && !flash.isShot)
+								{
+									flash.isShot = true;
+									flash.duration = 90;
+									flash.pos.x = smallFire[0].pos.x - 48.0f;
+									flash.pos.y = smallFire[0].pos.y + 96.0f;
+								}
+
+								if (flash.isShot)
+								{
+									if (flash.width <= 1280.0f)
+									{
+										flash.width += 64.0f;
+										flash.pos.x -= 32.0f;
 									}
 
-									if (smallFire[0].isShot)
+									if (flash.height <= 1280.0f)
 									{
-										smallFire[0].pos.y -= dropSpeed;
-
-										if (smallFire[0].pos.y <= 0.0f + smallFire[0].width)
-										{
-											smallFire[0].isShot = false;
-											fireDisappearCount = 1;
-										}
+										flash.height += 64.0f;
+										flash.pos.y += 32.0f;
 									}
 
-									if (fireDisappearCount == 1 && !flash.isShot)
+									if (flash.duration > 0)
 									{
-										flash.isShot = true;
-										flash.duration = 90;
-										flash.pos.x = smallFire[0].pos.x - 48.0f;
-										flash.pos.y = smallFire[0].pos.y + 96.0f;
+										flash.duration--;
 									}
 
-									if (flash.isShot)
+									if (flash.duration == 0)
 									{
-										if (flash.width <= 1280.0f)
-										{
-											flash.width += 64.0f;
-											flash.pos.x -= 32.0f;
-										}
-
-										if (flash.height <= 1280.0f)
-										{
-											flash.height += 64.0f;
-											flash.pos.y += 32.0f;
-										}
-
-										if (flash.duration > 0)
-										{
-											flash.duration--;
-										}
-
-										if (flash.duration == 0)
-										{
-											flash.isShot = false;
-											boss.isChange = true;
-											boss.form = 1;
-											boss.height = 200.0f;
-											boss.fallTimer = 60;
-											boss.isAttacking = false;
-										}
+										flash.isShot = false;
+										boss.isChange = true;
+										boss.form = 1;
+										boss.height = 200.0f;
+										boss.fallTimer = 60;
+										boss.isAttacking = false;
+										bossSkyFrameCount = 0;
+										bossSkyAnimeCount = 0;
 									}
 								}
 							}
@@ -1434,9 +1519,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					}
 				}
 
-				if (boss.form == 1)
+				// ボスが第二形態の時
+				if (boss.form == HUMAN)
 				{
-					if (!boss.isfalling)
+					if (!boss.isFalling)
 					{
 						if (boss.fallTimer > 0)
 						{
@@ -1446,11 +1532,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						if (boss.fallTimer <= 0)
 						{
 							boss.fallTimer = 0;
-							boss.isfalling = true;
+							boss.isHovering = false;
+							boss.isFalling = true;
+							boss2TempFrameCount = 0;
+							boss2TempAnimeCount = 0;
 						}
 					}
 
-					if (boss.isfalling)
+					if (boss.isFalling)
 					{
 						if (boss.pos.y > 0 - 120.0f)
 						{
@@ -1459,26 +1548,119 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 						if (boss.pos.y <= 0.0f - 120.0f)
 						{
-							boss.pos.y = -120.0f;
-							boss.isfalling = false;
-							boss.isAttacking = false;
-							phase = 1;
+							boss.isFalling = false;
+							fireDisappearCount = 0;
+							boss.hpCount = 200;
+							boss.isChange = false;
+							phase = TWO;
 						}
 					}
 				}
 			}
 
+			// フェーズが3のとき
+			if (phase == THREE)
+			{
+				if (boss.isAttacking)
+				{
+					switch (attackTypeThird)
+					{
+					case SLOWFIRE2:
+						SlowFire(kMaxSlowFire, smallFire, &boss, fireShootCount, fireDisappearCount);
+
+						break;
+					case FASTFIRE2:
+						FastFire(kMaxFastFire, smallFire, &boss, player, fireShootCount, fireDisappearCount);
+
+						break;
+					case MULTIPLEFIRE2:
+						MultipleFire(kMaxMultiple, smallFire, &boss, fireShootCount, fireDisappearCount);
+
+						break;
+					case GIANTFIREMULTI:
+						GiantFire(&giantFire, &explosion, &boss, player, fireDisappearCount, bossFrameCount, bossAnimeCount, bossFlyFrameCount, bossFlyAnimeCount, explosionFrameCount, explosionAnimeCount);
+
+						break;
+					}
+				}
+			}
+
+
 #pragma endregion
 
 #pragma region アニメーション
 			//アニメーション
+
+			if (phase == ONE)
+			{
+				if (boss.form == DRAGON)
+				{
+					if (!boss.isHovering && !boss.isFlying)
+					{
+						if (bossFrameCount >= 59)
+						{
+							bossFrameCount = 0;
+							bossAnimeCount = 0;
+						}
+
+						bossFrameCount++;
+					}
+
+					if (attackTypeFirst == FLY)
+					{
+						if (boss.isHovering)
+						{
+							if (bossSkyFrameCount >= 59)
+							{
+								bossSkyFrameCount = 0;
+								bossSkyAnimeCount = 0;
+							}
+
+							bossSkyFrameCount++;
+						}
+					}
+
+					if (boss.isFlying)
+					{
+						if (bossFlyFrameCount >= 59)
+						{
+							bossFlyFrameCount = 0;
+							bossFlyAnimeCount = 0;
+						}
+
+						bossFlyFrameCount++;
+					}
+				}
+			}
+
+			if (boss.form == HUMAN)
+			{
+				if (!boss.isFalling)
+				{
+					if (boss2TempFrameCount >= 59)
+					{
+						boss2TempFrameCount = 0;
+						boss2TempAnimeCount = 0;
+					}
+
+					boss2TempFrameCount++;
+				}
+			}
+
+			if (explosion.isShot)
+			{
+				if (explosionFrameCount >= 29)
+				{
+					explosionFrameCount = 0;
+					explosionAnimeCount = 0;
+				}
+
+				explosionFrameCount++;
+			}
+
 			if (frameCount >= 59)
 			{
 				frameCount = 0;
-				bossAnimeCount = 0;
-				bossSkyAnimeCount = 0;
-				bossFlyAnimeCount = 0;
-				explosionAnimeCount = 0;
 
 				//プレイヤー
 				ghPlayerFrameCount = 0; //待機
@@ -1490,32 +1672,50 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			}
 			frameCount++;
 
-			if (frameCount % (59 / 8) == 0)
+			if (phase == ONE)
 			{
-				bossAnimeCount++;
-			}
-
-			if (boss.isFlying || boss.form == 1)
-			{
-				if (frameCount % (59 / 7) == 0)
+				if (!boss.isFlying && !boss.isHovering)
 				{
-					bossFlyAnimeCount++;
+					if (bossFrameCount % (59 / 8) == 0)
+					{
+						bossAnimeCount++;
+					}
+				}
+
+				if (boss.isFlying)
+				{
+					if (bossFlyFrameCount % (59 / 7) == 0)
+					{
+						bossFlyAnimeCount++;
+					}
+				}
+
+				if (attackTypeFirst == FLY)
+				{
+					if (boss.isHovering)
+					{
+						if (bossSkyFrameCount % (59 / 9) == 0)
+						{
+							bossSkyAnimeCount++;
+						}
+					}
 				}
 			}
-			if (attackTypeFirst == 5)
+
+			if (boss.form == HUMAN)
 			{
-				if (boss.isHovering)
+				if (!boss.isFalling)
 				{
-					if (frameCount % (59 / 9) == 0)
+					if (boss2TempFrameCount % (59 / 7) == 0)
 					{
-						bossSkyAnimeCount++;
+						boss2TempAnimeCount++;
 					}
 				}
 			}
 
 			if (explosion.isShot)
 			{
-				if (frameCount % (59 / 4) == 0)
+				if (explosionFrameCount % (30 / 4) == 0)
 				{
 					explosionAnimeCount++;
 				}
@@ -1623,56 +1823,56 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			//--------------ボスと攻撃の当たり判定---------------//
 
-			//短剣とボス
-			if (shortSword.isAtk)
+			if (phase == ONE || phase == THREE)
 			{
-				IsHit(shortSword.pos, shortSword.width, shortSword.height, boss.pos, boss.width, boss.height, shortSword.isBossHit);
-			}
+				//短剣とボス
+				if (shortSword.isAtk)
+				{
+					IsHit(shortSword.pos, shortSword.width, shortSword.height, boss.pos, boss.width, boss.height, shortSword.isBossHit);
+				}
 
-			//大剣とボス
-			if (longSword.isAtk)
-			{
-				IsHit(longSword.pos, longSword.width, longSword.height, boss.pos, boss.width, boss.height, longSword.isBossHit);
-			}
-
-			//短剣の攻撃がボスに当たっている時
-			if (shortSword.isBossHit) {
-				shortSword.isAtk = false;
-				shortSword.durationTime = 30;
-				boss.hpCount -= shortSword.damage; //ボスのHPを攻撃力分減らす
-				shortSword.isBossHit = false;
-			}
-
-			//大剣の攻撃がボスに当たっている時
-			if (longSword.isBossHit) {
-				longSword.isAtk = false;
-				longSword.durationTime = 30;
-				boss.hpCount -= longSword.damage; //ボスのHPを攻撃力分減らす
-				longSword.isBossHit = false;
-			}
-
-			//----------------攻撃を反射するときの当たり判定----------------//
-
-			for (int i = 0; i < kMaxSmallFire; i++)
-			{
+				//大剣とボス
 				if (longSword.isAtk)
 				{
-					IsHit(longSword.pos, longSword.width, longSword.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, longSword.isSmallFireHit);
+					IsHit(longSword.pos, longSword.width, longSword.height, boss.pos, boss.width, boss.height, longSword.isBossHit);
 				}
 
-				if (longSword.isSmallFireHit)
-				{
+				//短剣の攻撃がボスに当たっている時
+				if (shortSword.isBossHit) {
+					shortSword.isAtk = false;
+					shortSword.durationTime = 30;
+					boss.hpCount -= shortSword.damage; //ボスのHPを攻撃力分減らす
+					shortSword.isBossHit = false;
+				}
+
+				//大剣の攻撃がボスに当たっている時
+				if (longSword.isBossHit) {
 					longSword.isAtk = false;
 					longSword.durationTime = 30;
-					longSword.isSmallFireHit = false;
-
-					smallFire[i].speed *= -2.0f; //反射
-					smallFire[i].isReflection = true;
+					boss.hpCount -= longSword.damage; //ボスのHPを攻撃力分減らす
+					longSword.isBossHit = false;
 				}
 
-				if (attackTypeFirst == SLOWFIRE)
+				//----------------攻撃を反射するときの当たり判定----------------//
+
+				for (int i = 0; i < kMaxSmallFire; i++)
 				{
-					if (!smallFire[i].isShot)
+					if (longSword.isAtk)
+					{
+						IsHit(longSword.pos, longSword.width, longSword.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, longSword.isSmallFireHit);
+					}
+
+					if (longSword.isSmallFireHit)
+					{
+						longSword.isAtk = false;
+						longSword.durationTime = 30;
+						longSword.isSmallFireHit = false;
+
+						smallFire[i].speed *= -2.0f; //反射
+						smallFire[i].isReflection = true;
+					}
+
+					if (attackTypeFirst == SLOWFIRE)
 					{
 						if (!smallFire[i].isShot)
 						{
@@ -1682,12 +1882,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							}
 						}
 					}
-				}
-				else if (attackTypeFirst == FASTFIRE)
-				{
-					if (!smallFire[i].isShot)
+					else if (attackTypeFirst == FASTFIRE)
 					{
-						if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 21.0f)
+						if (!smallFire[i].isShot)
 						{
 							if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 21.0f)
 							{
@@ -1695,218 +1892,220 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							}
 						}
 					}
-				}
-				else if (attackTypeFirst == MULTIPLEFIRE)
-				{
-					if (!smallFire[i].isShot)
+					else if (attackTypeFirst == MULTIPLEFIRE)
 					{
-						if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 13.0f)
+						if (!smallFire[i].isShot)
 						{
-							smallFire[i].speed = 12.0f;
+							if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 13.0f)
+							{
+								smallFire[i].speed = 12.0f;
+							}
 						}
 					}
 				}
-			}
 
-			//------------------反射した攻撃とボスの当たり判定-----------------//
+				//------------------反射した攻撃とボスの当たり判定-----------------//
 
-			for (int i = 0; i < kMaxSmallFire; i++)
-			{
-				if (smallFire[i].isReflection)
+				for (int i = 0; i < kMaxSmallFire; i++)
 				{
-					IsHit(smallFire[i].pos, smallFire[i].width, smallFire[i].height, boss.pos, boss.width, boss.height, smallFire[i].isBossHit);
+					if (smallFire[i].isReflection)
+					{
+						IsHit(smallFire[i].pos, smallFire[i].width, smallFire[i].height, boss.pos, boss.width, boss.height, smallFire[i].isBossHit);
+					}
+
+					if (smallFire[i].isBossHit)
+					{
+						boss.hpCount -= smallFire[i].reflectionDamage; //反射した小炎がボスに当たった時にHPを減らす
+						smallFire[i].isShot = false;
+						smallFire[i].isBossHit = false;
+						smallFire[i].isReflection = false;
+						fireDisappearCount++;
+					}
 				}
 
-				if (smallFire[i].isBossHit)
+				//------------------小炎とプレイヤーの当たり判定----------------//
+
+				// 小炎全体の当たり判定
+				for (int i = 0; i < kMaxSmallFire; i++)
 				{
-					boss.hpCount -= smallFire[i].reflectionDamage; //反射した小炎がボスに当たった時にHPを減らす
-					smallFire[i].isShot = false;
-					smallFire[i].isBossHit = false;
-					smallFire[i].isReflection = false;
-					fireDisappearCount++;
+					if (smallFire[i].isShot)
+					{
+						if (!player.isNoDamage)
+						{
+							IsHit(player.pos, player.width, player.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, smallFire[i].isPlayerHit);
+						}
+					}
 				}
 
-			}
-
-			// 無敵時間
-			if (player.noDamageTime > 0)
-			{
-				player.noDamageTime--;
-			}
-			else
-			{
-				player.noDamageTime = 0;
-				player.isNoDamage = false;
-			}
-
-			//------------------小炎とプレイヤーの当たり判定----------------//
-
-			// 小炎全体の当たり判定
-			for (int i = 0; i < kMaxSmallFire; i++)
-			{
-				if (smallFire[i].isShot)
+				// 巨大火球の当たり判定
+				if (giantFire.isShot)
 				{
 					if (!player.isNoDamage)
 					{
-						IsHit(player.pos, player.width, player.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, smallFire[i].isPlayerHit);
+						IsHit(player.pos, player.width, player.height, giantFire.pos, giantFire.width, giantFire.height, giantFire.isPlayerHit);
 					}
 				}
-			}
 
-			// 巨大火球の当たり判定
-			if (giantFire.isShot)
-			{
-				if (!player.isNoDamage)
+				if (explosion.isShot)
 				{
-					IsHit(player.pos, player.width, player.height, giantFire.pos, giantFire.width, giantFire.height, giantFire.isPlayerHit);
-				}
-			}
-
-			if (explosion.isShot)
-			{
-				if (!player.isNoDamage)
-				{
-					IsHit(player.pos, player.width, player.height, explosion.pos, explosion.width, explosion.height, explosion.isPlayerHit);
-				}
-			}
-
-			if (attackTypeFirst == SLOWFIRE)
-			{
-				// 小炎(連続)の当たり判定
-				for (int i = 0; i < kMaxSlowFire; i++)
-				{
-					if (smallFire[i].isPlayerHit)
+					if (!player.isNoDamage)
 					{
-						player.hpCount -= 1;
-						player.isNoDamage = true;
-						player.noDamageTime = 30;
-						smallFire[i].isShot = false;
-						smallFire[i].isPlayerHit = false;
-						fireDisappearCount++;
+						IsHit(player.pos, player.width, player.height, explosion.pos, explosion.width, explosion.height, explosion.isPlayerHit);
 					}
 				}
-			}
 
-			if (attackTypeFirst == FASTFIRE)
-			{
-				// 小炎(高速)の当たり判定
-				for (int i = 0; i < kMaxFastFire; i++)
+				if (attackTypeFirst == SLOWFIRE || attackTypeFirst == SLOWFIRE2)
 				{
-					if (smallFire[i].isPlayerHit)
+					// 小炎(連続)の当たり判定
+					for (int i = 0; i < kMaxSlowFire; i++)
 					{
-						player.hpCount -= 1;
-						player.isNoDamage = true;
-						player.noDamageTime = 30;
-						smallFire[i].isShot = false;
-						smallFire[i].isPlayerHit = false;
-						fireDisappearCount++;
-					}
-				}
-			}
-
-			if (attackTypeFirst == MULTIPLEFIRE)
-			{
-				// 小炎(拡散)の当たり判定
-				for (int i = 0; i < kMaxMultiple; i++)
-				{
-					if (smallFire[i].isPlayerHit)
-					{
-						player.hpCount -= 1;
-						player.isNoDamage = true;
-						player.noDamageTime = 30;
-						smallFire[i].isShot = false;
-						smallFire[i].isPlayerHit = false;
-						fireDisappearCount++;
-					}
-				}
-			}
-
-			if (giantFire.isPlayerHit)
-			{
-				player.hpCount -= 5;
-				player.isNoDamage = true;
-				player.noDamageTime = 30;
-				giantFire.isShot = false;
-				giantFire.isPlayerHit = false;
-				fireDisappearCount++;
-			}
-
-			if (explosion.isPlayerHit)
-			{
-				player.hpCount -= 5;
-				player.isNoDamage = true;
-				player.noDamageTime = 30;
-				explosion.isPlayerHit = false;
-			}
-
-			IsHit(player.pos, player.width, player.height, boss.pos, boss.width, boss.height, boss.isPlayerHit);
-
-			if (boss.isPlayerHit)
-			{
-				if (!boss.changedDirection)
-				{
-					if (player.pos.x > boss.pos.x)
-					{
-						player.pos.x = boss.pos.x + boss.width;
-						boss.isPlayerHit = false;
-					}
-					else if (player.pos.x < boss.pos.x)
-					{
-						player.pos.x = boss.pos.x - player.width;
-						boss.isPlayerHit = false;
-					}
-				}
-				else if (boss.changedDirection)
-				{
-					if (!player.isFlying)
-					{
-						if (boss.direction == RIGHT)
+						if (smallFire[i].isPlayerHit)
 						{
-							player.flySpeed = 32.0f;
+							player.hpCount -= 1;
+							player.isNoDamage = true;
+							player.noDamageTime = 30;
+							smallFire[i].isShot = false;
+							smallFire[i].isPlayerHit = false;
+							fireDisappearCount++;
 						}
-						else if (boss.direction == LEFT)
-						{
-							player.flySpeed = -32.0f;
-						}
+					}
+				}
 
-						player.hpCount -= 2;
-						player.isNoDamage = true;
-						player.noDamageTime = 60;
-						boss.isPlayerHit = false;
-						player.isFlying = true;
+				if (attackTypeFirst == FASTFIRE || attackTypeFirst == FASTFIRE2)
+				{
+					// 小炎(高速)の当たり判定
+					for (int i = 0; i < kMaxFastFire; i++)
+					{
+						if (smallFire[i].isPlayerHit)
+						{
+							player.hpCount -= 1;
+							player.isNoDamage = true;
+							player.noDamageTime = 30;
+							smallFire[i].isShot = false;
+							smallFire[i].isPlayerHit = false;
+							fireDisappearCount++;
+						}
+					}
+				}
+
+				if (attackTypeFirst == MULTIPLEFIRE || attackTypeFirst == MULTIPLEFIRE2)
+				{
+					// 小炎(拡散)の当たり判定
+					for (int i = 0; i < kMaxMultiple; i++)
+					{
+						if (smallFire[i].isPlayerHit)
+						{
+							player.hpCount -= 1;
+							player.isNoDamage = true;
+							player.noDamageTime = 30;
+							smallFire[i].isShot = false;
+							smallFire[i].isPlayerHit = false;
+							fireDisappearCount++;
+						}
+					}
+				}
+
+				if (giantFire.isPlayerHit)
+				{
+					player.hpCount -= 5;
+					player.isNoDamage = true;
+					player.noDamageTime = 30;
+					giantFire.isShot = false;
+					giantFire.isPlayerHit = false;
+					fireDisappearCount++;
+				}
+
+				if (explosion.isPlayerHit)
+				{
+					player.hpCount -= 5;
+					player.isNoDamage = true;
+					player.noDamageTime = 30;
+					explosion.isPlayerHit = false;
+				}
+
+				IsHit(player.pos, player.width, player.height, boss.pos, boss.width, boss.height, boss.isPlayerHit);
+
+				if (boss.isPlayerHit)
+				{
+					if (!boss.changedDirection)
+					{
+						if (player.pos.x > boss.pos.x)
+						{
+							player.pos.x = boss.pos.x + boss.width;
+							boss.isPlayerHit = false;
+						}
+						else if (player.pos.x < boss.pos.x)
+						{
+							player.pos.x = boss.pos.x - player.width;
+							boss.isPlayerHit = false;
+						}
+					}
+					else if (boss.changedDirection)
+					{
+						if (!player.isFlying)
+						{
+							if (boss.direction == RIGHT)
+							{
+								player.flySpeed = 32.0f;
+							}
+							else if (boss.direction == LEFT)
+							{
+								player.flySpeed = -32.0f;
+							}
+
+							player.hpCount -= 2;
+							player.isNoDamage = true;
+							player.noDamageTime = 60;
+							boss.isPlayerHit = false;
+							player.isFlying = true;
+						}
+					}
+				}
+
+				if (player.isFlying)
+				{
+					if (boss.direction == RIGHT)
+					{
+						if (player.flyDistance < 512.0f)
+						{
+							player.pos.x += player.flySpeed;
+							player.flyDistance += player.flySpeed;
+						}
+						else
+						{
+							player.flySpeed = 0.0f;
+							player.isFlying = false;
+							player.flyDistance = 0.0f;
+						}
+					}
+					else if (boss.direction == LEFT)
+					{
+						if (player.flyDistance > -512.0f)
+						{
+							player.pos.x += player.flySpeed;
+							player.flyDistance += player.flySpeed;
+						}
+						else
+						{
+							player.flySpeed = 0.0f;
+							player.isFlying = false;
+							player.flyDistance = 0.0f;
+						}
 					}
 				}
 			}
 
-			if (player.isFlying)
+			if (player.isNoDamage)
 			{
-				if (boss.direction == RIGHT)
+				// 無敵時間
+				if (player.noDamageTime > 0)
 				{
-					if (player.flyDistance < 512.0f)
-					{
-						player.pos.x += player.flySpeed;
-						player.flyDistance += player.flySpeed;
-					}
-					else
-					{
-						player.flySpeed = 0.0f;
-						player.isFlying = false;
-						player.flyDistance = 0.0f;
-					}
+					player.noDamageTime--;
 				}
-				else if (boss.direction == LEFT)
+				else
 				{
-					if (player.flyDistance > -512.0f)
-					{
-						player.pos.x += player.flySpeed;
-						player.flyDistance += player.flySpeed;
-					}
-					else
-					{
-						player.flySpeed = 0.0f;
-						player.isFlying = false;
-						player.flyDistance = 0.0f;
-					}
+					player.noDamageTime = 0;
+					player.isNoDamage = false;
 				}
 			}
 
@@ -1918,78 +2117,163 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			//パーティクル
 			//==============================================================
 
-			//--------------------プレイヤーの軌跡---------------------//
-			for (int i = 0; i < playerLocusMax; i++)
+			if (phase == ONE || phase == THREE)
 			{
-
-				if (playerLocus[i].isDisplay)
+				//--------------------プレイヤーの軌跡---------------------//
+				for (int i = 0; i < playerLocusMax; i++)
 				{
-					//段々小さくなる
-					if (playerLocus[i].width >= 0.0f && playerLocus[i].height >= 0.0f) {
-						playerLocus[i].width -= 0.5f;
-						playerLocus[i].height -= 0.5f;
-					}
-					else
-					{
-						playerLocus[i].width = 16.0f;
-						playerLocus[i].height = 16.0f;
-						playerLocus[i].isDisplay = false;
-					}
 
-					//回転させる
-					playerLocus[i].rotation += 0.02f;
-
-					//移動させる
-					if (!player.isDirections) 
-					{
-						//右
-						playerLocus[i].pos.x -= 0.5f;
-						playerLocus[i].pos.y += 0.01f;
-					}
-					else
-					{
-						//左
-						playerLocus[i].pos.x += 0.5f;
-						playerLocus[i].pos.y += 0.01f;
-					}
-				}
-
-				if (!playerLocus[i].isDisplay)
-				{
-					//ランダムな位置に表示させる
-					playerLocus[i].pos.x = rand() % 32 - 16 + player.pos.x + player.width / 2.0f;
-					playerLocus[i].pos.y = rand() % 32 - 16 + ToScreen(player.pos.y) + player.height / 2.0f;
-				}
-			}
-
-			//--------------------小炎の軌跡---------------------//
-			for (int i = 0; i < kMaxSmallFire; i++)
-			{
-				for (int j = 0; j < smallFireLocusMax; j++)
-				{
-					if (smallFireLocus[i][j].isDisplay)
+					if (playerLocus[i].isDisplay)
 					{
 						//段々小さくなる
-						if (smallFireLocus[i][j].width >= 0.0f && smallFireLocus[i][j].height >= 0.0f) {
-							smallFireLocus[i][j].width -= rand() % 5;
-							smallFireLocus[i][j].height -= rand() % 5;
+						if (playerLocus[i].width >= 0.0f && playerLocus[i].height >= 0.0f) {
+							playerLocus[i].width -= 0.5f;
+							playerLocus[i].height -= 0.5f;
 						}
 						else
 						{
-							smallFireLocus[i][j].width = 32.0f;
-							smallFireLocus[i][j].height = 32.0f;
-							smallFireLocus[i][j].isDisplay = false;
+							playerLocus[i].width = 16.0f;
+							playerLocus[i].height = 16.0f;
+							playerLocus[i].isDisplay = false;
 						}
 
 						//回転させる
-						smallFireLocus[i][j].rotation += 0.02f;
+						playerLocus[i].rotation += 0.02f;
 
 						//移動させる
-						if (player.pos.x <= smallFireLocus[i][j].pos.x) {
+						if (!player.isDirections)
+						{
+							//右
+							playerLocus[i].pos.x -= 0.5f;
+							playerLocus[i].pos.y += 0.01f;
+						}
+						else
+						{
+							//左
+							playerLocus[i].pos.x += 0.5f;
+							playerLocus[i].pos.y += 0.01f;
+						}
+					}
+
+					if (!playerLocus[i].isDisplay)
+					{
+						//ランダムな位置に表示させる
+						playerLocus[i].pos.x = rand() % 32 - 16 + player.pos.x + player.width / 2.0f;
+						playerLocus[i].pos.y = rand() % 32 - 16 + ToScreen(player.pos.y) + player.height / 2.0f;
+					}
+				}
+
+				//--------------------小炎の軌跡---------------------//
+				for (int i = 0; i < kMaxSmallFire; i++)
+				{
+					for (int j = 0; j < smallFireLocusMax; j++)
+					{
+						if (smallFireLocus[i][j].isDisplay)
+						{
+							//段々小さくなる
+							if (smallFireLocus[i][j].width >= 0.0f && smallFireLocus[i][j].height >= 0.0f) {
+								smallFireLocus[i][j].width -= rand() % 5;
+								smallFireLocus[i][j].height -= rand() % 5;
+							}
+							else
+							{
+								smallFireLocus[i][j].width = 32.0f;
+								smallFireLocus[i][j].height = 32.0f;
+								smallFireLocus[i][j].isDisplay = false;
+							}
+
+							//回転させる
+							smallFireLocus[i][j].rotation += 0.02f;
+
+							//移動させる
+							if (player.pos.x <= smallFireLocus[i][j].pos.x) {
+								//右
+								playerLocus[i].pos.x -= 0.1f;
+								playerLocus[i].pos.y += 0.01f;
+							}
+							else
+							{
+								//左
+								playerLocus[i].pos.x += 0.1f;
+								playerLocus[i].pos.y += 0.01f;
+							}
+						}
+
+						if (!smallFireLocus[i][j].isDisplay)
+						{
+							if (smallFire[i].isShot)
+							{
+								//ランダムな位置に表示させる
+								smallFireLocus[i][j].pos.x = rand() % 16 - 8 + smallFire[i].pos.x + smallFire[i].width / 2.0f;
+								smallFireLocus[i][j].pos.y = rand() % 16 - 8 + ToScreen(smallFire[i].pos.y) + smallFire[i].height / 2.0f;
+							}
+						}
+
+						//パーティクル軌跡
+						if (smallFire[i].isShot)
+						{
+							if (smallFireLocusCoolTime >= 0)
+							{
+								smallFireLocusCoolTime--;
+							}
+							else
+							{
+								smallFireLocus[i][j].isDisplay = true;
+								smallFireLocusCoolTime = 240;
+							}
+						}
+
+						if (smallFireLocus[i][j].width <= 20.0f)
+						{
+							if (smallFireLocus[i][j].color <= 0xFF8800FF)
+							{
+								smallFireLocus[i][j].color += 0x00110000;
+							}
+						}
+
+						//反射すると色が変わる
+						if (smallFire[i].isReflection)
+						{
+							smallFireLocus[i][j].color = 0x0000FFFF;
+						}
+
+						//弾が消えるときにエフェクトも消える
+						if (!smallFire[i].isShot)
+						{
+							smallFireLocus[i][j].isDisplay = false;
+							smallFireLocus[i][j].color = 0xFF0000FF;
+						}
+					}
+				}
+
+				//--------------------巨大火球の軌跡---------------------//
+				for (int i = 0; i < giantFireLocusMax; i++)
+				{
+					if (giantFireLocus[i].isDisplay)
+					{
+						//段々小さくなる
+						if (giantFireLocus[i].width >= 0.0f && giantFireLocus[i].height >= 0.0f)
+						{
+							giantFireLocus[i].width -= rand() % 10;
+							giantFireLocus[i].height -= rand() % 10;
+						}
+						else
+						{
+							giantFireLocus[i].width = 128.0f;
+							giantFireLocus[i].height = 128.0f;
+							giantFireLocus[i].isDisplay = false;
+						}
+
+						//回転させる
+						giantFireLocus[i].rotation += 0.02f;
+
+						//移動させる
+						if (player.pos.x <= giantFireLocus[i].pos.x)
+						{
 							//右
 							playerLocus[i].pos.x -= 0.1f;
-							playerLocus[i].pos.y += 0.01f;
-						} 
+							playerLocus[i].pos.y += 0.1f;
+						}
 						else
 						{
 							//左
@@ -1998,175 +2282,95 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						}
 					}
 
-					if (!smallFireLocus[i][j].isDisplay)
+					if (!giantFireLocus[i].isDisplay)
 					{
-						if (smallFire[i].isShot)
+						if (giantFire.isShot)
 						{
 							//ランダムな位置に表示させる
-							smallFireLocus[i][j].pos.x = rand() % 16 - 8 + smallFire[i].pos.x + smallFire[i].width / 2.0f;
-							smallFireLocus[i][j].pos.y = rand() % 16 - 8 + ToScreen(smallFire[i].pos.y) + smallFire[i].height / 2.0f;
+							giantFireLocus[i].pos.x = rand() % 64 - 32 + giantFire.pos.x + giantFire.width / 2.0f;
+							giantFireLocus[i].pos.y = rand() % 64 - 32 + ToScreen(giantFire.pos.y) + giantFire.height / 2.0f;
 						}
 					}
 
 					//パーティクル軌跡
-					if (smallFire[i].isShot)
+					if (giantFire.isShot)
 					{
-						if (smallFireLocusCoolTime >= 0)
+						if (giantFireLocusCoolTime >= 0)
 						{
-							smallFireLocusCoolTime--;
+							giantFireLocusCoolTime--;
 						}
 						else
 						{
-							smallFireLocus[i][j].isDisplay = true;
-							smallFireLocusCoolTime = 240;
+							giantFireLocus[i].isDisplay = true;
+							giantFireLocusCoolTime = 240;
 						}
 					}
 
-					if (smallFireLocus[i][j].width <= 20.0f)
+					if (giantFireLocus[i].width <= 96.0f)
 					{
-						if (smallFireLocus[i][j].color <= 0xFF8800FF) 
+						if (giantFireLocus[i].color <= 0xFF8800FF)
 						{
-							smallFireLocus[i][j].color += 0x00110000;
+							giantFireLocus[i].color += 0x00110000;
 						}
-					}
-
-					//反射すると色が変わる
-					if (smallFire[i].isReflection)
-					{
-						smallFireLocus[i][j].color = 0x0000FFFF;
 					}
 
 					//弾が消えるときにエフェクトも消える
-					if (!smallFire[i].isShot)
+					if (!giantFire.isShot)
 					{
-						smallFireLocus[i][j].isDisplay = false;
-						smallFireLocus[i][j].color = 0xFF0000FF;
-					}
-				}
-			}
-
-			//--------------------巨大火球の軌跡---------------------//
-			for (int i = 0; i < giantFireLocusMax; i++)
-			{
-				if (giantFireLocus[i].isDisplay)
-				{
-					//段々小さくなる
-					if (giantFireLocus[i].width >= 0.0f && giantFireLocus[i].height >= 0.0f) 
-					{
-						giantFireLocus[i].width -= rand() % 10;
-						giantFireLocus[i].height -= rand() % 10;
-					}
-					else
-					{
-						giantFireLocus[i].width = 128.0f;
-						giantFireLocus[i].height = 128.0f;
 						giantFireLocus[i].isDisplay = false;
-					}
-
-					//回転させる
-					giantFireLocus[i].rotation += 0.02f;
-
-					//移動させる
-					if (player.pos.x <= giantFireLocus[i].pos.x)
-					{
-						//右
-						playerLocus[i].pos.x -= 0.1f;
-						playerLocus[i].pos.y += 0.1f;
-					} 
-					else
-					{
-						//左
-						playerLocus[i].pos.x += 0.1f;
-						playerLocus[i].pos.y += 0.01f;
+						giantFireLocus[i].color = 0xFF0000FF;
 					}
 				}
 
-				if (!giantFireLocus[i].isDisplay)
+
+
+				//--------------------光の粉---------------------//
+				for (int i = 0; i < powderLocusMax; i++)
 				{
-					if (giantFire.isShot) 
+
+					if (powderLocus[i].isDisplay)
+					{
+						//段々小さくなる
+						if (powderLocus[i].width >= 0.0f && powderLocus[i].height >= 0.0f) {
+							powderLocus[i].width -= 0.05f;
+							powderLocus[i].height -= 0.05f;
+						}
+						else
+						{
+							powderLocus[i].width = 10.0f;
+							powderLocus[i].height = 10.0f;
+							powderLocus[i].isDisplay = false;
+						}
+
+						//回転させる
+						powderLocus[i].rotation += 0.02f;
+
+						//移動させる
+
+						powderLocus[i].pos.y -= 0.7f;
+
+						if (powderLocus[i].pos.y <= 0.0f)
+						{
+							powderLocus[i].isDisplay = false;
+						}
+
+					}
+
+					if (!powderLocus[i].isDisplay)
 					{
 						//ランダムな位置に表示させる
-						giantFireLocus[i].pos.x = rand() % 64 - 32 + giantFire.pos.x + giantFire.width / 2.0f;
-						giantFireLocus[i].pos.y = rand() % 64 - 32 + ToScreen(giantFire.pos.y) + giantFire.height / 2.0f;
+						powderLocus[i].pos.x = static_cast<float>(rand() % 1280);
+						powderLocus[i].pos.y = 600.0f;
 					}
-				}
 
-				//パーティクル軌跡
-				if (giantFire.isShot)
-				{
-					if (giantFireLocusCoolTime >= 0)
-					{
-						giantFireLocusCoolTime--;
+					if (powderLocusCoolTime >= 0) {
+						powderLocusCoolTime--;
 					}
 					else
 					{
-						giantFireLocus[i].isDisplay = true;
-						giantFireLocusCoolTime = 240;
+						powderLocus[i].isDisplay = true;
+						powderLocusCoolTime = 240;
 					}
-				}
-
-				if (giantFireLocus[i].width <= 96.0f)
-				{
-					if (giantFireLocus[i].color <= 0xFF8800FF)
-					{
-						giantFireLocus[i].color += 0x00110000;
-					}
-				}
-
-				//弾が消えるときにエフェクトも消える
-				if (!giantFire.isShot)
-				{
-					giantFireLocus[i].isDisplay = false;
-					giantFireLocus[i].color = 0xFF0000FF;
-				}
-			}
-
-			//--------------------光の粉---------------------//
-			for (int i = 0; i < powderLocusMax; i++)
-			{
-
-				if (powderLocus[i].isDisplay)
-				{
-					//段々小さくなる
-					if (powderLocus[i].width >= 0.0f && powderLocus[i].height >= 0.0f) {
-						powderLocus[i].width -= 0.05f;
-						powderLocus[i].height -= 0.05f;
-					}
-					else
-					{
-						powderLocus[i].width = 10.0f;
-						powderLocus[i].height = 10.0f;
-						powderLocus[i].isDisplay = false;
-					}
-
-					//回転させる
-					powderLocus[i].rotation += 0.02f;
-
-					//移動させる
-
-					powderLocus[i].pos.y -= 0.7f;
-
-					if (powderLocus[i].pos.y <= 0.0f)
-					{
-						powderLocus[i].isDisplay = false;
-					}
-
-				}
-
-				if (!powderLocus[i].isDisplay)
-				{
-					//ランダムな位置に表示させる
-					powderLocus[i].pos.x = static_cast<float>(rand() % 1280);
-					powderLocus[i].pos.y = 600.0f;
-				}
-
-				if (powderLocusCoolTime >= 0) {
-					powderLocusCoolTime--;
-				}
-				else
-				{
-					powderLocus[i].isDisplay = true;
-					powderLocusCoolTime = 240;
 				}
 			}
 
@@ -2184,193 +2388,213 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		if (scene == GAMEPLAY)
 		{
-
-			//---------------------パーティクル-----------------------//
-
-			//光の粉
-			for (int i = 0; i < powderLocusMax; i++)
+			if (phase == ONE || phase == THREE)
 			{
-				if (powderLocus[i].isDisplay)
+				//---------------------パーティクル-----------------------//
+
+				//光の粉
+				for (int i = 0; i < powderLocusMax; i++)
 				{
-					Novice::DrawBox(
-						static_cast<int>(powderLocus[i].pos.x),
-						static_cast<int>(powderLocus[i].pos.y),
-						static_cast<int>(powderLocus[i].width),
-						static_cast<int>(powderLocus[i].height),
-						powderLocus[i].rotation, powderLocus[i].color, kFillModeSolid);
+					if (powderLocus[i].isDisplay)
+					{
+						Novice::DrawBox(
+							static_cast<int>(powderLocus[i].pos.x),
+							static_cast<int>(powderLocus[i].pos.y),
+							static_cast<int>(powderLocus[i].width),
+							static_cast<int>(powderLocus[i].height),
+							powderLocus[i].rotation, powderLocus[i].color, kFillModeSolid);
+					}
 				}
-			}
 
-			//プレイヤーの軌跡
-			for (int i = 0; i < playerLocusMax; i++)
-			{
-				if (playerLocus[i].isDisplay)
+				//プレイヤーの軌跡
+				for (int i = 0; i < playerLocusMax; i++)
 				{
-					Novice::DrawBox
-					(
-						static_cast<int>(playerLocus[i].pos.x),
-						static_cast<int>(playerLocus[i].pos.y),
-						static_cast<int>(playerLocus[i].width),
-						static_cast<int>(playerLocus[i].height),
-						playerLocus[i].rotation, playerLocus[i].color, kFillModeWireFrame
-					);
+					if (playerLocus[i].isDisplay)
+					{
+						Novice::DrawBox
+						(
+							static_cast<int>(playerLocus[i].pos.x),
+							static_cast<int>(playerLocus[i].pos.y),
+							static_cast<int>(playerLocus[i].width),
+							static_cast<int>(playerLocus[i].height),
+							playerLocus[i].rotation, playerLocus[i].color, kFillModeWireFrame
+						);
+					}
 				}
-			}
 
-			//小炎の軌跡
-			for (int i = 0; i < kMaxSmallFire; i++)
-			{
-				for (int j = 0; j < smallFireLocusMax; j++)
+				//小炎の軌跡
+				for (int i = 0; i < kMaxSmallFire; i++)
 				{
-					if (smallFireLocus[i][j].isDisplay)
+					for (int j = 0; j < smallFireLocusMax; j++)
+					{
+						if (smallFireLocus[i][j].isDisplay)
+						{
+							Novice::DrawEllipse
+							(
+								static_cast<int>(smallFireLocus[i][j].pos.x),
+								static_cast<int>(smallFireLocus[i][j].pos.y),
+								static_cast<int>(smallFireLocus[i][j].width / 2.0f),
+								static_cast<int>(smallFireLocus[i][j].height / 2.0f),
+								smallFireLocus[i][j].rotation, smallFireLocus[i][j].color, kFillModeSolid
+							);
+						}
+					}
+				}
+
+				//巨大火球の軌跡
+				for (int i = 0; i < giantFireLocusMax; i++)
+				{
+					if (giantFireLocus[i].isDisplay)
 					{
 						Novice::DrawEllipse
 						(
-							static_cast<int>(smallFireLocus[i][j].pos.x),
-							static_cast<int>(smallFireLocus[i][j].pos.y),
-							static_cast<int>(smallFireLocus[i][j].width / 2.0f),
-							static_cast<int>(smallFireLocus[i][j].height / 2.0f),
-							smallFireLocus[i][j].rotation, smallFireLocus[i][j].color, kFillModeSolid
+							static_cast<int>(giantFireLocus[i].pos.x),
+							static_cast<int>(giantFireLocus[i].pos.y),
+							static_cast<int>(giantFireLocus[i].width / 2.0f),
+							static_cast<int>(giantFireLocus[i].height / 2.0f),
+							giantFireLocus[i].rotation, giantFireLocus[i].color, kFillModeSolid
 						);
 					}
 				}
-			}
 
-			//巨大火球の軌跡
-			for (int i = 0; i < giantFireLocusMax; i++)
-			{
-				if (giantFireLocus[i].isDisplay)
+				//地面 
+				Novice::DrawLine(0, 620, 1280, 620, RED);
+
+				if (phase == ONE)
 				{
-					Novice::DrawEllipse
-					(
-						static_cast<int>(giantFireLocus[i].pos.x),
-						static_cast<int>(giantFireLocus[i].pos.y),
-						static_cast<int>(giantFireLocus[i].width / 2.0f),
-						static_cast<int>(giantFireLocus[i].height / 2.0f),
-						giantFireLocus[i].rotation, giantFireLocus[i].color, kFillModeSolid
-					);
-				}
-			}
+					if (boss.form == DRAGON)
+					{
+						if (!boss.isFlying && !boss.isHovering)
+						{
+							// ボス
+							if (boss.direction == LEFT)
+							{
+								Novice::DrawSpriteRect
+								(
+									static_cast<int>(boss.pos.x - (boss1FrameImageWidth / 2.0f - boss.width / 2.0f)),
+									static_cast<int>(ToScreen(boss.pos.y + (boss1ImageHeight - boss.height))),
+									640 * bossAnimeCount,
+									0,
+									static_cast<int>(boss1FrameImageWidth),
+									static_cast<int>(boss1ImageHeight),
+									ghBoss1Left,
+									boss1FrameImageWidth / boss1MaxImageWidth, 1,
+									0, 0xFFFFFFFF
+								);
+							}
+							else if (boss.direction == RIGHT)
+							{
+								Novice::DrawSpriteRect
+								(
+									static_cast<int>(boss.pos.x - (boss1FrameImageWidth / 2.0f - boss.width / 2.0f)),
+									static_cast<int>(ToScreen(boss.pos.y + (boss1ImageHeight - boss.height))),
+									640 * bossAnimeCount,
+									0,
+									static_cast<int>(boss1FrameImageWidth),
+									static_cast<int>(boss1ImageHeight),
+									ghBoss1Right,
+									boss1FrameImageWidth / boss1MaxImageWidth, 1,
+									0, 0xFFFFFFFF
+								);
+							}
+						}
 
-			//地面 
-			Novice::DrawLine(0, 620, 1280, 620, RED);
+						if (boss.isFlying)
+						{
+							if (boss.direction == LEFT)
+							{
+								Novice::DrawSpriteRect
+								(
+									static_cast<int>(boss.pos.x - (boss1FlyFrameWidth / 2.0f - boss.width / 2.0f)),
+									static_cast<int>(ToScreen(boss.pos.y + (boss1FlyImageHeight - boss.height))),
+									static_cast<int>(boss1FlyFrameWidth) * bossFlyAnimeCount,
+									0,
+									static_cast<int>(boss1FlyFrameWidth),
+									static_cast<int>(boss1FlyImageHeight),
+									ghBoss1FlyLeft,
+									boss1FlyFrameWidth / boss1FlyMaxWidth, 1,
+									0, 0xFFFFFFFF
+								);
+							}
+							else if (boss.direction == RIGHT)
+							{
+								Novice::DrawSpriteRect
+								(
+									static_cast<int>(boss.pos.x - (boss1FlyFrameWidth / 2.0f - boss.width / 2.0f)),
+									static_cast<int>(ToScreen(boss.pos.y + (boss1FlyImageHeight - boss.height))),
+									static_cast<int>(boss1FlyFrameWidth) * bossFlyAnimeCount,
+									0,
+									static_cast<int>(boss1FlyFrameWidth),
+									static_cast<int>(boss1FlyImageHeight),
+									ghBoss1FlyRight,
+									boss1FlyFrameWidth / boss1FlyMaxWidth, 1,
+									0, 0xFFFFFFFF
+								);
+							}
+						}
 
-			if (boss.form == 0)
-			{
-				if (!boss.isFlying && !boss.isHovering)
-				{
-					// ボス
-					if (boss.direction == LEFT)
-					{
-						Novice::DrawSpriteRect
-						(
-							static_cast<int>(boss.pos.x - (boss1FrameImageWidth / 2.0f - boss.width / 2.0f)),
-							static_cast<int>(ToScreen(boss.pos.y + (boss1ImageHeight - boss.height))),
-							640 * bossAnimeCount,
-							0,
-							static_cast<int>(boss1FrameImageWidth),
-							static_cast<int>(boss1ImageHeight),
-							ghBoss1Left,
-							boss1FrameImageWidth / boss1MaxImageWidth, 1,
-							0, 0xFFFFFFFF
-						);
+						if (attackTypeFirst == FLY)
+						{
+							if (boss.isHovering)
+							{
+								Novice::DrawSpriteRect
+								(
+									static_cast<int>(boss.pos.x - (boss1SkyFrameWidth / 2.0f - boss.width / 2.0f)),
+									static_cast<int>(ToScreen(boss.pos.y + (boss1SkyImageHeight - boss.height))),
+									static_cast<int>(boss1SkyFrameWidth) * bossSkyAnimeCount,
+									0,
+									static_cast<int>(boss1SkyFrameWidth),
+									static_cast<int>(boss1SkyImageHeight),
+									ghBoss1Sky,
+									boss1SkyFrameWidth / boss1MaxImageWidth, 1,
+									0, 0xFFFFFFFF
+								);
+							}
+						}
 					}
-					else if (boss.direction == RIGHT)
+					else if (boss.form == HUMAN)
 					{
-						Novice::DrawSpriteRect
-						(
-							static_cast<int>(boss.pos.x - (boss1FrameImageWidth / 2.0f - boss.width / 2.0f)),
-							static_cast<int>(ToScreen(boss.pos.y + (boss1ImageHeight - boss.height))),
-							640 * bossAnimeCount,
-							0,
-							static_cast<int>(boss1FrameImageWidth),
-							static_cast<int>(boss1ImageHeight),
-							ghBoss1Right,
-							boss1FrameImageWidth / boss1MaxImageWidth, 1,
-							0, 0xFFFFFFFF
-						);
+						if (!boss.isFalling)
+						{
+							Novice::DrawSpriteRect
+							(
+								static_cast<int>(boss.pos.x - (boss2TempFrameWidth / 2.0f - boss.width / 2.0f)),
+								static_cast<int>(ToScreen(boss.pos.y + (boss2TempImageHeight - boss.height))),
+								static_cast<int>(boss2TempFrameWidth) * boss2TempAnimeCount,
+								0,
+								static_cast<int>(boss2TempFrameWidth),
+								static_cast<int>(boss2TempImageHeight),
+								ghBoss2Temp,
+								boss2TempFrameWidth / boss2TempMaxImageWidth, 1,
+								0, 0xFFFFFFFF
+							);
+						}
+						else
+						{
+							Novice::DrawSprite
+							(
+								static_cast<int>(boss.pos.x - (boss2FallWidth / 2.0f - boss.width / 2.0f)),
+								static_cast<int>(ToScreen(boss.pos.y + (boss2FallHeight - boss.height))),
+								ghBoss2Fall,
+								1, 1,
+								0.0f, 0xFFFFFFFF
+							);
+						}
 					}
 				}
-
-				if (boss.isFlying)
-				{
-					if (boss.direction == LEFT)
-					{
-						Novice::DrawSpriteRect
-						(
-							static_cast<int>(boss.pos.x - (boss1FlyFrameWidth / 2.0f - boss.width / 2.0f)),
-							static_cast<int>(ToScreen(boss.pos.y + (boss1FlyImageHeight - boss.height))),
-							static_cast<int>(boss1FlyFrameWidth) * bossFlyAnimeCount,
-							0,
-							static_cast<int>(boss1FlyFrameWidth),
-							static_cast<int>(boss1FlyImageHeight),
-							ghBoss1FlyLeft,
-							boss1FlyFrameWidth / boss1FlyMaxWidth, 1,
-							0, 0xFFFFFFFF
-						);
-					}
-					else if (boss.direction == RIGHT)
-					{
-						Novice::DrawSpriteRect
-						(
-							static_cast<int>(boss.pos.x - (boss1FlyFrameWidth / 2.0f - boss.width / 2.0f)),
-							static_cast<int>(ToScreen(boss.pos.y + (boss1FlyImageHeight - boss.height))),
-							static_cast<int>(boss1FlyFrameWidth) * bossFlyAnimeCount,
-							0,
-							static_cast<int>(boss1FlyFrameWidth),
-							static_cast<int>(boss1FlyImageHeight),
-							ghBoss1FlyRight,
-							boss1FlyFrameWidth / boss1FlyMaxWidth, 1,
-							0, 0xFFFFFFFF
-						);
-					}
-				}
-
-				if (attackTypeFirst == 5)
-				{
-					if (boss.isHovering)
-					{
-						Novice::DrawSpriteRect
-						(
-							static_cast<int>(boss.pos.x - (boss1SkyFrameWidth / 2.0f - boss.width / 2.0f)),
-							static_cast<int>(ToScreen(boss.pos.y + (boss1SkyImageHeight - boss.height))),
-							static_cast<int>(boss1SkyFrameWidth) * bossSkyAnimeCount,
-							0,
-							static_cast<int>(boss1SkyFrameWidth),
-							static_cast<int>(boss1SkyImageHeight),
-							ghBoss1Sky,
-							boss1SkyFrameWidth / boss1MaxImageWidth, 1,
-							0, 0xFFFFFFFF
-						);
-					}
-				}
-			}
-			else if (boss.form == 1)
-			{
-				if (!boss.isfalling)
+				else if (phase == THREE)
 				{
 					Novice::DrawSpriteRect
 					(
 						static_cast<int>(boss.pos.x - (boss2TempFrameWidth / 2.0f - boss.width / 2.0f)),
 						static_cast<int>(ToScreen(boss.pos.y + (boss2TempImageHeight - boss.height))),
-						static_cast<int>(boss2TempFrameWidth) * bossFlyAnimeCount,
+						static_cast<int>(boss2TempFrameWidth) * boss2TempAnimeCount,
 						0,
 						static_cast<int>(boss2TempFrameWidth),
 						static_cast<int>(boss2TempImageHeight),
-						ghBoss2Temp,
+						ghBoss2TempBig,
 						boss2TempFrameWidth / boss2TempMaxImageWidth, 1,
 						0, 0xFFFFFFFF
-					);
-				}
-				else
-				{
-					Novice::DrawSprite
-					(
-						static_cast<int>(boss.pos.x - (boss2FallWidth / 2.0f - boss.width / 2.0f)),
-						static_cast<int>(ToScreen(boss.pos.y + (boss2FallHeight - boss.height))),
-						ghBoss2Fall,
-						1, 1,
-						0.0f, 0xFFFFFFFF
 					);
 				}
 			}
@@ -2411,7 +2635,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					);
 				}
 			} 
-			else if (player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction)
+
+			if (player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction)
 			{
 				//移動している時のみ
 				if (!player.isDirections)
@@ -2519,368 +2744,373 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					);
 				}
 			}
-			else if (!player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
-			{ 
-				//弱攻撃している時のみ
-				if (!player.isDirections)
-				{
-					//プレイヤー右
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y)),
-						128 * ghPlayerAtkSFrameCount,
-						0,
-						static_cast<int>(ghPlayerAtkSWidth),
-						static_cast<int>(ghPlayerAtkSHeight),
-						ghPlayerAtkS[0],
-						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				} else
-				{
-					//プレイヤー左
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y)),
-						128 * ghPlayerAtkSFrameCount,
-						0,
-						static_cast<int>(ghPlayerAtkSWidth),
-						static_cast<int>(ghPlayerAtkSHeight),
-						ghPlayerAtkS[1],
-						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				}
-			} 
-			else if (player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
-			{ 
-				//移動中に弱攻撃している時のみ
-				if (!player.isDirections)
-				{
-					//プレイヤー右
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y)),
-						128 * ghPlayerAtkSFrameCount,
-						0,
-						static_cast<int>(ghPlayerAtkSWidth),
-						static_cast<int>(ghPlayerAtkSHeight),
-						ghPlayerAtkS[0],
-						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				} 
-				else
-				{
-					//プレイヤー左
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y)),
-						128 * ghPlayerAtkSFrameCount,
-						0,
-						static_cast<int>(ghPlayerAtkSWidth),
-						static_cast<int>(ghPlayerAtkSHeight),
-						ghPlayerAtkS[1],
-						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				}
-			} 
-			else if (!player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
-			{ 
-				//強攻撃している時のみ
-				if (!player.isDirections)
-				{
-					//プレイヤー右
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y) - 32.0f),
-						160 * ghPlayerAtkLFrameCount,
-						0,
-						static_cast<int>(ghPlayerAtkLWidth),
-						static_cast<int>(ghPlayerAtkLHeight),
-						ghPlayerAtkL[0],
-						ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				}
-				else
-				{
-					//プレイヤー左
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y) - 32.0f),
-						160 * ghPlayerAtkLFrameCount,
-						0,
-						static_cast<int>(ghPlayerAtkLWidth),
-						static_cast<int>(ghPlayerAtkLHeight),
-						ghPlayerAtkL[1],
-						ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				}
-			} 
-			else if (player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
-			{
-				//移動中に強攻撃している時のみ
-				if (!player.isDirections)
-				{
-					//プレイヤー右
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y) - 32.0f),
-						160 * ghPlayerAtkLFrameCount,
-						0,
-						static_cast<int>(ghPlayerAtkLWidth),
-						static_cast<int>(ghPlayerAtkLHeight),
-						ghPlayerAtkL[0],
-						ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				} 
-				else
-				{
-					//プレイヤー左
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y) - 32.0f),
-						160 * ghPlayerAtkLFrameCount,
-						0,
-						static_cast<int>(ghPlayerAtkLWidth),
-						static_cast<int>(ghPlayerAtkLHeight),
-						ghPlayerAtkL[1],
-						ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				}
-			} 
-			else if (!player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
-			{ 
-				//ジャンプ弱攻撃している時のみ
-				if (!player.isDirections)
-				{
-					//プレイヤー右
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y)),
-						128 * ghPlayerAtkSFrameCount,
-						0,
-						static_cast<int>(ghPlayerAtkSWidth),
-						static_cast<int>(ghPlayerAtkSHeight),
-						ghPlayerAtkS[0],
-						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				} 
-				else
-				{
-					//プレイヤー左
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y)),
-						128 * ghPlayerAtkSFrameCount,
-						0,
-						static_cast<int>(ghPlayerAtkSWidth),
-						static_cast<int>(ghPlayerAtkSHeight),
-						ghPlayerAtkS[1],
-						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				}
-			} 
-			else if (player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
-			{ 
-				//移動中にジャンプ弱攻撃している時のみ
-				if (!player.isDirections)
-				{
-					//プレイヤー右
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y)),
-						128 * ghPlayerAtkSFrameCount,
-						0,
-						static_cast<int>(ghPlayerAtkSWidth),
-						static_cast<int>(ghPlayerAtkSHeight),
-						ghPlayerAtkS[0],
-						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				}
-				else
-				{
-					//プレイヤー左
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y)),
-						128 * ghPlayerAtkSFrameCount,
-						0,
-						static_cast<int>(ghPlayerAtkSWidth),
-						static_cast<int>(ghPlayerAtkSHeight),
-						ghPlayerAtkS[1],
-						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				}
-			} 
-			else if (!player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
-			{ 
-				//ジャンプ強攻撃している時のみ
-				if (!player.isDirections)
-				{
-					//プレイヤー右
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y)),
-						160 * ghPlayerJumpAtkLFrameCount,
-						0,
-						static_cast<int>(ghPlayerJumpAtkLWidth),
-						static_cast<int>(ghPlayerJumpAtkLHeight),
-						ghPlayerJumpAtkL[0],
-						ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				}
-				else
-				{
-					//プレイヤー左
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y)),
-						160 * ghPlayerJumpAtkLFrameCount,
-						0,
-						static_cast<int>(ghPlayerJumpAtkLWidth),
-						static_cast<int>(ghPlayerJumpAtkLHeight),
-						ghPlayerJumpAtkL[1],
-						ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				}
-			}
-			else if (player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
-			{ 
-				//移動中にジャンプ強攻撃している時のみ
-				if (!player.isDirections)
-				{
-					//プレイヤー右
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y)),
-						160 * ghPlayerJumpAtkLFrameCount,
-						0,
-						static_cast<int>(ghPlayerJumpAtkLWidth),
-						static_cast<int>(ghPlayerJumpAtkLHeight),
-						ghPlayerJumpAtkL[0],
-						ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				}
-				else
-				{
-					//プレイヤー左
-					Novice::DrawSpriteRect
-					(
-						static_cast<int>(player.pos.x),
-						static_cast<int>(ToScreen(player.pos.y)),
-						160 * ghPlayerJumpAtkLFrameCount,
-						0,
-						static_cast<int>(ghPlayerJumpAtkLWidth),
-						static_cast<int>(ghPlayerJumpAtkLHeight),
-						ghPlayerJumpAtkL[1],
-						ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
-						0, 0xFFFFFFFF
-					);
-				}
-			}
 
-			for (int i = 0; i < kMaxSmallFire; i++)
+			if (phase == ONE || phase == THREE)
 			{
+				if (!player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
+				{
+					//弱攻撃している時のみ
+					if (!player.isDirections)
+					{
+						//プレイヤー右
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y)),
+							128 * ghPlayerAtkSFrameCount,
+							0,
+							static_cast<int>(ghPlayerAtkSWidth),
+							static_cast<int>(ghPlayerAtkSHeight),
+							ghPlayerAtkS[0],
+							ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+					else
+					{
+						//プレイヤー左
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y)),
+							128 * ghPlayerAtkSFrameCount,
+							0,
+							static_cast<int>(ghPlayerAtkSWidth),
+							static_cast<int>(ghPlayerAtkSHeight),
+							ghPlayerAtkS[1],
+							ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+				}
+				else if (player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
+				{
+					//移動中に弱攻撃している時のみ
+					if (!player.isDirections)
+					{
+						//プレイヤー右
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y)),
+							128 * ghPlayerAtkSFrameCount,
+							0,
+							static_cast<int>(ghPlayerAtkSWidth),
+							static_cast<int>(ghPlayerAtkSHeight),
+							ghPlayerAtkS[0],
+							ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+					else
+					{
+						//プレイヤー左
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y)),
+							128 * ghPlayerAtkSFrameCount,
+							0,
+							static_cast<int>(ghPlayerAtkSWidth),
+							static_cast<int>(ghPlayerAtkSHeight),
+							ghPlayerAtkS[1],
+							ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+				}
+				else if (!player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
+				{
+					//強攻撃している時のみ
+					if (!player.isDirections)
+					{
+						//プレイヤー右
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y) - 32.0f),
+							160 * ghPlayerAtkLFrameCount,
+							0,
+							static_cast<int>(ghPlayerAtkLWidth),
+							static_cast<int>(ghPlayerAtkLHeight),
+							ghPlayerAtkL[0],
+							ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+					else
+					{
+						//プレイヤー左
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y) - 32.0f),
+							160 * ghPlayerAtkLFrameCount,
+							0,
+							static_cast<int>(ghPlayerAtkLWidth),
+							static_cast<int>(ghPlayerAtkLHeight),
+							ghPlayerAtkL[1],
+							ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+				}
+				else if (player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
+				{
+					//移動中に強攻撃している時のみ
+					if (!player.isDirections)
+					{
+						//プレイヤー右
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y) - 32.0f),
+							160 * ghPlayerAtkLFrameCount,
+							0,
+							static_cast<int>(ghPlayerAtkLWidth),
+							static_cast<int>(ghPlayerAtkLHeight),
+							ghPlayerAtkL[0],
+							ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+					else
+					{
+						//プレイヤー左
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y) - 32.0f),
+							160 * ghPlayerAtkLFrameCount,
+							0,
+							static_cast<int>(ghPlayerAtkLWidth),
+							static_cast<int>(ghPlayerAtkLHeight),
+							ghPlayerAtkL[1],
+							ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+				}
+				else if (!player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
+				{
+					//ジャンプ弱攻撃している時のみ
+					if (!player.isDirections)
+					{
+						//プレイヤー右
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y)),
+							128 * ghPlayerAtkSFrameCount,
+							0,
+							static_cast<int>(ghPlayerAtkSWidth),
+							static_cast<int>(ghPlayerAtkSHeight),
+							ghPlayerAtkS[0],
+							ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+					else
+					{
+						//プレイヤー左
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y)),
+							128 * ghPlayerAtkSFrameCount,
+							0,
+							static_cast<int>(ghPlayerAtkSWidth),
+							static_cast<int>(ghPlayerAtkSHeight),
+							ghPlayerAtkS[1],
+							ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+				}
+				else if (player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
+				{
+					//移動中にジャンプ弱攻撃している時のみ
+					if (!player.isDirections)
+					{
+						//プレイヤー右
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y)),
+							128 * ghPlayerAtkSFrameCount,
+							0,
+							static_cast<int>(ghPlayerAtkSWidth),
+							static_cast<int>(ghPlayerAtkSHeight),
+							ghPlayerAtkS[0],
+							ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+					else
+					{
+						//プレイヤー左
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y)),
+							128 * ghPlayerAtkSFrameCount,
+							0,
+							static_cast<int>(ghPlayerAtkSWidth),
+							static_cast<int>(ghPlayerAtkSHeight),
+							ghPlayerAtkS[1],
+							ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+				}
+				else if (!player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
+				{
+					//ジャンプ強攻撃している時のみ
+					if (!player.isDirections)
+					{
+						//プレイヤー右
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y)),
+							160 * ghPlayerJumpAtkLFrameCount,
+							0,
+							static_cast<int>(ghPlayerJumpAtkLWidth),
+							static_cast<int>(ghPlayerJumpAtkLHeight),
+							ghPlayerJumpAtkL[0],
+							ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+					else
+					{
+						//プレイヤー左
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y)),
+							160 * ghPlayerJumpAtkLFrameCount,
+							0,
+							static_cast<int>(ghPlayerJumpAtkLWidth),
+							static_cast<int>(ghPlayerJumpAtkLHeight),
+							ghPlayerJumpAtkL[1],
+							ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+				}
+				else if (player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
+				{
+					//移動中にジャンプ強攻撃している時のみ
+					if (!player.isDirections)
+					{
+						//プレイヤー右
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y)),
+							160 * ghPlayerJumpAtkLFrameCount,
+							0,
+							static_cast<int>(ghPlayerJumpAtkLWidth),
+							static_cast<int>(ghPlayerJumpAtkLHeight),
+							ghPlayerJumpAtkL[0],
+							ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+					else
+					{
+						//プレイヤー左
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(player.pos.x),
+							static_cast<int>(ToScreen(player.pos.y)),
+							160 * ghPlayerJumpAtkLFrameCount,
+							0,
+							static_cast<int>(ghPlayerJumpAtkLWidth),
+							static_cast<int>(ghPlayerJumpAtkLHeight),
+							ghPlayerJumpAtkL[1],
+							ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+				}
+
 				// 小炎攻撃
-				if (smallFire[i].isShot)
+				for (int i = 0; i < kMaxSmallFire; i++)
+				{
+					if (smallFire[i].isShot)
+					{
+						Novice::DrawBox(
+							static_cast<int>(smallFire[i].pos.x),
+							static_cast<int>(ToScreen(smallFire[i].pos.y)),
+							static_cast<int>(smallFire[i].width),
+							static_cast<int>(smallFire[i].height),
+							0.0f, RED, kFillModeWireFrame);
+					}
+				}
+
+				// 巨大火球
+				if (giantFire.isShot)
 				{
 					Novice::DrawBox(
-						static_cast<int>(smallFire[i].pos.x),
-						static_cast<int>(ToScreen(smallFire[i].pos.y)),
-						static_cast<int>(smallFire[i].width),
-						static_cast<int>(smallFire[i].height),
+						static_cast<int>(giantFire.pos.x),
+						static_cast<int>(ToScreen(giantFire.pos.y)),
+						static_cast<int>(giantFire.width),
+						static_cast<int>(giantFire.height),
 						0.0f, RED, kFillModeWireFrame);
 				}
-			}
 
-			// 巨大火球
-			if (giantFire.isShot)
-			{
-				Novice::DrawBox(
-					static_cast<int>(giantFire.pos.x),
-					static_cast<int>(ToScreen(giantFire.pos.y)),
-					static_cast<int>(giantFire.width),
-					static_cast<int>(giantFire.height),
-					0.0f, RED, kFillModeWireFrame);
-			}
+				// 爆発
+				if (explosion.isShot)
+				{
+					Novice::DrawSpriteRect
+					(
+						static_cast<int>(explosion.pos.x),
+						static_cast<int>(ToScreen(explosion.pos.y + 384.0f)),
+						512 * explosionAnimeCount,
+						0,
+						static_cast<int>(explosionFrameWidth),
+						static_cast<int>(explosionImageHeight),
+						ghExplosion,
+						explosionFrameWidth / explosionMaxImageWidth, 1,
+						0, 0xFFFFFFFF
+					);
+				}
 
-			// 爆発
-			if (explosion.isShot)
-			{
-				Novice::DrawSpriteRect
-				(
-					static_cast<int>(explosion.pos.x),
-					static_cast<int>(ToScreen(explosion.pos.y + 384.0f)),
-					512 * explosionAnimeCount,
-					0,
-					static_cast<int>(explosionFrameWidth),
-					static_cast<int>(explosionImageHeight),
-					ghExplosion,
-					explosionFrameWidth / explosionMaxImageWidth, 1,
-					0, 0xFFFFFFFF
-				);
-			}
+				if (shortSword.isReaction) //短剣の判定(持続時)
+				{
+					Novice::DrawBox
+					(
+						static_cast<int>(shortSword.pos.x),
+						static_cast<int>(ToScreen(shortSword.pos.y)),
+						static_cast<int>(shortSword.width),
+						static_cast<int>(shortSword.height),
+						0.0f, 0xFF000055, kFillModeSolid
+					);
+				}
 
-			if (shortSword.isReaction) //短剣の判定(持続時)
-			{
-				Novice::DrawBox
-				(
-					static_cast<int>(shortSword.pos.x),
-					static_cast<int>(ToScreen(shortSword.pos.y)),
-					static_cast<int>(shortSword.width),
-					static_cast<int>(shortSword.height),
-					0.0f, 0xFF000055, kFillModeSolid
-				);
-			}
+				if (longSword.isReaction) //大剣の判定(持続時)
+				{
+					Novice::DrawBox
+					(
+						static_cast<int>(longSword.pos.x),
+						static_cast<int>(ToScreen(longSword.pos.y)),
+						static_cast<int>(longSword.width),
+						static_cast<int>(longSword.height),
+						0.0f, 0x0000FF55, kFillModeSolid
+					);
+				}
 
-			if (longSword.isReaction) //大剣の判定(持続時)
-			{
-				Novice::DrawBox
-				(
-					static_cast<int>(longSword.pos.x),
-					static_cast<int>(ToScreen(longSword.pos.y)),
-					static_cast<int>(longSword.width),
-					static_cast<int>(longSword.height),
-					0.0f, 0x0000FF55, kFillModeSolid
-				);
-			}
-
-			if (flash.isShot)
-			{
-				Novice::DrawBox(
-					static_cast<int>(flash.pos.x),
-					static_cast<int>(ToScreen(flash.pos.y)),
-					static_cast<int>(flash.width),
-					static_cast<int>(flash.height),
-					0.0f, 0XFFFFFFFF, kFillModeSolid);
+				if (flash.isShot)
+				{
+					Novice::DrawBox(
+						static_cast<int>(flash.pos.x),
+						static_cast<int>(ToScreen(flash.pos.y)),
+						static_cast<int>(flash.width),
+						static_cast<int>(flash.height),
+						0.0f, 0XFFFFFFFF, kFillModeSolid);
+				}
 			}
 
 			Novice::ScreenPrintf(100, 100, "isAttacking: %d", boss.isAttacking);
@@ -2893,9 +3123,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			Novice::ScreenPrintf(100, 240, "smallFire : %d", smallFire[7].isShot);
 			Novice::ScreenPrintf(100, 260, "player.isNodamage : %d", player.isNoDamage);
 			Novice::ScreenPrintf(100, 280, "player.noDamageTime : %d", player.noDamageTime);
-			Novice::ScreenPrintf(100, 300, "boss.isInScreen : %d", boss.isInScreen);
-			Novice::ScreenPrintf(100, 320, "explosion.pos.y : %f", explosion.pos.y);
-			Novice::ScreenPrintf(100, 340, "giantFire.pos.y : %f", giantFire.pos.y);
 
 			Novice::DrawBox(static_cast<int>(boss.pos.x),
 				static_cast<int>(ToScreen(boss.pos.y)),
