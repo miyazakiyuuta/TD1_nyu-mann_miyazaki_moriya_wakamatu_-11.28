@@ -2978,6 +2978,34 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				);
 			}
 
+			// 巨大火球
+			if (giantFire.isShot)
+			{
+				Novice::DrawBox(
+					static_cast<int>(giantFire.pos.x),
+					static_cast<int>(ToScreen(giantFire.pos.y)),
+					static_cast<int>(giantFire.width),
+					static_cast<int>(giantFire.height),
+					0.0f, RED, kFillModeWireFrame);
+			}
+
+			// 爆発
+			if (explosion.isShot)
+			{
+				Novice::DrawSpriteRect
+				(
+					static_cast<int>(explosion.pos.x),
+					static_cast<int>(ToScreen(explosion.pos.y + 384.0f)),
+					512 * explosionAnimeCount,
+					0,
+					static_cast<int>(explosionFrameWidth),
+					static_cast<int>(explosionImageHeight),
+					ghExplosion,
+					explosionFrameWidth / explosionMaxImageWidth, 1,
+					0, 0xFFFFFFFF
+				);
+			}
+
 			//ヒットエフェクト
 			for (int i = 0; i < hitEffectMax; i++)
 			{
