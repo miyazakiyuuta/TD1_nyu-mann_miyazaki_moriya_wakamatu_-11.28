@@ -1009,8 +1009,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						for (int i = 0; i < playerLocusMax; i++) {
 							if (playerLocusCoolTime >= 0) {
 								playerLocusCoolTime--;
-							}
-							else {
+							} else {
 								playerLocus[i].isDisplay = true;
 								playerLocusCoolTime = 240;
 							}
@@ -1027,8 +1026,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						for (int i = 0; i < playerLocusMax; i++) {
 							if (playerLocusCoolTime >= 0) {
 								playerLocusCoolTime--;
-							}
-							else {
+							} else {
 								playerLocus[i].isDisplay = true;
 								playerLocusCoolTime = 240;
 							}
@@ -1050,8 +1048,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						for (int i = 0; i < playerLocusMax; i++) {
 							if (playerLocusCoolTime >= 0) {
 								playerLocusCoolTime--;
-							}
-							else {
+							} else {
 								playerLocus[i].isDisplay = true;
 								playerLocusCoolTime = 240;
 							}
@@ -1063,8 +1060,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				if (keys[DIK_A] || keys[DIK_D] || padX >= 1 || padX <= -1)
 				{
 					player.isWalk = true;
-				}
-				else
+				} else
 				{
 					player.isWalk = false;
 				}
@@ -1126,8 +1122,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					if (shortSword.durationTime >= 0)
 					{
 						shortSword.durationTime--;
-					}
-					else
+					} else
 					{
 						shortSword.isAtk = false;
 						shortSword.durationTime = 30;
@@ -1139,8 +1134,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					if (longSword.durationTime >= 0)
 					{
 						longSword.durationTime--;
-					}
-					else
+					} else
 					{
 						longSword.isAtk = false;
 						longSword.durationTime = 30;
@@ -1158,8 +1152,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						player.gravity = 0.5f;
 						player.speed = 0.0f;
 						player.jump = 0.0f;
-					}
-					else
+					} else
 					{
 						shortSword.reactionTime = 30;
 						player.speed = 10.0f;
@@ -1175,8 +1168,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						player.gravity = 0.5f;
 						player.speed = 0.0f;
 						player.jump = 0.0f;
-					}
-					else
+					} else
 					{
 						longSword.reactionTime = 30;
 						player.speed = 10.0f;
@@ -1191,8 +1183,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				if (!player.isDirections)//右
 				{
 					shortSword.pos.x = player.pos.x + player.width;
-				}
-				else//左
+				} else//左
 				{
 					shortSword.pos.x = player.pos.x + player.width - shortSword.width;
 				}
@@ -1202,8 +1193,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				if (!player.isDirections)//右
 				{
 					longSword.pos.x = player.pos.x + player.width;
-				}
-				else//左
+				} else//左
 				{
 					longSword.pos.x = player.pos.x + player.width - longSword.width;
 				}
@@ -1213,8 +1203,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				if (player.pos.y - player.height > 0.0f)
 				{
 					player.pos.y += player.gravity -= 0.7f;
-				}
-				else
+				} else
 				{
 					player.gravity = 0.0f;
 				}
@@ -1247,8 +1236,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						if (boss.attackCoolTimer > 0)
 						{
 							boss.attackCoolTimer--;
-						}
-						else if (boss.attackCoolTimer <= 0)
+						} else if (boss.attackCoolTimer <= 0)
 						{
 							//初期化
 							for (int i = 0; i < kMaxSmallFire; ++i)
@@ -1271,18 +1259,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 								{
 									boss.hpCount = 0;
 									attackTypeFirst = 5;
-								}
-								else if (boss.hpCount > 0)
+								} else if (boss.hpCount > 0)
 								{
 									if (boss.hpCount <= 150)
 									{
 										attackTypeFirst = rand() % 5;
-									}
-									else if (boss.hpCount <= 190)
+									} else if (boss.hpCount <= 190)
 									{
 										attackTypeFirst = rand() % 4;
-									}
-									else if (boss.hpCount <= 200)
+									} else if (boss.hpCount <= 200)
 									{
 										attackTypeFirst = rand() % 3;
 									}
@@ -1295,17 +1280,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 									{
 										smallFire[i].speed = slowFireSpeed;
 									}
-								}
-								else if (attackTypeFirst == FASTFIRE)
-								{
-									for (int i = 0; i < kMaxFastFire; i++)
-									{
+                } else if (attackTypeFirst == FASTFIRE)
+                {
+                  for (int i = 0; i < kMaxFastFire; i++) // 攻撃の種類によって炎のスピードを変える
+                  {
 										smallFire[i].speed = fastFireSpeed;
 									}
-								}
-								else if (attackTypeFirst == MULTIPLEFIRE)
-								{
-									for (int i = 0; i < kMaxMultiple; i++)
+                }	else if (attackTypeFirst == MULTIPLEFIRE)
+                {
+								  for (int i = 0; i < kMaxMultiple; i++) // 攻撃の種類によって炎のスピードを変える
 									{
 										smallFire[i].speed = multipleFireSpeed;
 									}
@@ -1727,85 +1710,74 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				{
 					ghPlayerFrameCount++;
 				}
-			}
-			else if (player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			} else if (player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction)
 			{
 				//移動してる時
 				if (frameCount % (59 / 3) == 0)
 				{
 					ghPlayerWalkFrameCount++;
 				}
-			}
-			else if (!player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			} else if (!player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
 			{ //ジャンプしてる時
 				if (frameCount % (60 / 4) == 0)
 				{
 					ghPlayerJumpFrameCount++;
 				}
-			}
-			else if (player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			} else if (player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
 			{
 				//移動中にジャンプしてる時
 				if (frameCount % (59 / 4) == 0)
 				{
 					ghPlayerJumpFrameCount++;
 				}
-			}
-			else if (!player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
+			} else if (!player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
 			{ //弱攻撃をしてる時
 				if (frameCount % (30 / 1) == 0)
 				{
 					ghPlayerAtkSFrameCount++;
 				}
-			}
-			else if (player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
+			} else if (player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
 			{ //移動中に弱攻撃をしてる時
 				if (frameCount % (30 / 1) == 0)
 				{
 					ghPlayerAtkSFrameCount++;
 				}
-			}
-			else if (!player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
+			} else if (!player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
 			{
 				//強攻撃をしてる時
 				if (frameCount % (29 / 4) == 0)
 				{
 					ghPlayerAtkLFrameCount++;
 				}
-			}
-			else if (player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
+			} else if (player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
 			{
 				//移動中に強攻撃をしてる時
 				if (frameCount % (29 / 4) == 0)
 				{
 					ghPlayerAtkLFrameCount++;
 				}
-			}
-			else if (!player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
+			} else if (!player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
 			{
 				//ジャンプ弱攻撃をしてる時
 				if (frameCount % (29 / 1) == 0)
 				{
 					ghPlayerAtkSFrameCount++;
 				}
-			}
-			else if (player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
+			} else if (player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
 			{
 				//移動中にジャンプ弱攻撃をしてる時
 				if (frameCount % (29 / 1) == 0)
 				{
 					ghPlayerAtkSFrameCount++;
 				}
-			}
-			else if (!player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
+			} else if (!player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
 			{
 				//ジャンプ強攻撃をしてる時
 				if (frameCount % (29 / 4) == 0)
 				{
 					ghPlayerJumpAtkLFrameCount++;
 				}
-			}
-			else if (player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
+			} else if (player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
 			{
 				//移動中にジャンプ強攻撃をしてる時
 				if (frameCount % (29 / 4) == 0)
@@ -1880,10 +1852,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							{
 								smallFire[i].speed = 5.0f;
 							}
-						}
-					}
-					else if (attackTypeFirst == FASTFIRE)
-					{
+            }
+          } else if (attackTypeFirst == FASTFIRE)
+          {
 						if (!smallFire[i].isShot)
 						{
 							if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 21.0f)
@@ -1891,8 +1862,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 								smallFire[i].speed = 20.0f;
 							}
 						}
-					}
-					else if (attackTypeFirst == MULTIPLEFIRE)
+          } else if (attackTypeFirst == MULTIPLEFIRE)
 					{
 						if (!smallFire[i].isShot)
 						{
@@ -1923,7 +1893,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					}
 				}
 
-				//------------------小炎とプレイヤーの当たり判定----------------//
+			  //------------------小炎とプレイヤーの当たり判定----------------//
 
 				// 小炎全体の当たり判定
 				for (int i = 0; i < kMaxSmallFire; i++)
@@ -2106,8 +2076,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				{
 					player.noDamageTime = 0;
 					player.isNoDamage = false;
-				}
-			}
+        }
+      }
 
 #pragma endregion
 
@@ -2122,20 +2092,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				//--------------------プレイヤーの軌跡---------------------//
 				for (int i = 0; i < playerLocusMax; i++)
 				{
-
 					if (playerLocus[i].isDisplay)
-					{
-						//段々小さくなる
-						if (playerLocus[i].width >= 0.0f && playerLocus[i].height >= 0.0f) {
-							playerLocus[i].width -= 0.5f;
-							playerLocus[i].height -= 0.5f;
-						}
-						else
-						{
-							playerLocus[i].width = 16.0f;
-							playerLocus[i].height = 16.0f;
-							playerLocus[i].isDisplay = false;
-						}
+          {
+            //段々小さくなる
+            if (playerLocus[i].width >= 0.0f && playerLocus[i].height >= 0.0f) {
+                playerLocus[i].width -= 0.5f;
+                playerLocus[i].height -= 0.5f;
+            } else
+            {
+              playerLocus[i].width = 16.0f;
+              playerLocus[i].height = 16.0f;
+              playerLocus[i].isDisplay = false;
+            }
 
 						//回転させる
 						playerLocus[i].rotation += 0.02f;
@@ -2155,7 +2123,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						}
 					}
 
-					if (!playerLocus[i].isDisplay)
+          if (!playerLocus[i].isDisplay)
 					{
 						//ランダムな位置に表示させる
 						playerLocus[i].pos.x = rand() % 32 - 16 + player.pos.x + player.width / 2.0f;
@@ -2273,8 +2241,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							//右
 							playerLocus[i].pos.x -= 0.1f;
 							playerLocus[i].pos.y += 0.1f;
-						}
-						else
+						} else
 						{
 							//左
 							playerLocus[i].pos.x += 0.1f;
@@ -2298,8 +2265,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						if (giantFireLocusCoolTime >= 0)
 						{
 							giantFireLocusCoolTime--;
-						}
-						else
+						} else
 						{
 							giantFireLocus[i].isDisplay = true;
 							giantFireLocusCoolTime = 240;
@@ -2317,25 +2283,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					//弾が消えるときにエフェクトも消える
 					if (!giantFire.isShot)
 					{
-						giantFireLocus[i].isDisplay = false;
-						giantFireLocus[i].color = 0xFF0000FF;
+						smallFireLocus[i][j].isDisplay = false;
+						smallFireLocus[i][j].color = 0xFF0000FF;
 					}
-				}
-
-
-
+        }
+        
 				//--------------------光の粉---------------------//
 				for (int i = 0; i < powderLocusMax; i++)
 				{
-
+          
 					if (powderLocus[i].isDisplay)
 					{
 						//段々小さくなる
 						if (powderLocus[i].width >= 0.0f && powderLocus[i].height >= 0.0f) {
-							powderLocus[i].width -= 0.05f;
-							powderLocus[i].height -= 0.05f;
-						}
-						else
+                powderLocus[i].width -= 0.05f;
+                powderLocus[i].height -= 0.05f;
+						} else
 						{
 							powderLocus[i].width = 10.0f;
 							powderLocus[i].height = 10.0f;
@@ -2353,7 +2316,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						{
 							powderLocus[i].isDisplay = false;
 						}
-
 					}
 
 					if (!powderLocus[i].isDisplay)
@@ -2617,8 +2579,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerWidth / ghPlayerMaxWidth, 1,
 						0, 0xFFFFFFFF
 					);
-				} 
-				else if (player.isDirections)
+				} else if (player.isDirections)
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -2634,9 +2595,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, 0xFFFFFFFF
 					);
 				}
-			} 
-
-			if (player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			} else if (player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction)
 			{
 				//移動している時のみ
 				if (!player.isDirections)
@@ -2654,8 +2613,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerWalkWidth / ghPlayerWalkMaxWidth, 1,
 						0, 0xFFFFFFFF
 					);
-				} 
-				else
+				} else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -2671,8 +2629,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, 0xFFFFFFFF
 					);
 				}
-			} 
-			else if (!player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			} else if (!player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
 			{
 				//ジャンプしている時のみ
 				if (!player.isDirections)
@@ -2690,8 +2647,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerJumpWidth / ghPlayerJumpMaxWidth, 1,
 						0, 0xFFFFFFFF
 					);
-				}
-				else
+				} else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -2707,9 +2663,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, 0xFFFFFFFF
 					);
 				}
-			} 
-			else if (player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
-			{ 
+			} else if (player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			{
 				//移動中にジャンプしている時のみ
 				if (!player.isDirections)
 				{
@@ -2726,8 +2681,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerJumpWidth / ghPlayerJumpMaxWidth, 1,
 						0, 0xFFFFFFFF
 					);
-				}
-				else
+				} else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -2782,27 +2736,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							0, 0xFFFFFFFF
 						);
 					}
-				}
-				else if (player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
-				{
-					//移動中に弱攻撃している時のみ
-					if (!player.isDirections)
-					{
-						//プレイヤー右
-						Novice::DrawSpriteRect
-						(
-							static_cast<int>(player.pos.x),
-							static_cast<int>(ToScreen(player.pos.y)),
-							128 * ghPlayerAtkSFrameCount,
-							0,
-							static_cast<int>(ghPlayerAtkSWidth),
-							static_cast<int>(ghPlayerAtkSHeight),
-							ghPlayerAtkS[0],
-							ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
-							0, 0xFFFFFFFF
-						);
-					}
-					else
+        } else if (player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
+        {
+          //移動中に弱攻撃している時のみ
+          if (!player.isDirections)
+          {
+            //プレイヤー右
+            Novice::DrawSpriteRect
+            (
+              static_cast<int>(player.pos.x),
+              static_cast<int>(ToScreen(player.pos.y)),
+              128 * ghPlayerAtkSFrameCount,
+              0,
+              static_cast<int>(ghPlayerAtkSWidth),
+              static_cast<int>(ghPlayerAtkSHeight),
+              ghPlayerAtkS[0],
+              ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
+              0, 0xFFFFFFFF
+            );
+          } else
 					{
 						//プレイヤー左
 						Novice::DrawSpriteRect
@@ -2854,9 +2806,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							0, 0xFFFFFFFF
 						);
 					}
-				}
-				else if (player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
-				{
+				} else if (!player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
+        {
 					//移動中に強攻撃している時のみ
 					if (!player.isDirections)
 					{
@@ -2963,8 +2914,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						);
 					}
 				}
-				else if (!player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
-				{
+        else if (!player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
+        {
 					//ジャンプ強攻撃している時のみ
 					if (!player.isDirections)
 					{
@@ -3077,7 +3028,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, 0xFFFFFFFF
 					);
 				}
-
+        
 				if (shortSword.isReaction) //短剣の判定(持続時)
 				{
 					Novice::DrawBox
