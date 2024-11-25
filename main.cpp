@@ -2311,7 +2311,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							}
 						}
 
-						attackTypeFirst = 5;
+						
 
 						//小さくなるにつれて色変化
 						if (attackTypeFirst != 5)
