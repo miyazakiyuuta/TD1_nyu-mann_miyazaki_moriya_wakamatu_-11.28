@@ -1300,22 +1300,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				shortSword.pos.y = player.pos.y - player.height + shortSword.height;
 				if (!player.isDirections)//右
 				{
-					shortSword.pos.x = player.pos.x + player.width;
+					shortSword.pos.x = player.pos.x + player.width / 2.0f;
 				}
 				else//左
 				{
-					shortSword.pos.x = player.pos.x + player.width - shortSword.width;
+					shortSword.pos.x = player.pos.x + player.width / 2.0f - shortSword.width;
 				}
 
 				//大剣
 				longSword.pos.y = player.pos.y - player.height + longSword.height;
 				if (!player.isDirections)//右
 				{
-					longSword.pos.x = player.pos.x + player.width;
+					longSword.pos.x = player.pos.x + player.width / 2.0f;
 				}
 				else//左
 				{
-					longSword.pos.x = player.pos.x + player.width - longSword.width;
+					longSword.pos.x = player.pos.x + player.width / 2.0f - longSword.width;
 				}
 
 				//----------------重力------------------//
@@ -2689,106 +2689,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					}
 				}
 
-				//--------------------小炎の軌跡---------------------//
-				for (int i = 0; i < kMaxSmallFire; i++)
-				{
-					for (int j = 0; j < smallFireLocusMax; j++)
-					{
-						if (smallFireLocus[i][j].isDisplay)
-						{
-							//段々小さくなる
-							if (smallFireLocus[i][j].width >= 0.0f && smallFireLocus[i][j].height >= 0.0f) {
-								smallFireLocus[i][j].width -= rand() % 5;
-								smallFireLocus[i][j].height -= rand() % 5;
-							} 
-							else
-							{
-								smallFireLocus[i][j].width = 32.0f;
-								smallFireLocus[i][j].height = 32.0f;
-								smallFireLocus[i][j].isDisplay = false;
-							}
-
-							//回転させる
-							smallFireLocus[i][j].rotation += 0.02f;
-
-							//移動させる
-							if (player.pos.x <= smallFireLocus[i][j].pos.x) {
-								//右
-								playerLocus[i].pos.x -= 0.1f;
-								playerLocus[i].pos.y += 0.01f;
-							}
-							else
-							{
-								//左
-								playerLocus[i].pos.x += 0.1f;
-								playerLocus[i].pos.y += 0.01f;
-							}
-						}
-
-						if (!smallFireLocus[i][j].isDisplay)
-						{
-							if (smallFire[i].isShot)
-							{
-								//ランダムな位置に表示させる
-								smallFireLocus[i][j].pos.x = rand() % 16 - 8 + smallFire[i].pos.x + smallFire[i].width / 2.0f;
-								smallFireLocus[i][j].pos.y = rand() % 16 - 8 + ToScreen(smallFire[i].pos.y) + smallFire[i].height / 2.0f;
-							}
-						}
-
-						//クールタイム
-						if (smallFire[i].isShot)
-						{
-							if (smallFireLocusCoolTime >= 0)
-							{
-								smallFireLocusCoolTime--;
-							} 
-							else
-							{
-								smallFireLocus[i][j].isDisplay = true;
-								smallFireLocusCoolTime = 240;
-							}
-						}
-
-						//小さくなるにつれて色変化
-						if (attackTypeFirst != 5)
-						{
-							if (smallFireLocus[i][j].width <= 20.0f)
-							{
-								if (smallFireLocus[i][j].color <= 0xFF8800FF)
-								{
-									smallFireLocus[i][j].color += 0x00110000;
-								}
-							}
-						} 
-						else //形態変化技の時
-						{
-							if (static_cast<int>(smallFireLocus[i][j].width) % 2 == 0) {
-								if (smallFireLocus[i][j].color == 0xFFFFFFFF)
-								{
-									smallFireLocus[i][j].color = 0x0000FFFF;
-								} 
-								else
-								{
-									smallFireLocus[i][j].color = 0xFFFFFFFF;
-								}
-							}
-						}
-
-						//反射すると色が変わる
-						if (smallFire[i].isReflection)
-						{
-							smallFireLocus[i][j].color = 0x0000FFFF;
-						}
-
-						//弾が消えるときにエフェクトも消える
-						if (!smallFire[i].isShot)
-						{
-							smallFireLocus[i][j].isDisplay = false;
-							smallFireLocus[i][j].color = 0xFF0000FF;
-						}
-					}
-				}
-
 				//--------------------巨大火球の軌跡---------------------//
 				for (int i = 0; i < giantFireLocusMax; i++)
 				{
@@ -3020,6 +2920,105 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 						hitFireEffect[i].color = 0xFF0000FF;
 					}
+				}
+			}
+		}
+
+		//--------------------小炎の軌跡---------------------//
+		for (int i = 0; i < kMaxSmallFire; i++)
+		{
+			for (int j = 0; j < smallFireLocusMax; j++)
+			{
+				if (smallFireLocus[i][j].isDisplay)
+				{
+					//段々小さくなる
+					if (smallFireLocus[i][j].width >= 0.0f && smallFireLocus[i][j].height >= 0.0f) {
+						smallFireLocus[i][j].width -= rand() % 5;
+						smallFireLocus[i][j].height -= rand() % 5;
+					} 
+					else
+					{
+						smallFireLocus[i][j].width = 32.0f;
+						smallFireLocus[i][j].height = 32.0f;
+						smallFireLocus[i][j].isDisplay = false;
+					}
+
+					//回転させる
+					smallFireLocus[i][j].rotation += 0.02f;
+
+					//移動させる
+					if (player.pos.x <= smallFireLocus[i][j].pos.x) {
+						//右
+						playerLocus[i].pos.x -= 0.1f;
+						playerLocus[i].pos.y += 0.01f;
+					}
+					else
+					{
+						//左
+						playerLocus[i].pos.x += 0.1f;
+						playerLocus[i].pos.y += 0.01f;
+					}
+				}
+
+				if (!smallFireLocus[i][j].isDisplay)
+				{
+					if (smallFire[i].isShot)
+					{
+						//ランダムな位置に表示させる
+						smallFireLocus[i][j].pos.x = rand() % 16 - 8 + smallFire[i].pos.x + smallFire[i].width / 2.0f;
+						smallFireLocus[i][j].pos.y = rand() % 16 - 8 + ToScreen(smallFire[i].pos.y) + smallFire[i].height / 2.0f;
+					}
+				}
+
+				//クールタイム
+				if (smallFire[i].isShot)
+				{
+					if (smallFireLocusCoolTime >= 0)
+					{
+						smallFireLocusCoolTime--;
+					}
+					else
+					{
+						smallFireLocus[i][j].isDisplay = true;
+						smallFireLocusCoolTime = 240;
+					}
+				}
+
+				//小さくなるにつれて色変化
+				if (attackTypeFirst != 5)
+				{
+					if (smallFireLocus[i][j].width <= 20.0f)
+					{
+						if (smallFireLocus[i][j].color <= 0xFF8800FF)
+						{
+							smallFireLocus[i][j].color += 0x00110000;
+						}
+					}
+				} else //形態変化技の時
+				{
+					if (static_cast<int>(smallFireLocus[i][j].width) % 2 == 0) {
+						if (smallFireLocus[i][j].color == 0xFFFFFFFF)
+						{
+							smallFireLocus[i][j].color = 0x0000FFFF;
+						}
+						else
+						{
+							smallFireLocus[i][j].color = 0xFFFFFFFF;
+						}
+					}
+				}
+
+				//反射すると色が変わる
+				if (smallFire[i].isReflection)
+				{
+					smallFireLocus[i][j].color = 0x0000FFFF;
+				}
+
+				//弾が消えるときにエフェクトも消える
+				if (!smallFire[i].isShot)
+				{
+					smallFireLocus[i][j].isDisplay = false;
+					smallFireLocus[i][j].color = 0xFF0000FF;
 				}
 			}
 		}
