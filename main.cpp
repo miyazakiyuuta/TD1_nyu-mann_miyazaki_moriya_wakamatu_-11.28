@@ -2655,7 +2655,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						if (playerLocus[i].width >= 0.0f && playerLocus[i].height >= 0.0f) {
 							playerLocus[i].width -= 0.5f;
 							playerLocus[i].height -= 0.5f;
-						} else
+						}
+						else
 						{
 							playerLocus[i].width = 16.0f;
 							playerLocus[i].height = 16.0f;
@@ -2671,7 +2672,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							//右
 							playerLocus[i].pos.x -= 0.5f;
 							playerLocus[i].pos.y += 0.01f;
-						} else
+						}
+						else
 						{
 							//左
 							playerLocus[i].pos.x += 0.5f;
@@ -2698,7 +2700,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							if (smallFireLocus[i][j].width >= 0.0f && smallFireLocus[i][j].height >= 0.0f) {
 								smallFireLocus[i][j].width -= rand() % 5;
 								smallFireLocus[i][j].height -= rand() % 5;
-							} else
+							} 
+							else
 							{
 								smallFireLocus[i][j].width = 32.0f;
 								smallFireLocus[i][j].height = 32.0f;
@@ -2713,7 +2716,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 								//右
 								playerLocus[i].pos.x -= 0.1f;
 								playerLocus[i].pos.y += 0.01f;
-							} else
+							}
+							else
 							{
 								//左
 								playerLocus[i].pos.x += 0.1f;
@@ -2737,7 +2741,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							if (smallFireLocusCoolTime >= 0)
 							{
 								smallFireLocusCoolTime--;
-							} else
+							} 
+							else
 							{
 								smallFireLocus[i][j].isDisplay = true;
 								smallFireLocusCoolTime = 240;
@@ -2754,13 +2759,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 									smallFireLocus[i][j].color += 0x00110000;
 								}
 							}
-						} else //形態変化技の時
+						} 
+						else //形態変化技の時
 						{
 							if (static_cast<int>(smallFireLocus[i][j].width) % 2 == 0) {
 								if (smallFireLocus[i][j].color == 0xFFFFFFFF)
 								{
 									smallFireLocus[i][j].color = 0x0000FFFF;
-								} else
+								} 
+								else
 								{
 									smallFireLocus[i][j].color = 0xFFFFFFFF;
 								}
@@ -2792,7 +2799,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						{
 							giantFireLocus[i].width -= rand() % 10;
 							giantFireLocus[i].height -= rand() % 10;
-						} else
+						}
+						else
 						{
 							giantFireLocus[i].width = 128.0f;
 							giantFireLocus[i].height = 128.0f;
@@ -2808,7 +2816,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							//右
 							playerLocus[i].pos.x -= 0.1f;
 							playerLocus[i].pos.y += 0.1f;
-						} else
+						}
+						else
 						{
 							//左
 							playerLocus[i].pos.x += 0.1f;
@@ -2832,7 +2841,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						if (giantFireLocusCoolTime >= 0)
 						{
 							giantFireLocusCoolTime--;
-						} else
+						}
+						else
 						{
 							giantFireLocus[i].isDisplay = true;
 							giantFireLocusCoolTime = 240;
@@ -2866,7 +2876,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						if (powderAura[i].width >= 0.0f && powderAura[i].height >= 0.0f) {
 							powderAura[i].width -= 0.05f;
 							powderAura[i].height -= 0.05f;
-						} else
+						}
+						else
 						{
 							powderAura[i].width = 10.0f;
 							powderAura[i].height = 10.0f;
@@ -2896,7 +2907,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 					if (powderAuraCoolTime >= 0) {
 						powderAuraCoolTime--;
-					} else
+					} 
+					else
 					{
 						powderAura[i].isDisplay = true;
 						powderAuraCoolTime = 240;
@@ -2918,7 +2930,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						//段々小さくなる
 						if (hitEffect[i].width >= 0.0f) {
 							hitEffect[i].width -= 1.0f;
-						} else
+						} 
+						else
 						{
 							if (i % 2 == 1)
 							{
@@ -2926,12 +2939,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 								hitEffect[i].height = static_cast<float>(rand() % 128);
 								hitEffect[i].isDisplay = false;
 								hitEffect[i].circumference = 0.0f;
-							} else
+							} 
+							else
 							{
 								if (hitEffect[i].width >= -5.0f) {
 									hitEffect[i].width -= 0.7f;
 									hitEffect[i].height -= 5.0f;
-								} else
+								}
+								else
 								{
 									hitEffect[i].width = 5.0f;
 									hitEffect[i].height = static_cast<float>(rand() % 128);
@@ -2972,7 +2987,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						{
 							hitFireEffect[i].width -= rand() % 5;
 							hitFireEffect[i].height -= rand() % 5;
-						} else
+						}
+						else
 						{
 							hitFireEffect[i].width = 64.0f;
 							hitFireEffect[i].height = 64.0f;
