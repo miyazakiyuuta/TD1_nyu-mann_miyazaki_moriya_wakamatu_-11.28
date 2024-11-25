@@ -2575,8 +2575,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		//----------------形態変化技による明転----------------//
 
-		attackTypeFirst = 5;
-
 		if (flash.isShot)
 		{
 			if (changeColor <= 0xFFFFFFFF)
