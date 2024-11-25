@@ -2709,6 +2709,76 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							giantFireLocus[i].isDisplay = false;
 						}
 
+						//クールタイム
+						if (smallFire[i].isShot)
+						{
+							if (smallFireLocusCoolTime >= 0)
+							{
+								smallFireLocusCoolTime--;
+							} else
+							{
+								smallFireLocus[i][j].isDisplay = true;
+								smallFireLocusCoolTime = 240;
+							}
+						}
+
+						
+
+						//小さくなるにつれて色変化
+						if (attackTypeFirst != 5)
+						{
+							if (smallFireLocus[i][j].width <= 20.0f)
+							{
+								if (smallFireLocus[i][j].color <= 0xFF8800FF)
+								{
+									smallFireLocus[i][j].color += 0x00110000;
+								}
+							}
+						} else //形態変化技の時
+						{
+							if (static_cast<int>(smallFireLocus[i][j].width) % 2 == 0) {
+								if (smallFireLocus[i][j].color == 0xFFFFFFFF)
+								{
+									smallFireLocus[i][j].color = 0x0000FFFF;
+								} else
+								{
+									smallFireLocus[i][j].color = 0xFFFFFFFF;
+								}
+							}
+						}
+
+						//反射すると色が変わる
+						if (smallFire[i].isReflection)
+						{
+							smallFireLocus[i][j].color = 0x0000FFFF;
+						}
+
+						//弾が消えるときにエフェクトも消える
+						if (!smallFire[i].isShot)
+						{
+							smallFireLocus[i][j].isDisplay = false;
+							smallFireLocus[i][j].color = 0xFF0000FF;
+						}
+					}
+				}
+
+				//--------------------巨大火球の軌跡---------------------//
+				for (int i = 0; i < giantFireLocusMax; i++)
+				{
+					if (giantFireLocus[i].isDisplay)
+					{
+						//段々小さくなる
+						if (giantFireLocus[i].width >= 0.0f && giantFireLocus[i].height >= 0.0f)
+						{
+							giantFireLocus[i].width -= rand() % 10;
+							giantFireLocus[i].height -= rand() % 10;
+						} else
+						{
+							giantFireLocus[i].width = 128.0f;
+							giantFireLocus[i].height = 128.0f;
+							giantFireLocus[i].isDisplay = false;
+						}
+
 						//回転させる
 						giantFireLocus[i].rotation += 0.02f;
 
