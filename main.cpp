@@ -3005,7 +3005,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						//右
 						playerLocus[i].pos.x -= 0.1f;
 						playerLocus[i].pos.y += 0.01f;
-					} else
+					}
+					else
 					{
 						//左
 						playerLocus[i].pos.x += 0.1f;
@@ -3029,7 +3030,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					if (smallFireLocusCoolTime >= 0)
 					{
 						smallFireLocusCoolTime--;
-					} else
+					}
+					else
 					{
 						smallFireLocus[i][j].isDisplay = true;
 						smallFireLocusCoolTime = 240;
@@ -3046,14 +3048,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							smallFireLocus[i][j].color += 0x00110000;
 						}
 					}
-				} else //形態変化技の時
+				} 
+				else //形態変化技の時
 				{
 					if (static_cast<int>(smallFireLocus[i][j].width) % 2 == 0)
 					{
 						if (smallFireLocus[i][j].color == 0xFFFFFFFF)
 						{
 							smallFireLocus[i][j].color = 0x0000FFFF;
-						} else
+						}
+						else
 						{
 							smallFireLocus[i][j].color = 0xFFFFFFFF;
 						}
@@ -3091,7 +3095,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			if (backGround.shakeTime >= 0) {
 				backGround.shakeTime--;
-			} else
+			}
+			else
 			{
 				backGround.shakeTime = 30;
 				backGround.isShake = false;
@@ -3125,7 +3130,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 						//回転させる
 						transition[i][j].rotation += 0.043f;
-					} else
+					} 
+					else
 					{
 						isTransition = false;
 						transition[i][j].rotation = 0.0f;
@@ -3144,7 +3150,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 						//回転させる
 						transition[i][j].rotation += 0.043f;
-					} else
+					}
+					else
 					{
 						transition[i][j].color = 0xFFFFFF00;
 					}
@@ -3277,7 +3284,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 									boss1FrameImageWidth / boss1MaxImageWidth, 1,
 									0, 0xFFFFFFFF
 								);
-							} else if (boss.direction == RIGHT)
+							} 
+							else if (boss.direction == RIGHT)
 							{
 								Novice::DrawSpriteRect
 								(
@@ -3310,7 +3318,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 									boss1FlyFrameWidth / boss1FlyMaxWidth, 1,
 									0, 0xFFFFFFFF
 								);
-							} else if (boss.direction == RIGHT)
+							}
+							else if (boss.direction == RIGHT)
 							{
 								Novice::DrawSpriteRect
 								(
@@ -3345,7 +3354,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 								);
 							}
 						}
-					} else if (boss.form == HUMAN)
+					} 
+					else if (boss.form == HUMAN)
 					{
 						if (!boss.isFalling)
 						{
@@ -3361,7 +3371,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 								boss2TempFrameWidth / boss2TempMaxImageWidth, 1,
 								0, 0xFFFFFFFF
 							);
-						} else
+						} 
+						else
 						{
 							Novice::DrawSprite
 							(
@@ -3373,7 +3384,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							);
 						}
 					}
-				} else if (phase == THREE)
+				}
+                else if (phase == THREE)
 				{
 					Novice::DrawSpriteRect
 					(
@@ -3477,7 +3489,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 								static_cast<int>(hitEffect[i].height / 2.0f),
 								hitEffect[i].rotation, hitEffect[i].color, kFillModeSolid
 							);
-						} else
+						} 
+						else
 						{
 							Novice::DrawEllipse
 							(
@@ -3552,7 +3565,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerJumpWidth / ghPlayerJumpMaxWidth, 1,
 						0, player.color
 					);
-				} else
+				}
+				else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -3588,7 +3602,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerJumpWidth / ghPlayerJumpMaxWidth, 1,
 						0, player.color
 					);
-				} else
+				} 
+				else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -3604,7 +3619,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, player.color
 					);
 				}
-			} else if (player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			} 
+			else if (player.isWalk && player.isJump && !shortSword.isReaction && !longSword.isReaction)
 			{
 				//移動中にジャンプしている時のみ
 				if (!player.isDirections)
@@ -3622,7 +3638,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerJumpWidth / ghPlayerJumpMaxWidth, 1,
 						0, player.color
 					);
-				} else
+				}
+				else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -3638,7 +3655,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, player.color
 					);
 				}
-			} else if (!player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction) //止まっている時のみ
+			}
+			else if (!player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction) //止まっている時のみ
 			{
 				//止まっている時のみ
 				if (!player.isDirections)
@@ -3656,7 +3674,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerWidth / ghPlayerMaxWidth, 1,
 						0, player.color
 					);
-				} else if (player.isDirections)
+				}
+				else if (player.isDirections)
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -3672,7 +3691,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, player.color
 					);
 				}
-			} else if (player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction)
+			} 
+			else if (player.isWalk && !player.isJump && !shortSword.isReaction && !longSword.isReaction)
 			{
 				//移動している時のみ
 				if (!player.isDirections)
@@ -3690,7 +3710,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerWalkWidth / ghPlayerWalkMaxWidth, 1,
 						0, player.color
 					);
-				} else
+				} 
+				else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -3706,7 +3727,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, player.color
 					);
 				}
-			} else if (!player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
+			}
+			else if (!player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
 			{
 				//弱攻撃している時のみ
 				if (!player.isDirections)
@@ -3724,7 +3746,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
 						0, player.color
 					);
-				} else
+				} 
+				else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -3740,7 +3763,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, player.color
 					);
 				}
-			} else if (player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
+			} 
+			else if (player.isWalk && !player.isJump && shortSword.isReaction && !longSword.isReaction)
 			{
 				//移動中に弱攻撃している時のみ
 				if (!player.isDirections)
@@ -3758,7 +3782,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
 						0, player.color
 					);
-				} else
+				} 
+				else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -3774,7 +3799,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, player.color
 					);
 				}
-			} else if (!player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
+			}
+			else if (!player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
 			{
 				//強攻撃している時のみ
 				if (!player.isDirections)
@@ -3792,7 +3818,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
 						0, player.color
 					);
-				} else
+				}
+				else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -3808,7 +3835,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, player.color
 					);
 				}
-			} else if (!player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
+			}
+			else if (!player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
 			{
 				//移動中に強攻撃している時のみ
 				if (!player.isDirections)
@@ -3826,7 +3854,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerAtkLWidth / ghPlayerAtkLMaxWidth, 1,
 						0, player.color
 					);
-				} else
+				}
+				else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -3842,7 +3871,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, player.color
 					);
 				}
-			} else if (!player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
+			} 
+			else if (!player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
 			{
 				//ジャンプ弱攻撃している時のみ
 				if (!player.isDirections)
@@ -3860,7 +3890,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
 						0, player.color
 					);
-				} else
+				} 
+				else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -3876,7 +3907,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, player.color
 					);
 				}
-			} else if (player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
+			} 
+			else if (player.isWalk && player.isJump && shortSword.isReaction && !longSword.isReaction)
 			{
 				//移動中にジャンプ弱攻撃している時のみ
 				if (!player.isDirections)
@@ -3894,7 +3926,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerAtkSWidth / ghPlayerAtkSMaxWidth, 1,
 						0, player.color
 					);
-				} else
+				}
+				else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -3910,7 +3943,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, player.color
 					);
 				}
-			} else if (!player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
+			}
+			else if (!player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
 			{
 				//ジャンプ強攻撃している時のみ
 				if (!player.isDirections)
@@ -3928,7 +3962,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
 						0, player.color
 					);
-				} else
+				} 
+				else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
@@ -3944,7 +3979,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						0, player.color
 					);
 				}
-			} else if (player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
+			} 
+			else if (player.isWalk && player.isJump && !shortSword.isReaction && longSword.isReaction)
 			{
 				//移動中にジャンプ強攻撃している時のみ
 				if (!player.isDirections)
@@ -3962,7 +3998,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghPlayerJumpAtkLWidth / ghPlayerJumpAtkLMaxWidth, 1,
 						0, player.color
 					);
-				} else
+				} 
+				else
 				{
 					//プレイヤー左
 					Novice::DrawSpriteRect
