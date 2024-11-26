@@ -1139,6 +1139,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		case GAMEPLAY:
 		break;
 		case GAMEOVER:
+
+		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+		{
+			isTransition = true; //トランジション
+			sceneChange = true;
+		}
+
+		//シーン切り替えまでの待機時間
+		if (sceneChange)
+		{
+			if (sceneChangeTime >= 0)
+			{
+				sceneChangeTime--;
+			}
+			else
+			{
+				sceneChangeTime = 65;
+				scene = GAMETITLE;
+				sceneChange = false;
+			}
+		}
+
 		break;
 		case GAMECLEAR:
 		break;
@@ -3246,8 +3268,56 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				{
 					if (isContinue)
 					{
+						//プレイヤーの初期化
 						player.isAlive = true;
 						player.hpCount = 10;
+						player.pos.x = 100.0f;
+						player.pos.y = 100.0f;
+
+						//ボスの初期化
+						//フェーズ1
+						if (phase == ONE || phase == THREE)
+						{
+							boss.pos = { 840.0f, 320.0f };
+							boss.hpCount = 200;
+							boss.attackCoolTimer = 60;
+							boss.fireCoolTimer = 0;
+							boss.isAttacking = false;
+							boss.isCharging = false;
+							boss.chargeTimer = 120;
+							boss.isHovering = false;
+							boss.isFlying = false;
+							boss.direction = LEFT;
+							boss.form = DRAGON;
+							boss.isFalling = false;
+							boss.fallTimer = 0;
+							boss.isPlayerHit = false;
+							boss.changedDirection = false;
+						}
+
+						//フェーズ2
+						if (phase == TWO)
+						{
+							boss.isFalling = false;
+							fireDisappearCount = 0;
+							boss.hpCount = 200;
+							boss.isChange = false;
+							player.speed = 10.0f;
+							player.pos = { 640.0f,360.0f };
+							player.isJump = true;
+							fireDisappearCount = 0;
+							fireShootCount = 0;
+							for (int i = 0; i < kMaxSmallFire; ++i)
+							{
+								smallFire[i].isShot = false;
+								for (int j = 0; j < smallFireLocusMax; ++j)
+								{
+									smallFireLocus[i][j].color = RED;
+								}
+							}
+							attackTypeFirst = 0;
+						}
+						
 					}
 					else
 					{
@@ -3255,6 +3325,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					}
 					sceneChangeTime = 65;
 					sceneChange = false;
+					isContinue = true;
 				}
 			}
 		}
