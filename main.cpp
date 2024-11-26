@@ -673,7 +673,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	player.jump = 15.0f; //ジャンプ速度
 	player.gravity = 0.0f; //重力
 	player.isJump = false; //ジャンプ状態か否か
-	player.isAlive; //生存
+	player.isAlive = true; //生存
 	player.isDirections = false; //プレイヤーの向いている方向(false = 右,true = 左)
 	player.hpCount = 10; //hp
 	player.isWalk = false; //移動しているか(モーション切り替えに使う)
@@ -1087,6 +1087,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	int frameCount = 0; // フレーム
 
+	//コンティニュー
+	int isContinue = true; //yes & no の選択
+	int ghContinue = Novice::LoadTexture("./Resources/images/Continue.png");
+	int ghContinueYes = Novice::LoadTexture("./Resources/images/Yes.png");
+	int ghContinueNo = Novice::LoadTexture("./Resources/images/No.png");
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0)
 	{
@@ -1150,256 +1156,260 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			if (phase == ONE || phase == THREE)
 			{
-				//攻撃時は動けない
-				if (!shortSword.isAtk && !longSword.isAtk)
+				if (player.isAlive)
 				{
-					//左右移動(AD or 左スティック)
-					if (keys[DIK_A] || padX <= -1)
+					//攻撃時は動けない
+					if (!shortSword.isAtk && !longSword.isAtk)
 					{
-						player.pos.x -= player.speed;
-						player.isDirections = true;
-
-						//パーティクル軌跡
-						for (int i = 0; i < playerLocusMax; i++)
+						//左右移動(AD or 左スティック)
+						if (keys[DIK_A] || padX <= -1)
 						{
-							if (playerLocusCoolTime >= 0)
+							player.pos.x -= player.speed;
+							player.isDirections = true;
+
+							//パーティクル軌跡
+							for (int i = 0; i < playerLocusMax; i++)
 							{
-								playerLocusCoolTime--;
+								if (playerLocusCoolTime >= 0)
+								{
+									playerLocusCoolTime--;
+								}
+								else
+								{
+									playerLocus[i].isDisplay = true;
+									playerLocusCoolTime = 240;
+								}
 							}
-							else
+						}
+
+
+						if (keys[DIK_D] || padX >= 1)
+						{
+							player.pos.x += player.speed;
+							player.isDirections = false;
+
+							//パーティクル軌跡
+							for (int i = 0; i < playerLocusMax; i++)
 							{
-								playerLocus[i].isDisplay = true;
-								playerLocusCoolTime = 240;
+								if (playerLocusCoolTime >= 0)
+								{
+									playerLocusCoolTime--;
+								}
+								else
+								{
+									playerLocus[i].isDisplay = true;
+									playerLocusCoolTime = 240;
+								}
+							}
+						}
+
+
+						//ジャンプ(SPACE or A)
+						if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsPressButton(0, PadButton::kPadButton10))
+						{
+							player.isJump = true;
+						}
+
+						if (player.isJump)
+						{
+							player.pos.y += player.jump;
+
+							//パーティクル軌跡
+							for (int i = 0; i < playerLocusMax; i++)
+							{
+								if (playerLocusCoolTime >= 0)
+								{
+									playerLocusCoolTime--;
+								}
+								else
+								{
+									playerLocus[i].isDisplay = true;
+									playerLocusCoolTime = 240;
+								}
 							}
 						}
 					}
 
-
-					if (keys[DIK_D] || padX >= 1)
+					//移動モーションと待機モーション切り替え
+					if (keys[DIK_A] || keys[DIK_D] || padX >= 1 || padX <= -1)
 					{
-						player.pos.x += player.speed;
-						player.isDirections = false;
-
-						//パーティクル軌跡
-						for (int i = 0; i < playerLocusMax; i++)
-						{
-							if (playerLocusCoolTime >= 0)
-							{
-								playerLocusCoolTime--;
-							}
-							else
-							{
-								playerLocus[i].isDisplay = true;
-								playerLocusCoolTime = 240;
-							}
-						}
-					}
-
-
-					//ジャンプ(SPACE or A)
-					if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsPressButton(0, PadButton::kPadButton10))
-					{
-						player.isJump = true;
-					}
-
-					if (player.isJump)
-					{
-						player.pos.y += player.jump;
-
-						//パーティクル軌跡
-						for (int i = 0; i < playerLocusMax; i++)
-						{
-							if (playerLocusCoolTime >= 0)
-							{
-								playerLocusCoolTime--;
-							}
-							else
-							{
-								playerLocus[i].isDisplay = true;
-								playerLocusCoolTime = 240;
-							}
-						}
-					}
-				}
-
-				//移動モーションと待機モーション切り替え
-				if (keys[DIK_A] || keys[DIK_D] || padX >= 1 || padX <= -1)
-				{
-					player.isWalk = true;
-				}
-				else
-				{
-					player.isWalk = false;
-				}
-
-				//==============================================================
-				//攻撃
-				//==============================================================
-
-				//攻撃時は動けない
-				if (!shortSword.isAtk && !longSword.isAtk)
-				{
-					//短剣(J or X)
-					if (keys[DIK_J] && !preKeys[DIK_J] || Novice::IsPressButton(0, PadButton::kPadButton12))
-					{
-						if (!longSword.isAtk) //大剣攻撃時は使えない
-						{
-							if (shortSword.coolTime <= 0) //クールタイムが０以下の時のみ
-							{
-								shortSword.isAtk = true;
-								shortSword.isReaction = true;
-								shortSword.coolTime = 20;
-								longSword.coolTime = 40;
-							}
-						}
-					}
-
-					//大剣(K or Y)
-					if (keys[DIK_K] && !preKeys[DIK_K] || Novice::IsPressButton(0, PadButton::kPadButton13))
-					{
-						if (!shortSword.isAtk) //短剣攻撃時は使えない
-						{
-							if (longSword.coolTime <= 0) //クールタイムが０以下の時のみ
-							{
-								longSword.isAtk = true;
-								longSword.isReaction = true;
-								shortSword.coolTime = 20;
-								longSword.coolTime = 40;
-							}
-						}
-					}
-				}
-
-				//--------------クールタイム----------------//
-
-				if (shortSword.coolTime >= 0) //短剣
-				{
-					shortSword.coolTime--;
-				}
-
-				if (longSword.coolTime >= 0) //大剣
-				{
-					longSword.coolTime--;
-				}
-
-				//-------------攻撃の持続時間----------------//
-
-				if (shortSword.isAtk) //短剣
-				{
-					if (shortSword.durationTime >= 0)
-					{
-						shortSword.durationTime--;
+						player.isWalk = true;
 					}
 					else
 					{
-						shortSword.isAtk = false;
-						shortSword.durationTime = 30;
+						player.isWalk = false;
 					}
-				}
 
-				if (longSword.isAtk) //大剣
-				{
-					if (longSword.durationTime >= 0)
+					//==============================================================
+					//攻撃
+					//==============================================================
+
+					//攻撃時は動けない
+					if (!shortSword.isAtk && !longSword.isAtk)
 					{
-						longSword.durationTime--;
+						//短剣(J or X)
+						if (keys[DIK_J] && !preKeys[DIK_J] || Novice::IsPressButton(0, PadButton::kPadButton12))
+						{
+							if (!longSword.isAtk) //大剣攻撃時は使えない
+							{
+								if (shortSword.coolTime <= 0) //クールタイムが０以下の時のみ
+								{
+									shortSword.isAtk = true;
+									shortSword.isReaction = true;
+									shortSword.coolTime = 20;
+									longSword.coolTime = 40;
+								}
+							}
+						}
+
+						//大剣(K or Y)
+						if (keys[DIK_K] && !preKeys[DIK_K] || Novice::IsPressButton(0, PadButton::kPadButton13))
+						{
+							if (!shortSword.isAtk) //短剣攻撃時は使えない
+							{
+								if (longSword.coolTime <= 0) //クールタイムが０以下の時のみ
+								{
+									longSword.isAtk = true;
+									longSword.isReaction = true;
+									shortSword.coolTime = 20;
+									longSword.coolTime = 40;
+								}
+							}
+						}
+					}
+
+					//--------------クールタイム----------------//
+
+					if (shortSword.coolTime >= 0) //短剣
+					{
+						shortSword.coolTime--;
+					}
+
+					if (longSword.coolTime >= 0) //大剣
+					{
+						longSword.coolTime--;
+					}
+
+					//-------------攻撃の持続時間----------------//
+
+					if (shortSword.isAtk) //短剣
+					{
+						if (shortSword.durationTime >= 0)
+						{
+							shortSword.durationTime--;
+						}
+						else
+						{
+							shortSword.isAtk = false;
+							shortSword.durationTime = 30;
+						}
+					}
+
+					if (longSword.isAtk) //大剣
+					{
+						if (longSword.durationTime >= 0)
+						{
+							longSword.durationTime--;
+						}
+						else
+						{
+							longSword.isAtk = false;
+							longSword.durationTime = 30;
+						}
+					}
+
+
+					//------------攻撃時の硬直によって動けない時間------------//
+
+					if (shortSword.isReaction) //短剣
+					{
+						if (shortSword.reactionTime >= 0)
+						{
+							shortSword.reactionTime--;
+							player.gravity = 0.5f;
+							player.speed = 0.0f;
+							player.jump = 0.0f;
+						}
+						else
+						{
+							shortSword.reactionTime = 30;
+							player.speed = 10.0f;
+							shortSword.isReaction = false;
+						}
+					}
+
+					if (longSword.isReaction) //大剣
+					{
+						if (longSword.reactionTime >= 0)
+						{
+							longSword.reactionTime--;
+							player.gravity = 0.5f;
+							player.speed = 0.0f;
+							player.jump = 0.0f;
+						}
+						else
+						{
+							longSword.reactionTime = 30;
+							player.speed = 10.0f;
+							longSword.isReaction = false;
+						}
+					}
+
+					//-----------攻撃の座標--------------//
+
+					//短剣
+					shortSword.pos.y = player.pos.y - player.height + shortSword.height;
+					if (!player.isDirections)//右
+					{
+						shortSword.pos.x = player.pos.x + player.width / 2.0f;
+					}
+					else//左
+					{
+						shortSword.pos.x = player.pos.x + player.width / 2.0f - shortSword.width;
+					}
+
+					//大剣
+					longSword.pos.y = player.pos.y - player.height + longSword.height;
+					if (!player.isDirections)//右
+					{
+						longSword.pos.x = player.pos.x + player.width / 2.0f;
+					}
+					else//左
+					{
+						longSword.pos.x = player.pos.x + player.width / 2.0f - longSword.width;
+					}
+
+					//----------------重力------------------//
+
+					if (player.pos.y - player.height > 0.0f)
+					{
+						player.pos.y += player.gravity -= 0.7f;
 					}
 					else
 					{
-						longSword.isAtk = false;
-						longSword.durationTime = 30;
+						player.gravity = 0.0f;
 					}
-				}
 
-
-				//------------攻撃時の硬直によって動けない時間------------//
-
-				if (shortSword.isReaction) //短剣
-				{
-					if (shortSword.reactionTime >= 0)
+					//地面に着地した時
+					if (player.pos.y - player.height <= 0.0f)
 					{
-						shortSword.reactionTime--;
-						player.gravity = 0.5f;
-						player.speed = 0.0f;
-						player.jump = 0.0f;
+						player.pos.y = player.height;
+						player.jump = 15.0f;
+						player.isJump = false;
 					}
-					else
+
+					//-----------HP--------------//
+
+					if (player.hpCount <= 0)
 					{
-						shortSword.reactionTime = 30;
-						player.speed = 10.0f;
-						shortSword.isReaction = false;
+						player.isAlive = false;
 					}
-				}
 
-				if (longSword.isReaction) //大剣
-				{
-					if (longSword.reactionTime >= 0)
-					{
-						longSword.reactionTime--;
-						player.gravity = 0.5f;
-						player.speed = 0.0f;
-						player.jump = 0.0f;
-					}
-					else
-					{
-						longSword.reactionTime = 30;
-						player.speed = 10.0f;
-						longSword.isReaction = false;
-					}
+					//描画用変数の座標更新
+					playerDrawing.pos.x = player.pos.x - playerDrawing.adjustment.x; //ｘ座標
+					playerDrawing.pos.y = player.pos.y + playerDrawing.adjustment.y; //ｙ座標
 				}
-
-				//-----------攻撃の座標--------------//
-
-				//短剣
-				shortSword.pos.y = player.pos.y - player.height + shortSword.height;
-				if (!player.isDirections)//右
-				{
-					shortSword.pos.x = player.pos.x + player.width / 2.0f;
-				}
-				else//左
-				{
-					shortSword.pos.x = player.pos.x + player.width / 2.0f - shortSword.width;
-				}
-
-				//大剣
-				longSword.pos.y = player.pos.y - player.height + longSword.height;
-				if (!player.isDirections)//右
-				{
-					longSword.pos.x = player.pos.x + player.width / 2.0f;
-				}
-				else//左
-				{
-					longSword.pos.x = player.pos.x + player.width / 2.0f - longSword.width;
-				}
-
-				//----------------重力------------------//
-
-				if (player.pos.y - player.height > 0.0f)
-				{
-					player.pos.y += player.gravity -= 0.7f;
-				}
-				else
-				{
-					player.gravity = 0.0f;
-				}
-
-				//地面に着地した時
-				if (player.pos.y - player.height <= 0.0f)
-				{
-					player.pos.y = player.height;
-					player.jump = 15.0f;
-					player.isJump = false;
-				}
-
-				//-----------HP--------------//
-
-				if (player.hpCount <= 0)
-				{
-					player.isAlive = false;
-				}
-
-				//描画用変数の座標更新
-				playerDrawing.pos.x = player.pos.x - playerDrawing.adjustment.x; //ｘ座標
-				playerDrawing.pos.y = player.pos.y + playerDrawing.adjustment.y; //ｙ座標
+				
 
 			#pragma endregion
 
@@ -3179,6 +3189,56 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			}
 		}
 
+		//死んだとき
+		if (!player.isAlive)
+		{
+			//----------------コンティニュー--------------//
+
+			//選択
+			if (!sceneChange)
+			{
+				if (keys[DIK_A] && !preKeys[DIK_A] || padX <= -1)
+				{
+					isContinue = true; //YES
+				}
+
+				if (keys[DIK_D] && !preKeys[DIK_D] || padX >= 1)
+				{
+					isContinue = false; //NO
+				}
+			}
+
+			//------------シーン切り替え-------------//
+			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+			{
+				isTransition = true; //トランジション
+				sceneChange = true;
+			}
+
+			//シーン切り替えまでの待機時間
+			if (sceneChange)
+			{
+				if (sceneChangeTime >= 0)
+				{
+					sceneChangeTime--;
+				}
+				else
+				{
+					if (isContinue)
+					{
+						player.isAlive = true;
+						player.hpCount = 10;
+					}
+					else
+					{
+						scene = GAMEOVER;
+					}
+					sceneChangeTime = 65;
+					sceneChange = false;
+				}
+			}
+		}
+
 	#pragma endregion
 
 		///
@@ -4042,6 +4102,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							smallFireLocus[i][j].rotation, smallFireLocus[i][j].color, kFillModeSolid
 						);
 					}
+				}
+			}
+
+			//コンティニュー
+			if (!player.isAlive)
+			{
+				//コンティニュー画面
+				Novice::DrawSprite(0, 0, ghContinue, 1, 1, 0.0f, WHITE);
+
+				if (isContinue)
+				{
+					//YES強調
+					Novice::DrawSprite(0, 0, ghContinueYes, 1, 1, 0.0f, WHITE);
+				}
+				else
+				{
+					//NO強調
+					Novice::DrawSprite(0, 0, ghContinueNo, 1, 1, 0.0f, WHITE);
 				}
 			}
 
