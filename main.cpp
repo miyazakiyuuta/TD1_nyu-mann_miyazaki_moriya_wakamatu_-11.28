@@ -120,6 +120,7 @@ struct Particle
 struct BackGround
 {
 	Vector2 pos;
+	Vector2 phaseTwoPos;
 	int color;
 	int isShake;
 	int shakeTime;
@@ -1078,6 +1079,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	backGround.pos.x = 0.0f; //x座標
 	backGround.pos.y = 0.0f; //y座標
 	backGround.color = 0xFFFFFFFF; //色
+	backGround.phaseTwoPos = { 0.0f,0.0f };
 	backGround.isShake = false; //シェイク
 	backGround.shakeTime = 30; //シェイクの持続時間
 
@@ -1728,6 +1730,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							for (int i = 0; i < kMaxSmallFire; ++i)
 							{
 								smallFire[i].isShot = false;
+								for (int j = 0; j < smallFireLocusMax; ++j)
+								{
+									smallFireLocus[i][j].color = RED;
+								}
 							}
 							attackTypeFirst = 0;
 						}
@@ -1737,6 +1743,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			if (phase == TWO)
 			{
+				backGround.phaseTwoPos.y -= 15.0f;
+				if (backGround.phaseTwoPos.y < -720.0f)
+				{
+					backGround.phaseTwoPos.y = 0.0f;
+				}
 				//移動
 				if (keys[DIK_W] && keys[DIK_A] || padX <= -1 && padY <= -1)
 				{
@@ -2661,7 +2672,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							IsHit(player.pos, player.width, player.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, smallFire[i].isPlayerHit);
 						}
 					}
+					if (smallFire[i].isPlayerHit)
+					{
+						player.hpCount--;
+						player.isNoDamage = true;
+						smallFire[i].isShot = false;
+						smallFire[i].isPlayerHit = false;
+						fireDisappearCount++;
+					}
 				}
+
 			}
 
 			if (player.isNoDamage)
@@ -2685,7 +2705,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				}
 				else
 				{
-					player.noDamageTime = 0;
+					player.noDamageTime = 60;
 					player.isNoDamage = false;
 					player.color = 0xFFFFFFFF;
 				}
@@ -3545,7 +3565,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			if (phase == TWO)
 			{
-				Novice::DrawSprite(0, 0, ghBackGroundTwo, 1.0f, 1.0f, 0.0f, WHITE);
+				Novice::DrawSprite(static_cast<int>(backGround.phaseTwoPos.x), static_cast<int>(backGround.phaseTwoPos.y),
+					ghBackGroundTwo, 1.0f, 1.0f, 0.0f, WHITE);
+				Novice::DrawSprite(static_cast<int>(backGround.phaseTwoPos.x), static_cast<int>(backGround.phaseTwoPos.y + 720.0f),
+					ghBackGroundTwo, 1.0f, 1.0f, 0.0f, WHITE);
 
 				for (int i = 0; i < kMaxSmallFire; i++)
 				{
