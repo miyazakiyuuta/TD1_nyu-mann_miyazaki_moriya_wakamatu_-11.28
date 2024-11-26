@@ -1095,6 +1095,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	int ghContinueYes = Novice::LoadTexture("./Resources/images/Yes.png");
 	int ghContinueNo = Novice::LoadTexture("./Resources/images/No.png");
 
+	//クリア
+	int ghClear = Novice::LoadTexture("./Resources/images/CLEAR.png");
+
+	//ゲームオーバー
+	int ghGameOver = Novice::LoadTexture("./Resources/images/GAME_OVER.png");
+
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0)
 	{
@@ -1118,6 +1124,54 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{
 			isTransition = true; //トランジション
 			sceneChange = true;
+
+			//プレイヤーの初期化
+			player.isAlive = true;
+			player.hpCount = 10;
+			player.pos.x = 100.0f;
+			player.pos.y = 100.0f;
+			player.isDirections = false;
+
+			//ボスの初期化
+			boss.pos = { 840.0f, 320.0f };
+			boss.hpCount = 200;
+			boss.attackCoolTimer = 60;
+			boss.fireCoolTimer = 0;
+			boss.isAttacking = false;
+			boss.isCharging = false;
+			boss.chargeTimer = 120;
+			boss.isHovering = false;
+			boss.isFlying = false;
+			boss.direction = LEFT;
+			boss.form = DRAGON;
+			boss.isFalling = false;
+			boss.fallTimer = 0;
+			boss.isPlayerHit = false;
+			boss.changedDirection = false;
+			phase = ONE;
+
+			//攻撃の初期化
+			for (int i = 0; i < kMaxSmallFire; i++)
+			{
+				smallFire[i].pos = { 0.0f };
+				smallFire[i].speed = 0.0f;
+				smallFire[i].isShot = false;
+				smallFire[i].gravity = 0.0f;
+				smallFire[i].direction = { 0.0f };
+				smallFire[i].isPlayerHit = false; 
+				smallFire[i].isBossHit = false; 
+				smallFire[i].isReflection = false;
+			}
+
+			giantFire.pos = { 0.0f }; 
+			giantFire.isShot = false; 
+			giantFire.direction = { 0.0f }; 
+			giantFire.isPlayerHit = false; 
+
+			explosion.pos = { 0.0f };
+			explosion.duration = 0;
+			explosion.isPlayerHit = false;
+			explosion.isShot = false;
 		}
 
 		//シーン切り替えまでの待機時間
@@ -1163,6 +1217,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		break;
 		case GAMECLEAR:
+
+		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+		{
+			isTransition = true; //トランジション
+			sceneChange = true;
+		}
+
+		//シーン切り替えまでの待機時間
+		if (sceneChange)
+		{
+			if (sceneChangeTime >= 0)
+			{
+				sceneChangeTime--;
+			}
+			else
+			{
+				sceneChangeTime = 65;
+				scene = GAMETITLE;
+				sceneChange = false;
+			}
+		}
+
 		break;
 		}
 		if (scene == GAMEPLAY)
@@ -3166,61 +3242,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			}
 		}
 
-		//==============================================================================
-		//トランジション
-		//==============================================================================
-
-		for (int i = 0; i < transitionMaxY; i++)
-		{
-			for (int j = 0; j < transitionMaxX; j++)
-			{
-				if (keys[DIK_T] && !preKeys[DIK_T])
-				{
-					isTransition = true;
-				}
-
-				if (isTransition)
-				{
-					//段々大きくなる
-					if (transition[i][j].width <= 70.0f && transition[i][j].height <= 70.0f)
-					{
-						//色を元に戻す
-						transition[i][j].color = 0xFFFFFFFF;
-
-						transition[i][j].width += 1.0f;
-						transition[i][j].height += 1.0f;
-
-						//回転させる
-						transition[i][j].rotation += 0.043f;
-					}
-					else
-					{
-						isTransition = false;
-						transition[i][j].rotation = 0.0f;
-					}
-
-				}
-
-				if (!isTransition)
-				{
-					//段々小さくなる
-					if (transition[i][j].width >= 0.0f && transition[i][j].height >= 0.0f)
-					{
-
-						transition[i][j].width -= 1.0f;
-						transition[i][j].height -= 1.0f;
-
-						//回転させる
-						transition[i][j].rotation += 0.043f;
-					}
-					else
-					{
-						transition[i][j].color = 0xFFFFFF00;
-					}
-				}
-			}
-		}
-
 		//----------------形態変化技による明転----------------//
 
 		if (flash.isShot)
@@ -3273,6 +3294,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						player.hpCount = 10;
 						player.pos.x = 100.0f;
 						player.pos.y = 100.0f;
+						player.isDirections = false;
 
 						//ボスの初期化
 						//フェーズ1
@@ -3317,6 +3339,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							}
 							attackTypeFirst = 0;
 						}
+
+						//攻撃の初期化
+						for (int i = 0; i < kMaxSmallFire; i++)
+						{
+							smallFire[i].pos = { 0.0f }; // 座標
+							smallFire[i].speed = 0.0f; // 速度
+							smallFire[i].isShot = false; // 撃たれたか
+							smallFire[i].gravity = 0.0f; //重力
+							smallFire[i].direction = { 0.0f };
+							smallFire[i].isPlayerHit = false; //プレイヤーに当たったか
+							smallFire[i].isBossHit = false; // 反射された攻撃がボスに当たったか 
+							smallFire[i].isReflection = false; // 反射されたか 
+						}
+
+						giantFire.pos = { 0.0f }; // 座標
+						giantFire.isShot = false; // 撃たれたか
+						giantFire.direction = { 0.0f }; // 方向
+						giantFire.isPlayerHit = false; // プレイヤーに当たったか
+
+						explosion.pos = { 0.0f }; // 座標
+						explosion.duration = 0; // 持続時間
+						explosion.isPlayerHit = false; // プレイヤーに当たったか
+						explosion.isShot = false; // 撃たれたか
 						
 					}
 					else
@@ -4233,8 +4278,97 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				static_cast<int>(boss.width),
 				static_cast<int>(boss.height),
 				0.0f, 0xFFFFFFFF, kFillModeWireFrame);
+
+		///
+		/// ↑描画処理ここまで
+		///
 		}
 
+		if (scene == GAMETITLE)
+		{
+			
+		}
+
+		if (scene == GAMEOVER)
+		{
+			//ゲームオーバー画面
+			Novice::DrawSprite(0, 0, ghGameOver, 1, 1, 0.0f, WHITE);
+		}
+
+		//※クリア画面に行く処理はまだない
+		if (scene == GAMECLEAR)
+		{
+			//クリア画面
+			Novice::DrawSprite(0, 0, ghClear, 1, 1, 0.0f, WHITE);
+		}
+
+		//=============================================================================
+		//全シーンで使う処理
+		//=============================================================================
+
+		///
+		/// ↓更新処理
+		///	
+		
+		//トランジション
+		for (int i = 0; i < transitionMaxY; i++)
+		{
+			for (int j = 0; j < transitionMaxX; j++)
+			{
+				if (keys[DIK_T] && !preKeys[DIK_T])
+				{
+					isTransition = true;
+				}
+
+				if (isTransition)
+				{
+					//段々大きくなる
+					if (transition[i][j].width <= 70.0f && transition[i][j].height <= 70.0f)
+					{
+						//色を元に戻す
+						transition[i][j].color = 0xFFFFFFFF;
+
+						transition[i][j].width += 1.0f;
+						transition[i][j].height += 1.0f;
+
+						//回転させる
+						transition[i][j].rotation += 0.043f;
+					}
+					else
+					{
+						isTransition = false;
+						transition[i][j].rotation = 0.0f;
+					}
+
+				}
+
+				if (!isTransition)
+				{
+					//段々小さくなる
+					if (transition[i][j].width >= 0.0f && transition[i][j].height >= 0.0f)
+					{
+
+						transition[i][j].width -= 1.0f;
+						transition[i][j].height -= 1.0f;
+
+						//回転させる
+						transition[i][j].rotation += 0.043f;
+					}
+					else
+					{
+						transition[i][j].color = 0xFFFFFF00;
+					}
+				}
+			}
+		}
+
+		///
+		/// ↑更新処理
+		///
+
+		///
+		/// ↓描画処理
+		///
 
 		//トランジション
 		for (int i = 0; i < transitionMaxY; i++)
@@ -4254,7 +4388,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 
 		///
-		/// ↑描画処理ここまで
+		/// ↑描画処理
 		///
 
 		// フレームの終了
