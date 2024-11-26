@@ -1004,7 +1004,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//地面から出るオーラ
 	const int powderAuraMax = 50; //最大表示数
 	Particle powderAura[powderAuraMax];
-	for (int i = 0; i < powderAuraMax; i++) 
+	for (int i = 0; i < powderAuraMax; i++)
 	{
 		powderAura[i].pos.x = 0.0f; //ｘ座標
 		powderAura[i].pos.y = 0.0f; //ｙ座標
@@ -1019,7 +1019,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//ヒットエフェクト
 	const int hitEffectMax = 100; //最大表示数
 	Particle hitEffect[hitEffectMax];
-	for (int i = 0; i < hitEffectMax; i++) 
+	for (int i = 0; i < hitEffectMax; i++)
 	{
 		hitEffect[i].pos.x = 0.0f; //ｘ座標
 		hitEffect[i].pos.y = 0.0f; //ｙ座標
@@ -1035,7 +1035,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//小炎のヒットエフェクト
 	const int hitFireEffectMax = 200; //最大表示数
 	Particle hitFireEffect[hitFireEffectMax];
-	for (int i = 0; i < hitFireEffectMax; i++) 
+	for (int i = 0; i < hitFireEffectMax; i++)
 	{
 		hitFireEffect[i].pos.x = 0.0f; //ｘ座標
 		hitFireEffect[i].pos.y = 0.0f; //ｙ座標
@@ -1088,7 +1088,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	int frameCount = 0; // フレーム
 
 	// ウィンドウの×ボタンが押されるまでループ
-	while (Novice::ProcessMessage() == 0) {
+	while (Novice::ProcessMessage() == 0)
+	{
 		// フレームの開始
 		Novice::BeginFrame();
 
@@ -2346,7 +2347,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				}
 
 				//短剣の攻撃がボスに当たっている時
-				if (shortSword.isBossHit) {
+				if (shortSword.isBossHit)
+				{
 					shortSword.isAtk = false;
 					shortSword.durationTime = 30;
 					boss.hpCount -= shortSword.damage; //ボスのHPを攻撃力分減らす
@@ -2362,7 +2364,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				}
 
 				//大剣の攻撃がボスに当たっている時
-				if (longSword.isBossHit) {
+				if (longSword.isBossHit)
+				{
 					longSword.isAtk = false;
 					longSword.durationTime = 30;
 					boss.hpCount -= longSword.damage; //ボスのHPを攻撃力分減らす
@@ -2668,7 +2671,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				{
 					player.noDamageTime--;
 
-					if (player.noDamageTime % 2 == 1) {
+					if (player.noDamageTime % 2 == 1)
+					{
 						if (player.color == 0xFFFFFFFF)
 						{
 							player.color = 0xFFFFFF55;
@@ -2704,7 +2708,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					if (playerLocus[i].isDisplay)
 					{
 						//段々小さくなる
-						if (playerLocus[i].width >= 0.0f && playerLocus[i].height >= 0.0f) {
+						if (playerLocus[i].width >= 0.0f && playerLocus[i].height >= 0.0f)
+						{
 							playerLocus[i].width -= 0.5f;
 							playerLocus[i].height -= 0.5f;
 						}
@@ -3097,7 +3102,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{
 			backGround.pos.x += static_cast<float>(rand() % 40 - 20);
 
-			if (backGround.shakeTime >= 0) {
+			if (backGround.shakeTime >= 0)
+			{
 				backGround.shakeTime--;
 			}
 			else
@@ -4083,7 +4089,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		Novice::EndFrame();
 
 		// ESCキーが押されたらループを抜ける
-		if (preKeys[DIK_ESCAPE] == 0 && keys[DIK_ESCAPE] != 0) {
+		if (preKeys[DIK_ESCAPE] == 0 && keys[DIK_ESCAPE] != 0)
+		{
 			break;
 		}
 	}
