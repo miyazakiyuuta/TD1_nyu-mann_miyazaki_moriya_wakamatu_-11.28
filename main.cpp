@@ -3846,7 +3846,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					);
 				}
 			}
-			else if (!player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
+			else if (player.isWalk && !player.isJump && !shortSword.isReaction && longSword.isReaction)
 			{
 				//移動中に強攻撃している時のみ
 				if (!player.isDirections)
