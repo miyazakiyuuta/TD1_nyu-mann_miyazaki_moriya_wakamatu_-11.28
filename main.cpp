@@ -2174,6 +2174,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 										flash.isShot = false;
 										boss.isChange = true;
 										boss.form = HUMAN;
+										boss.pos.x = 546.0f;
 										boss.width = 186.0f;
 										boss.height = 226.0f;
 										boss.fallTimer = 60;
@@ -5343,7 +5344,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							boss.hpCount = 200;
 							boss.width = 288.0f;
 							boss.height = 320.0f;
-							boss.attackCoolTimer = 60;
+							boss.attackCoolTimer = 120;
 							boss.fireCoolTimer = 0;
 							boss.isAttacking = false;
 							boss.isCharging = false;
