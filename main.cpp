@@ -102,6 +102,7 @@ struct Attack
 	int isBossHit;
 	int duration;
 	float length;
+	int SE;
 };
 
 //パーティクル
@@ -140,7 +141,8 @@ enum SCENE
 	GAMETITLE,
 	GAMEPLAY,
 	GAMEOVER,
-	GAMECLEAR
+	GAMECLEAR,
+	GAMERESULT
 };
 
 enum ATTACKFIRST
@@ -898,7 +900,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	shortSword.durationTime = 30; //攻撃の持続時間
 	shortSword.isAtk = false; //攻撃しているか
 	shortSword.isBossHit = false; //攻撃が当たっているか(ボスに)
-	shortSword.damage = 300; //攻撃力
+	shortSword.damage = 3; //攻撃力
 	shortSword.isReaction = false; //硬直が起きているか(アニメーション切り替えにも使う)
 	shortSword.reactionTime = 30; //硬直で動けない時間
 
@@ -1357,6 +1359,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//音楽
 	int phaseOneSE = Novice::LoadAudio("./Resources/sounds/phase1.mp3");
 	int phaseThreeSE = Novice::LoadAudio("./Resources/sounds/phase3.mp3");
+	int gameOverSE = Novice::LoadAudio("./Resources/sounds/gameOver.mp3");
+	int gameClearSE = Novice::LoadAudio("./Resources/sounds/gameClear.wav");
+	int longSwordSE = Novice::LoadAudio("./Resources/sounds/longSword.mp3");
+	int shortSwordSE = Novice::LoadAudio("./Resources/sounds/shortSword.mp3");
+	//int fireSE = Novice::LoadAudio("./Resources/sounds/fire.mp3");
+	//int flySE = Novice::LoadAudio("./Resources/sounds/fly.mp3");
+	int phaseOnePlayHandle = -1;
+	int phaseThreePlayHandle = -1;
+	int gameOverPlayHandle = -1;
+	int gameClearPlayHandle = -1;
+	int longSwordPlayHandle = -1;
+	int shortSwordPlayHandle = -1;
 
 	//コンティニュー
 	int isContinue = true; //yes & no の選択
@@ -1440,12 +1454,35 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				else
 				{
 					sceneChangeTime = 65;
-					scene = GAMETITLE;
+					scene = GAMERESULT;
 					sceneChange = false;
 				}
 			}
 
 			break;
+		case GAMERESULT:
+
+			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
+			{
+				isTransition = true; //トランジション
+				sceneChange = true;
+			}
+
+			//シーン切り替えまでの待機時間
+			if (sceneChange)
+			{
+				if (sceneChangeTime >= 0)
+				{
+					sceneChangeTime--;
+				}
+				else
+				{
+					sceneChangeTime = 65;
+					scene = GAMETITLE;
+					sceneChange = false;
+				}
+			}
+
 		}
 		if (scene == GAMEPLAY)
 		{
@@ -1577,6 +1614,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 									shortSword.isReaction = true;
 									shortSword.coolTime = 20;
 									longSword.coolTime = 40;
+
 								}
 							}
 						}
@@ -1592,8 +1630,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 									longSword.isReaction = true;
 									shortSword.coolTime = 20;
 									longSword.coolTime = 40;
+
 								}
 							}
+
+
 						}
 					}
 
@@ -1874,7 +1915,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						break;
 					case MULTIPLEFIRE: MultipleFire(kMaxMultiple, smallFire, &boss, fireShootCount);
 						break;
-					case GIANTFIRE: GiantFire(&giantFire, &explosion, &boss, &player, fireDisappearCount, bossFrameCount, bossAnimeCount, bossFlyFrameCount, bossFlyAnimeCount, explosionFrameCount, explosionAnimeCount);
+					case GIANTFIRE:
+						GiantFire(&giantFire, &explosion, &boss, &player, fireDisappearCount, bossFrameCount, bossAnimeCount, bossFlyFrameCount, bossFlyAnimeCount, explosionFrameCount, explosionAnimeCount);
+
 						break;
 					case FLY:
 						if (!boss.isHovering)
@@ -2756,6 +2799,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					}
 
 					shortSword.isBossHit = false;
+					if(!Novice::IsPlayingAudio(shortSwordPlayHandle))
+					{
+						shortSwordPlayHandle = Novice::PlayAudio(shortSwordSE, 0, 0.7f);
+					}
 				}
 
 				//大剣の攻撃がボスに当たっている時
@@ -2773,6 +2820,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					}
 
 					longSword.isBossHit = false;
+
+					if(!Novice::IsPlayingAudio(longSwordPlayHandle))
+					{
+						longSwordPlayHandle = Novice::PlayAudio(longSwordSE, 0, 0.7f);
+					}
+					
 				}
 
 				//----------------攻撃を反射するときの当たり判定----------------//
@@ -2802,6 +2855,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							}
 
 							smallFire[i].isReflection = true;
+							if (smallFire[i].isShot)
+							{
+								Novice::PlayAudio(longSwordSE, 0, 0.7f);
+							}
 						}
 
 						if (attackTypeFirst == SLOWFIRE)
@@ -3810,31 +3867,62 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 #pragma region 音
 
-		if (phase == ONE || phase == TWO)
+		if (scene == GAMEPLAY)
 		{
-			if (!Novice::IsPlayingAudio(phaseOneSE))
+
+
+			if (phase == ONE || phase == TWO)
 			{
-				Novice::PlayAudio(phaseOneSE, 1, 0.2f);
+				if (!Novice::IsPlayingAudio(phaseOnePlayHandle))
+				{
+					phaseOnePlayHandle = Novice::PlayAudio(phaseOneSE, 1, 0.2f);
+				}
+			}
+			else
+			{
+				Novice::StopAudio(phaseOnePlayHandle);
+			}
+
+			if (phase == THREE)
+			{
+				if (!Novice::IsPlayingAudio(phaseThreePlayHandle))
+				{
+					phaseThreePlayHandle = Novice::PlayAudio(phaseThreeSE, 1, 0.2f);
+				}
+			}
+			else
+			{
+				Novice::StopAudio(phaseThreePlayHandle);
 			}
 		}
 		else
 		{
-			if (Novice::IsPlayingAudio(phaseOneSE))
-			{
-				Novice::StopAudio(phaseOneSE);
-			}
+			Novice::StopAudio(phaseOnePlayHandle);
+			Novice::StopAudio(phaseThreePlayHandle);
 		}
 
-		if (phase == THREE)
+		if (scene == GAMEOVER)
 		{
-			if (!Novice::IsPlayingAudio(phaseThreeSE))
+			if (!Novice::IsPlayingAudio(gameOverPlayHandle))
 			{
-				Novice::PlayAudio(phaseThreeSE, 1, 0.2f);
+				gameOverPlayHandle = Novice::PlayAudio(gameOverSE, 1, 0.2f);
 			}
 		}
 		else
 		{
-			Novice::StopAudio(phaseThreeSE);
+			Novice::StopAudio(gameOverPlayHandle);
+		}
+
+		if (scene == GAMECLEAR)
+		{
+			if (!Novice::IsPlayingAudio(gameClearPlayHandle))
+			{
+				gameClearPlayHandle = Novice::PlayAudio(gameClearSE, 1, 0.2f);
+			}
+		}
+		else
+		{
+			Novice::StopAudio(gameClearPlayHandle);
 		}
 
 #pragma endregion
@@ -5134,6 +5222,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{
 			//クリア画面
 			Novice::DrawSprite(0, 0, ghClear, 1, 1, 0.0f, WHITE);
+		}
+
+		if (scene == GAMERESULT)
+		{
+			Novice::DrawBox(0, 0, 1280, 720, 0.0f, BLACK, kFillModeSolid);
+			Novice::DrawSprite(494, 360 - 64, numberGraphs[timeArray[0]], 2.0f, 2.0f, 0.0f, WHITE);
+			Novice::DrawSprite(622, 386 - 64, doubleQuotesGH, 2.0f, 2.0f, 0.0f, WHITE);
+			Novice::DrawSprite(640, 360 - 64, numberGraphs[timeArray[1]], 2.0f, 2.0f, 0.0f, WHITE);
+			Novice::DrawSprite(720, 360 - 64, numberGraphs[timeArray[2]], 2.0f, 2.0f, 0.0f, WHITE);
 		}
 
 		///
