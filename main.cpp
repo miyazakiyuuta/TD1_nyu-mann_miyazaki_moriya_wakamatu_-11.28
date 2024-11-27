@@ -956,7 +956,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	shortSword.durationTime = 30; //攻撃の持続時間
 	shortSword.isAtk = false; //攻撃しているか
 	shortSword.isBossHit = false; //攻撃が当たっているか(ボスに)
-	shortSword.damage = 3; //攻撃力
+	shortSword.damage = 300; //攻撃力
 	shortSword.isReaction = false; //硬直が起きているか(アニメーション切り替えにも使う)
 	shortSword.reactionTime = 30; //硬直で動けない時間
 
@@ -1833,6 +1833,72 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				//ボスの移動 
 				//===========================================================
 
+				//-----------------小炎の軌道修正---------------------//
+
+			//フェーズ１の小炎軌道修正
+			if (attackTypeFirst == SLOWFIRE)
+			{
+				for (int i = 0; i < kMaxSlowFire; i++)
+				{
+					if (!smallFire[i].isShot)
+					{
+						smallFire[i].speed = slowFireSpeed;
+					}
+				}
+			}
+			else if (attackTypeFirst == FASTFIRE)
+			{
+				for (int i = 0; i < kMaxFastFire; i++)
+				{
+					if (!smallFire[i].isShot)
+					{
+						smallFire[i].speed = fastFireSpeed;
+					}
+				}
+			}
+			else if (attackTypeFirst == MULTIPLEFIRE)
+			{
+				for (int i = 0; i < kMaxMultiple; i++)
+				{
+					if (!smallFire[i].isShot)
+					{
+						smallFire[i].speed = multipleFireSpeed;
+					}
+				}
+			}
+
+			//フェーズ3の小炎軌道修正
+			if (attackTypeFirst == SLOWFIRE2)
+			{
+				for (int i = 0; i < kMaxSlowFire; i++)
+				{
+					if (!smallFire[i].isShot)
+					{
+						smallFire[i].speed = slowFireSpeed2;
+					}
+				}
+			}
+			else if (attackTypeFirst == FASTFIRE2)
+			{
+				for (int i = 0; i < kMaxFastFire2; i++)
+				{
+					if (!smallFire[i].isShot)
+					{
+						smallFire[i].speed = fastFireSpeed2;
+					}
+				}
+			}
+			else if (attackTypeFirst == MULTIPLEFIRE2)
+			{
+				for (int i = 0; i < kMaxMultiple; i++)
+				{
+					if (!smallFire[i].isShot)
+					{
+						smallFire[i].speed = multipleFireSpeed;
+					}
+				}
+			}
+
 				if (!boss.isChange) // 形態変化していないとき
 				{
 					if (!boss.isAttacking) // 攻撃していないとき
@@ -2649,7 +2715,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			{
 				boss.isAlive = false;
 			}
-
+		
 
 #pragma endregion
 
@@ -3007,65 +3073,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				//----------------攻撃を反射するときの当たり判定----------------//
 
 				//形態変化技以外の時
-				if (attackTypeFirst != 5)
+				for (int i = 0; i < kMaxSmallFire; i++)
 				{
-					for (int i = 0; i < kMaxSmallFire; i++)
+					if (longSword.isAtk)
 					{
-						if (longSword.isAtk)
+						IsHit(longSword.pos, longSword.width, longSword.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, longSword.isSmallFireHit);
+					}
+
+					if (longSword.isSmallFireHit)
+					{
+						longSword.isAtk = false;
+						longSword.durationTime = 30;
+						longSword.isSmallFireHit = false;
+						smallFire[i].speed *= -2.0f; //反射
+
+						//ヒットエフェクト
+						for (int j = 0; j < hitEffectMax; j++)
 						{
-							IsHit(longSword.pos, longSword.width, longSword.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, longSword.isSmallFireHit);
+							hitEffect[j].isDisplay = true;
+							hitEffect[j].speed = 2.0f;
 						}
 
-						if (longSword.isSmallFireHit)
-						{
-							longSword.isAtk = false;
-							longSword.durationTime = 30;
-							longSword.isSmallFireHit = false;
-							smallFire[i].speed *= -2.0f; //反射
+						smallFire[i].isReflection = true;
 
-							//ヒットエフェクト
-							for (int j = 0; j < hitEffectMax; j++)
-							{
-								hitEffect[j].isDisplay = true;
-								hitEffect[j].speed = 2.0f;
-							}
-
-							smallFire[i].isReflection = true;
-							if (smallFire[i].isShot)
-							{
-								Novice::PlayAudio(longSwordSE, 0, 0.7f);
-							}
-						}
-
-						if (attackTypeFirst == SLOWFIRE)
+						if (smallFire[i].isShot)
 						{
-							if (!smallFire[i].isShot)
-							{
-								if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 6.0f)
-								{
-									smallFire[i].speed = 5.0f;
-								}
-							}
-						}
-						else if (attackTypeFirst == FASTFIRE)
-						{
-							if (!smallFire[i].isShot)
-							{
-								if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 21.0f)
-								{
-									smallFire[i].speed = 20.0f;
-								}
-							}
-						}
-						else if (attackTypeFirst == MULTIPLEFIRE)
-						{
-							if (!smallFire[i].isShot)
-							{
-								if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 13.0f)
-								{
-									smallFire[i].speed = 12.0f;
-								}
-							}
+							Novice::PlayAudio(longSwordSE, 0, 0.7f);
 						}
 
 						if (attackTypeThird == SLOWFIRE2)
@@ -3149,7 +3182,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					}
 				}
 
-				if (attackTypeFirst == SLOWFIRE || attackTypeThird == SLOWFIRE2)
+				if (attackTypeFirst == SLOWFIRE2 || attackTypeThird == SLOWFIRE2)
 				{
 					// 小炎(連続)の当たり判定
 					for (int i = 0; i < kMaxSlowFire; i++)
@@ -3513,6 +3546,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						}
 						else
 						{
+							giantFireLocus[i].width = 128.0f;
+							giantFireLocus[i].height = 128.0f;
 							giantFireLocus[i].isDisplay = true;
 							giantFireLocusCoolTime = 240;
 						}
@@ -3684,7 +3719,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							hitFireEffect[i].pos.y = boss.pos.y + 150.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
 						}
 
-						if (phase == TWO) //フェーズ3の時
+						if (phase == THREE) //フェーズ3の時
 						{
 							hitFireEffect[i].pos.x = boss.pos.x + 150.0f - cosf(effectTheta * i) * hitFireEffect[i].circumference; //ｘ座標
 							hitFireEffect[i].pos.y = boss.pos.y + 200.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
@@ -3708,7 +3743,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							hitFireEffect[i].pos.y = boss.pos.y + 150.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
 						}
 
-						if (phase == ONE) //フェーズ２の時
+						if (phase == THREE) //フェーズ3の時
 						{
 							hitFireEffect[i].pos.x = boss.pos.x + 150.0f - cosf(effectTheta * i) * hitFireEffect[i].circumference; //ｘ座標
 							hitFireEffect[i].pos.y = boss.pos.y + 200.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
@@ -3806,6 +3841,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					{
 						if (smallFire[i].isShot)
 						{
+							smallFireLocus[i][j].width = 32.0f;
+							smallFireLocus[i][j].height = 32.0f;
+							smallFireLocus[i][j].color = 0xFF0000FF;
+
 							//ランダムな位置に表示させる
 							smallFireLocus[i][j].pos.x = rand() % 16 - 8 + smallFire[i].pos.x + smallFire[i].width / 2.0f;
 							smallFireLocus[i][j].pos.y = rand() % 16 - 8 + ToScreen(smallFire[i].pos.y) + smallFire[i].height / 2.0f;
