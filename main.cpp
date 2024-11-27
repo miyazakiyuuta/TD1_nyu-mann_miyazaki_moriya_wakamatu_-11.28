@@ -1155,7 +1155,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{
 		case GAMETITLE:
 
-		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
 		{
 			isTransition = true; //トランジション
 			sceneChange = true;
@@ -1229,7 +1229,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		break;
 		case GAMEOVER:
 
-		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
 		{
 			isTransition = true; //トランジション
 			sceneChange = true;
@@ -1253,7 +1253,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		break;
 		case GAMECLEAR:
 
-		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
 		{
 			isTransition = true; //トランジション
 			sceneChange = true;
@@ -3365,7 +3365,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				}
 
 				//------------シーン切り替え-------------//
-				if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+				if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
 				{
 					isTransition = true; //トランジション
 					sceneChange = true;
