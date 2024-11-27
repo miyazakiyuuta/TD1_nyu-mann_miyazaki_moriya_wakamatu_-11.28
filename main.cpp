@@ -1833,6 +1833,72 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				//ボスの移動 
 				//===========================================================
 
+				//-----------------小炎の軌道修正---------------------//
+
+			//フェーズ１の小炎軌道修正
+			if (attackTypeFirst == SLOWFIRE)
+			{
+				for (int i = 0; i < kMaxSlowFire; i++)
+				{
+					if (!smallFire[i].isShot)
+					{
+						smallFire[i].speed = slowFireSpeed;
+					}
+				}
+			}
+			else if (attackTypeFirst == FASTFIRE)
+			{
+				for (int i = 0; i < kMaxFastFire; i++)
+				{
+					if (!smallFire[i].isShot)
+					{
+						smallFire[i].speed = fastFireSpeed;
+					}
+				}
+			}
+			else if (attackTypeFirst == MULTIPLEFIRE)
+			{
+				for (int i = 0; i < kMaxMultiple; i++)
+				{
+					if (!smallFire[i].isShot)
+					{
+						smallFire[i].speed = multipleFireSpeed;
+					}
+				}
+			}
+
+			//フェーズ3の小炎軌道修正
+			if (attackTypeFirst == SLOWFIRE2)
+			{
+				for (int i = 0; i < kMaxSlowFire; i++)
+				{
+					if (!smallFire[i].isShot)
+					{
+						smallFire[i].speed = slowFireSpeed2;
+					}
+				}
+			}
+			else if (attackTypeFirst == FASTFIRE2)
+			{
+				for (int i = 0; i < kMaxFastFire2; i++)
+				{
+					if (!smallFire[i].isShot)
+					{
+						smallFire[i].speed = fastFireSpeed2;
+					}
+				}
+			}
+			else if (attackTypeFirst == MULTIPLEFIRE2)
+			{
+				for (int i = 0; i < kMaxMultiple; i++)
+				{
+					if (!smallFire[i].isShot)
+					{
+						smallFire[i].speed = multipleFireSpeed;
+					}
+				}
+			}
+
 				if (!boss.isChange) // 形態変化していないとき
 				{
 					if (!boss.isAttacking) // 攻撃していないとき
@@ -2649,7 +2715,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			{
 				boss.isAlive = false;
 			}
-
+		
 
 #pragma endregion
 
@@ -2988,98 +3054,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				//----------------攻撃を反射するときの当たり判定----------------//
 
 				//形態変化技以外の時
-				if (attackTypeFirst != 5)
+				for (int i = 0; i < kMaxSmallFire; i++)
 				{
-					for (int i = 0; i < kMaxSmallFire; i++)
+					if (longSword.isAtk)
 					{
-						if (longSword.isAtk)
+						IsHit(longSword.pos, longSword.width, longSword.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, longSword.isSmallFireHit);
+					}
+
+					if (longSword.isSmallFireHit)
+					{
+						longSword.isAtk = false;
+						longSword.durationTime = 30;
+						longSword.isSmallFireHit = false;
+						smallFire[i].speed *= -2.0f; //反射
+
+						//ヒットエフェクト
+						for (int j = 0; j < hitEffectMax; j++)
 						{
-							IsHit(longSword.pos, longSword.width, longSword.height, smallFire[i].pos, smallFire[i].width, smallFire[i].height, longSword.isSmallFireHit);
+							hitEffect[j].isDisplay = true;
+							hitEffect[j].speed = 2.0f;
 						}
 
-						if (longSword.isSmallFireHit)
-						{
-							longSword.isAtk = false;
-							longSword.durationTime = 30;
-							longSword.isSmallFireHit = false;
-							smallFire[i].speed *= -2.0f; //反射
+						smallFire[i].isReflection = true;
 
-							//ヒットエフェクト
-							for (int j = 0; j < hitEffectMax; j++)
-							{
-								hitEffect[j].isDisplay = true;
-								hitEffect[j].speed = 2.0f;
-							}
-
-							smallFire[i].isReflection = true;
-							if (smallFire[i].isShot)
-							{
-								Novice::PlayAudio(longSwordSE, 0, 0.7f);
-							}
-						}
-
-						//フェーズ１の小炎軌道修正
-						if (attackTypeFirst == SLOWFIRE)
+						if (smallFire[i].isShot)
 						{
-							if (!smallFire[i].isShot)
-							{
-								if (smallFire[i].speed <= 0.0f || smallFire[i].speed > slowFireSpeed)
-								{
-									smallFire[i].speed = slowFireSpeed;
-								}
-							}
-						}
-						else if (attackTypeFirst == FASTFIRE)
-						{
-							if (!smallFire[i].isShot)
-							{
-								if (smallFire[i].speed <= 0.0f || smallFire[i].speed > fastFireSpeed)
-								{
-									smallFire[i].speed = fastFireSpeed;
-								}
-							}
-						}
-						else if (attackTypeFirst == MULTIPLEFIRE)
-						{
-							if (!smallFire[i].isShot)
-							{
-								if (smallFire[i].speed <= 0.0f || smallFire[i].speed > multipleFireSpeed)
-								{
-									smallFire[i].speed = multipleFireSpeed;
-								}
-							}
-						}
-
-						//フェーズ2の小炎軌道修正
-						if (attackTypeFirst == SLOWFIRE2)
-						{
-							if (!smallFire[i].isShot)
-							{
-								if (smallFire[i].speed <= 0.0f || smallFire[i].speed > slowFireSpeed2)
-								{
-									smallFire[i].speed = slowFireSpeed2;
-								}
-							}
-						}
-						else if (attackTypeFirst == FASTFIRE2)
-						{
-							if (!smallFire[i].isShot)
-							{
-								if (smallFire[i].speed <= 0.0f || smallFire[i].speed > fastFireSpeed2)
-								{
-									smallFire[i].speed = fastFireSpeed2;
-								}
-							}
-						}
-						else if (attackTypeFirst == MULTIPLEFIRE2)
-						{
-							if (!smallFire[i].isShot)
-							{
-								if (smallFire[i].speed <= 0.0f || smallFire[i].speed > multipleFireSpeed)
-								{
-									smallFire[i].speed = multipleFireSpeed;
-								}
-							}
+							Novice::PlayAudio(longSwordSE, 0, 0.7f);
 						}
 					}
 				}
@@ -3663,7 +3663,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							hitFireEffect[i].pos.y = boss.pos.y + 150.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
 						}
 
-						if (phase == TWO) //フェーズ3の時
+						if (phase == THREE) //フェーズ3の時
 						{
 							hitFireEffect[i].pos.x = boss.pos.x + 150.0f - cosf(effectTheta * i) * hitFireEffect[i].circumference; //ｘ座標
 							hitFireEffect[i].pos.y = boss.pos.y + 200.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
@@ -3687,7 +3687,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							hitFireEffect[i].pos.y = boss.pos.y + 150.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
 						}
 
-						if (phase == ONE) //フェーズ２の時
+						if (phase == THREE) //フェーズ3の時
 						{
 							hitFireEffect[i].pos.x = boss.pos.x + 150.0f - cosf(effectTheta * i) * hitFireEffect[i].circumference; //ｘ座標
 							hitFireEffect[i].pos.y = boss.pos.y + 200.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
