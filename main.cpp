@@ -1389,53 +1389,65 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{
 		case GAMETITLE:
 
-			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
+
+		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
+		{
+			isTransition = true; //トランジション
+			sceneChange = true;
+
+			//プレイヤーの初期化
+			player.isAlive = true;
+			player.hpCount = 20;
+			player.pos.x = 100.0f;
+			player.pos.y = 100.0f;
+			player.isDirections = false;
+
+			//ボスの初期化
+			boss.pos = { 840.0f, 320.0f };
+			boss.hpCount = 200;
+			boss.attackCoolTimer = 60;
+			boss.fireCoolTimer = 0;
+			boss.isAttacking = false;
+			boss.isCharging = false;
+			boss.chargeTimer = 120;
+			boss.isHovering = false;
+			boss.isFlying = false;
+			boss.direction = LEFT;
+			boss.form = DRAGON;
+			boss.isFalling = false;
+			boss.fallTimer = 0;
+			boss.isPlayerHit = false;
+			boss.changedDirection = false;
+			phase = ONE;
+
+			//攻撃の初期化
+			for (int i = 0; i < kMaxSmallFire; i++)
 			{
-				isTransition = true; //トランジション
-				sceneChange = true;
+				smallFire[i].pos = { 0.0f };
+				smallFire[i].speed = 0.0f;
+				smallFire[i].isShot = false;
+				smallFire[i].gravity = 0.0f;
+				smallFire[i].direction = { 0.0f };
+				smallFire[i].isPlayerHit = false;
+				smallFire[i].isBossHit = false;
+				smallFire[i].isReflection = false;
+			}
 
-				//プレイヤーの初期化
-				player.isAlive = true;
-				player.hpCount = 10;
-				player.pos.x = 100.0f;
-				player.pos.y = 100.0f;
-				player.isDirections = false;
+			giantFire.pos = { 0.0f };
+			giantFire.isShot = false;
+			giantFire.direction = { 0.0f };
+			giantFire.isPlayerHit = false;
 
-				//ボスの初期化
-				boss.pos = { 840.0f, 320.0f };
-				boss.hpCount = 200;
-				boss.attackCoolTimer = 60;
-				boss.fireCoolTimer = 0;
-				boss.isAttacking = false;
-				boss.isCharging = false;
-				boss.chargeTimer = 120;
-				boss.isHovering = false;
-				boss.isFlying = false;
-				boss.direction = LEFT;
-				boss.form = DRAGON;
-				boss.isFalling = false;
-				boss.fallTimer = 0;
-				boss.isPlayerHit = false;
-				boss.changedDirection = false;
-				phase = ONE;
+			explosion.pos = { 0.0f };
+			explosion.duration = 0;
+			explosion.isPlayerHit = false;
+			explosion.isShot = false;
 
-				//攻撃の初期化
-				for (int i = 0; i < kMaxSmallFire; i++)
-				{
-					smallFire[i].pos = { 0.0f };
-					smallFire[i].speed = 0.0f;
-					smallFire[i].isShot = false;
-					smallFire[i].gravity = 0.0f;
-					smallFire[i].direction = { 0.0f };
-					smallFire[i].isPlayerHit = false;
-					smallFire[i].isBossHit = false;
-					smallFire[i].isReflection = false;
-				}
-
-				giantFire.pos = { 0.0f };
-				giantFire.isShot = false;
-				giantFire.direction = { 0.0f };
-				giantFire.isPlayerHit = false;
+			//タイマー初期化
+			frameTimer = 0;
+			secondsTimer = 0;
+			printTime = 0;
+		}
 
 				explosion.pos = { 0.0f };
 				explosion.duration = 0;
@@ -3706,7 +3718,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						{
 							//プレイヤーの初期化
 							player.isAlive = true;
-							player.hpCount = 10;
+							player.hpCount = 20;
 							player.pos.x = 100.0f;
 							player.pos.y = 100.0f;
 							player.isDirections = false;
@@ -3846,8 +3858,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					static_cast<int>(backGround.pos.y),
 					ghBackGround1, 1, 1, 0.0f, backGround.color
 				);
+
+				//画面外(左)
+				Novice::DrawSprite
+				(
+					static_cast<int>(backGround.pos.x - 1280.0f),
+					static_cast<int>(backGround.pos.y),
+					ghBackGround1, 1, 1, 0.0f, backGround.color
+				);
+
+				//画面外(右)
+				Novice::DrawSprite
+				(
+					static_cast<int>(backGround.pos.x + 1280.0f),
+					static_cast<int>(backGround.pos.y),
+					ghBackGround1, 1, 1, 0.0f, backGround.color
+				);
 			}
-			else if (phase == THREE)
+			else if (phase == THREE) //最終ステージ
 			{
 				//背景
 				Novice::DrawSprite
@@ -3856,23 +3884,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					static_cast<int>(backGround.pos.y),
 					ghBackGround3, 1, 1, 0.0f, backGround.color
 				);
+
+				//画面外(左)
+				Novice::DrawSprite
+				(
+					static_cast<int>(backGround.pos.x - 1280.0f),
+					static_cast<int>(backGround.pos.y),
+					ghBackGround3, 1, 1, 0.0f, backGround.color
+				);
+
+				//画面外(右)
+				Novice::DrawSprite
+				(
+					static_cast<int>(backGround.pos.x + 1280.0f),
+					static_cast<int>(backGround.pos.y),
+					ghBackGround3, 1, 1, 0.0f, backGround.color
+				);
 			}
-
-			//画面外(左)
-			Novice::DrawSprite
-			(
-				static_cast<int>(backGround.pos.x - 1280.0f),
-				static_cast<int>(backGround.pos.y),
-				ghBackGround1, 1, 1, 0.0f, backGround.color
-			);
-
-			//画面外(右)
-			Novice::DrawSprite
-			(
-				static_cast<int>(backGround.pos.x + 1280.0f),
-				static_cast<int>(backGround.pos.y),
-				ghBackGround1, 1, 1, 0.0f, backGround.color
-			);
 
 			//---------------------パーティクル-----------------------//
 
