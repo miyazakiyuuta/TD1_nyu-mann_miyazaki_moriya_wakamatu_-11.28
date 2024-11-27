@@ -1390,70 +1390,65 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		case GAMETITLE:
 
 
-		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
-		{
-			isTransition = true; //トランジション
-			sceneChange = true;
-
-			//プレイヤーの初期化
-			player.isAlive = true;
-			player.hpCount = 20;
-			player.pos.x = 100.0f;
-			player.pos.y = 100.0f;
-			player.isDirections = false;
-
-			//ボスの初期化
-			boss.pos = { 840.0f, 320.0f };
-			boss.hpCount = 200;
-			boss.attackCoolTimer = 60;
-			boss.fireCoolTimer = 0;
-			boss.isAttacking = false;
-			boss.isCharging = false;
-			boss.chargeTimer = 120;
-			boss.isHovering = false;
-			boss.isFlying = false;
-			boss.direction = LEFT;
-			boss.form = DRAGON;
-			boss.isFalling = false;
-			boss.fallTimer = 0;
-			boss.isPlayerHit = false;
-			boss.changedDirection = false;
-			phase = ONE;
-
-			//攻撃の初期化
-			for (int i = 0; i < kMaxSmallFire; i++)
+			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
 			{
-				smallFire[i].pos = { 0.0f };
-				smallFire[i].speed = 0.0f;
-				smallFire[i].isShot = false;
-				smallFire[i].gravity = 0.0f;
-				smallFire[i].direction = { 0.0f };
-				smallFire[i].isPlayerHit = false;
-				smallFire[i].isBossHit = false;
-				smallFire[i].isReflection = false;
-			}
+				isTransition = true; //トランジション
+				sceneChange = true;
 
-			giantFire.pos = { 0.0f };
-			giantFire.isShot = false;
-			giantFire.direction = { 0.0f };
-			giantFire.isPlayerHit = false;
+				//プレイヤーの初期化
+				player.isAlive = true;
+				player.hpCount = 20;
+				player.pos.x = 100.0f;
+				player.pos.y = 100.0f;
+				player.isDirections = false;
 
-			explosion.pos = { 0.0f };
-			explosion.duration = 0;
-			explosion.isPlayerHit = false;
-			explosion.isShot = false;
+				//ボスの初期化
+				boss.pos = { 840.0f, 320.0f };
+				boss.hpCount = 200;
+				boss.attackCoolTimer = 60;
+				boss.fireCoolTimer = 0;
+				boss.isAttacking = false;
+				boss.isCharging = false;
+				boss.chargeTimer = 120;
+				boss.isHovering = false;
+				boss.isFlying = false;
+				boss.direction = LEFT;
+				boss.form = DRAGON;
+				boss.isFalling = false;
+				boss.fallTimer = 0;
+				boss.isPlayerHit = false;
+				boss.changedDirection = false;
+				phase = ONE;
 
-			//タイマー初期化
-			frameTimer = 0;
-			secondsTimer = 0;
-			printTime = 0;
-		}
+				//攻撃の初期化
+				for (int i = 0; i < kMaxSmallFire; i++)
+				{
+					smallFire[i].pos = { 0.0f };
+					smallFire[i].speed = 0.0f;
+					smallFire[i].isShot = false;
+					smallFire[i].gravity = 0.0f;
+					smallFire[i].direction = { 0.0f };
+					smallFire[i].isPlayerHit = false;
+					smallFire[i].isBossHit = false;
+					smallFire[i].isReflection = false;
+				}
+
+				giantFire.pos = { 0.0f };
+				giantFire.isShot = false;
+				giantFire.direction = { 0.0f };
+				giantFire.isPlayerHit = false;
 
 				explosion.pos = { 0.0f };
 				explosion.duration = 0;
 				explosion.isPlayerHit = false;
 				explosion.isShot = false;
+
+				//タイマー初期化
+				frameTimer = 0;
+				secondsTimer = 0;
+				printTime = 0;
 			}
+
 
 			//シーン切り替えまでの待機時間
 			if (sceneChange)
