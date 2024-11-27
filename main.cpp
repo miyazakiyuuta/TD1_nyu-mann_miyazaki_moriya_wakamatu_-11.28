@@ -1778,22 +1778,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					shortSword.pos.y = player.pos.y - player.height + shortSword.height;
 					if (!player.isDirections)//右
 					{
-						shortSword.pos.x = player.pos.x + player.width / 2.0f;
+						shortSword.pos.x = player.pos.x + player.width;
 					}
 					else//左
 					{
-						shortSword.pos.x = player.pos.x + player.width / 2.0f - shortSword.width;
+						shortSword.pos.x = player.pos.x - shortSword.width;
 					}
 
 					//大剣
 					longSword.pos.y = player.pos.y - player.height + longSword.height;
 					if (!player.isDirections)//右
 					{
-						longSword.pos.x = player.pos.x + player.width / 2.0f;
+						longSword.pos.x = player.pos.x + player.width;
 					}
 					else//左
 					{
-						longSword.pos.x = player.pos.x + player.width / 2.0f - longSword.width;
+						longSword.pos.x = player.pos.x - longSword.width;
 					}
 
 					//----------------重力------------------//
