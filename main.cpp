@@ -4,7 +4,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
-const char kWindowTitle[] = "LC1C_TD(~11/28)_タイトル";
+const char kWindowTitle[] = "1248_喧嘩上等ドラゴンにもツッパル";
 const int kWindowWidth = 1280; // 画面の横幅
 const int kWindowHeight = 720; // 画面の縦幅
 
