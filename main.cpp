@@ -956,7 +956,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	shortSword.durationTime = 30; //攻撃の持続時間
 	shortSword.isAtk = false; //攻撃しているか
 	shortSword.isBossHit = false; //攻撃が当たっているか(ボスに)
-	shortSword.damage = 300; //攻撃力
+	shortSword.damage = 3; //攻撃力
 	shortSword.isReaction = false; //硬直が起きているか(アニメーション切り替えにも使う)
 	shortSword.reactionTime = 30; //硬直で動けない時間
 
@@ -2174,6 +2174,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 										flash.isShot = false;
 										boss.isChange = true;
 										boss.form = HUMAN;
+										boss.pos.x = 546.0f;
 										boss.width = 186.0f;
 										boss.height = 226.0f;
 										boss.fallTimer = 60;
@@ -5343,7 +5344,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							boss.hpCount = 200;
 							boss.width = 288.0f;
 							boss.height = 320.0f;
-							boss.attackCoolTimer = 60;
+							boss.attackCoolTimer = 120;
 							boss.fireCoolTimer = 0;
 							boss.isAttacking = false;
 							boss.isCharging = false;
