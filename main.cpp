@@ -900,7 +900,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	shortSword.durationTime = 30; //攻撃の持続時間
 	shortSword.isAtk = false; //攻撃しているか
 	shortSword.isBossHit = false; //攻撃が当たっているか(ボスに)
-	shortSword.damage = 3; //攻撃力
+	shortSword.damage = 300; //攻撃力
 	shortSword.isReaction = false; //硬直が起きているか(アニメーション切り替えにも使う)
 	shortSword.reactionTime = 30; //硬直で動けない時間
 
@@ -2861,13 +2861,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							}
 						}
 
+						//フェーズ１の小炎軌道修正
 						if (attackTypeFirst == SLOWFIRE)
 						{
 							if (!smallFire[i].isShot)
 							{
-								if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 6.0f)
+								if (smallFire[i].speed <= 0.0f || smallFire[i].speed > slowFireSpeed)
 								{
-									smallFire[i].speed = 5.0f;
+									smallFire[i].speed = slowFireSpeed;
 								}
 							}
 						}
@@ -2875,9 +2876,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						{
 							if (!smallFire[i].isShot)
 							{
-								if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 21.0f)
+								if (smallFire[i].speed <= 0.0f || smallFire[i].speed > fastFireSpeed)
 								{
-									smallFire[i].speed = 20.0f;
+									smallFire[i].speed = fastFireSpeed;
 								}
 							}
 						}
@@ -2885,9 +2886,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						{
 							if (!smallFire[i].isShot)
 							{
-								if (smallFire[i].speed <= 0.0f || smallFire[i].speed >= 13.0f)
+								if (smallFire[i].speed <= 0.0f || smallFire[i].speed > multipleFireSpeed)
 								{
-									smallFire[i].speed = 12.0f;
+									smallFire[i].speed = multipleFireSpeed;
+								}
+							}
+						}
+
+						//フェーズ2の小炎軌道修正
+						if (attackTypeFirst == SLOWFIRE2)
+						{
+							if (!smallFire[i].isShot)
+							{
+								if (smallFire[i].speed <= 0.0f || smallFire[i].speed > slowFireSpeed2)
+								{
+									smallFire[i].speed = slowFireSpeed2;
+								}
+							}
+						}
+						else if (attackTypeFirst == FASTFIRE2)
+						{
+							if (!smallFire[i].isShot)
+							{
+								if (smallFire[i].speed <= 0.0f || smallFire[i].speed > fastFireSpeed2)
+								{
+									smallFire[i].speed = fastFireSpeed2;
+								}
+							}
+						}
+						else if (attackTypeFirst == MULTIPLEFIRE2)
+						{
+							if (!smallFire[i].isShot)
+							{
+								if (smallFire[i].speed <= 0.0f || smallFire[i].speed > multipleFireSpeed)
+								{
+									smallFire[i].speed = multipleFireSpeed;
 								}
 							}
 						}
@@ -2952,7 +2985,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					}
 				}
 
-				if (attackTypeFirst == SLOWFIRE || attackTypeThird == SLOWFIRE2)
+				if (attackTypeFirst == SLOWFIRE2 || attackTypeThird == SLOWFIRE2)
 				{
 					// 小炎(連続)の当たり判定
 					for (int i = 0; i < kMaxSlowFire; i++)
@@ -2968,7 +3001,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					}
 				}
 
-				if (attackTypeFirst == FASTFIRE || attackTypeThird == FASTFIRE2)
+				if (attackTypeFirst == FASTFIRE2 || attackTypeThird == FASTFIRE2)
 				{
 					// 小炎(高速)の当たり判定
 					for (int i = 0; i < kMaxFastFire; i++)
@@ -2984,7 +3017,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					}
 				}
 
-				if (attackTypeFirst == MULTIPLEFIRE || attackTypeThird == MULTIPLEFIRE2)
+				if (attackTypeFirst == MULTIPLEFIRE2 || attackTypeThird == MULTIPLEFIRE2)
 				{
 					// 小炎(拡散)の当たり判定
 					for (int i = 0; i < kMaxMultiple; i++)
@@ -3299,6 +3332,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						}
 						else
 						{
+							giantFireLocus[i].width = 128.0f;
+							giantFireLocus[i].height = 128.0f;
 							giantFireLocus[i].isDisplay = true;
 							giantFireLocusCoolTime = 240;
 						}
@@ -3592,6 +3627,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					{
 						if (smallFire[i].isShot)
 						{
+							smallFireLocus[i][j].width = 32.0f;
+							smallFireLocus[i][j].height = 32.0f;
+							smallFireLocus[i][j].color = 0xFF0000FF;
+
 							//ランダムな位置に表示させる
 							smallFireLocus[i][j].pos.x = rand() % 16 - 8 + smallFire[i].pos.x + smallFire[i].width / 2.0f;
 							smallFireLocus[i][j].pos.y = rand() % 16 - 8 + ToScreen(smallFire[i].pos.y) + smallFire[i].height / 2.0f;
