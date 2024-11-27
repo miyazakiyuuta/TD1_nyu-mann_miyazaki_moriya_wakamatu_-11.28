@@ -849,7 +849,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//==============================================
 
 	//シーン
-	int scene = GAMEPLAY;
+	int scene = GAMETITLE;
 	int sceneChange = false;
 	int sceneChangeTime = 65;
 
@@ -1364,6 +1364,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	int ghContinueYes = Novice::LoadTexture("./Resources/images/Yes.png");
 	int ghContinueNo = Novice::LoadTexture("./Resources/images/No.png");
 
+	//タイトル
+	int isRule = false;
+	int ruleTime = 60;
+	int ghTitle = Novice::LoadTexture("./Resources/images/title.png");
+	int ghRule = Novice::LoadTexture("./Resources/images/Rule.png");
+
 	//クリア
 	int ghClear = Novice::LoadTexture("./Resources/images/CLEAR.png");
 	int clearFrame = 60;
@@ -1389,83 +1395,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		switch (scene)
 		{
 		case GAMETITLE:
-
-
-			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
-			{
-				isTransition = true; //トランジション
-				sceneChange = true;
-
-				//プレイヤーの初期化
-				player.isAlive = true;
-				player.hpCount = 20;
-				player.pos.x = 100.0f;
-				player.pos.y = 100.0f;
-				player.isDirections = false;
-
-				//ボスの初期化
-				boss.pos = { 840.0f, 320.0f };
-				boss.hpCount = 200;
-				boss.attackCoolTimer = 60;
-				boss.fireCoolTimer = 0;
-				boss.isAttacking = false;
-				boss.isCharging = false;
-				boss.chargeTimer = 120;
-				boss.isHovering = false;
-				boss.isFlying = false;
-				boss.direction = LEFT;
-				boss.form = DRAGON;
-				boss.isFalling = false;
-				boss.fallTimer = 0;
-				boss.isPlayerHit = false;
-				boss.changedDirection = false;
-				phase = ONE;
-
-				//攻撃の初期化
-				for (int i = 0; i < kMaxSmallFire; i++)
-				{
-					smallFire[i].pos = { 0.0f };
-					smallFire[i].speed = 0.0f;
-					smallFire[i].isShot = false;
-					smallFire[i].gravity = 0.0f;
-					smallFire[i].direction = { 0.0f };
-					smallFire[i].isPlayerHit = false;
-					smallFire[i].isBossHit = false;
-					smallFire[i].isReflection = false;
-				}
-
-				giantFire.pos = { 0.0f };
-				giantFire.isShot = false;
-				giantFire.direction = { 0.0f };
-				giantFire.isPlayerHit = false;
-
-				explosion.pos = { 0.0f };
-				explosion.duration = 0;
-				explosion.isPlayerHit = false;
-				explosion.isShot = false;
-
-				//タイマー初期化
-				frameTimer = 0;
-				secondsTimer = 0;
-				printTime = 0;
-			}
-
-
-			//シーン切り替えまでの待機時間
-			if (sceneChange)
-			{
-				if (sceneChangeTime >= 0)
-				{
-					sceneChangeTime--;
-				}
-				else
-				{
-					sceneChangeTime = 65;
-					scene = GAMEPLAY;
-					sceneChange = false;
-				}
-			}
-
 			break;
 		case GAMEPLAY:
 			break;
@@ -3385,6 +3314,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						powderAuraCoolTime = 240;
 					}
 
+					//フェーズ１の時の色
+					if (phase == THREE)
+					{
+						powderAura[i].color = 0xFFFFFFFF;
+					}
+
 					//フェーズ３の時に色変更
 					if (phase == THREE)
 					{
@@ -3833,19 +3768,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			//ボスが死んだとき
 			if (phase == THREE && !boss.isAlive)
 			{
+
 				if (clearFrame >= 0)
 				{
 					clearFrame--;
+					flash.isShot = true;
+					backGround.isShake = true;
 				}
 				else
 				{
-					clearFrame = 60;
+					flash.duration = 0;
+					flash.isShot = false;
+					backGround.isShake = false;
 					isTransition = true; //トランジション
 					sceneChange = true;
+					clearFrame = 60;
 				}
-
-				flash.isShot = true;
-				backGround.isShake = true;
 
 				//------------シーン切り替え-------------//
 
@@ -5039,6 +4977,151 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		if (scene == GAMETITLE)
 		{
 
+			//選択
+			if (!sceneChange)
+			{
+				if (keys[DIK_W] && !preKeys[DIK_W] || Novice::IsTriggerButton(0, PadButton::kPadButton0))
+				{
+					isContinue = true; //スタート
+				}
+
+				if (keys[DIK_S] && !preKeys[DIK_S] || Novice::IsTriggerButton(0, PadButton::kPadButton1))
+				{
+					isContinue = false; //クレジット
+				}
+
+			}
+
+			if (ruleTime >= 0)
+			{
+				ruleTime--;
+			}
+			
+			if (ruleTime <= 0)
+			{
+				if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
+				{
+					if (!isRule)
+					{
+						sceneChange = true;
+
+						if (isContinue)
+						{
+							isTransition = true; //トランジション
+
+							//プレイヤーの初期化
+							player.isAlive = true;
+							player.hpCount = 20;
+							player.pos.x = 100.0f;
+							player.pos.y = 100.0f;
+							player.isDirections = false;
+
+							//ボスの初期化
+							boss.pos = { 840.0f, 320.0f };
+							boss.hpCount = 200;
+							boss.attackCoolTimer = 60;
+							boss.fireCoolTimer = 0;
+							boss.isAttacking = false;
+							boss.isCharging = false;
+							boss.chargeTimer = 120;
+							boss.isHovering = false;
+							boss.isFlying = false;
+							boss.direction = LEFT;
+							boss.form = DRAGON;
+							boss.isFalling = false;
+							boss.fallTimer = 0;
+							boss.isPlayerHit = false;
+							boss.changedDirection = false;
+							phase = ONE;
+
+							//攻撃の初期化
+							for (int i = 0; i < kMaxSmallFire; i++)
+							{
+								smallFire[i].pos = { 0.0f };
+								smallFire[i].speed = 0.0f;
+								smallFire[i].isShot = false;
+								smallFire[i].gravity = 0.0f;
+								smallFire[i].direction = { 0.0f };
+								smallFire[i].isPlayerHit = false;
+								smallFire[i].isBossHit = false;
+								smallFire[i].isReflection = false;
+							}
+
+							giantFire.pos = { 0.0f };
+							giantFire.isShot = false;
+							giantFire.direction = { 0.0f };
+							giantFire.isPlayerHit = false;
+
+							explosion.pos = { 0.0f };
+							explosion.duration = 0;
+							explosion.isPlayerHit = false;
+							explosion.isShot = false;
+
+							//タイマー初期化
+							frameTimer = 0;
+							secondsTimer = 0;
+							printTime = 0;
+							
+							//点滅
+							flash.isShot = false;
+						}
+						ruleTime = 60;
+					}
+					else
+					{
+						//ルール画面を閉じる処理
+						if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
+						{
+							isRule = false;
+							ruleTime = 60;
+						}
+					}
+				}
+			}
+
+			
+
+			//シーン切り替えまでの待機時間
+			if (sceneChange)
+			{
+				if (isContinue) //ゲームクエスト
+				{
+					if (sceneChangeTime >= 0)
+					{
+						sceneChangeTime--;
+					}
+					else
+					{
+						sceneChangeTime = 65;
+						scene = GAMEPLAY;
+						sceneChange = false;
+					}
+				}
+				else
+				{
+					isRule = true;
+					sceneChange = false;
+				}
+			}
+
+			//タイトル画面
+			Novice::DrawSprite(0, 0, ghTitle, 1, 1, 0.0f, WHITE);
+
+			//選択
+			if (isContinue)
+			{
+				Novice::DrawBox(448, 504, 352, 64, 0.0f, WHITE, kFillModeWireFrame);
+			}
+			else
+			{
+				Novice::DrawBox(448, 590, 364, 64, 0.0f, WHITE, kFillModeWireFrame);
+			}
+
+			//ルール
+			if (isRule)
+			{
+				Novice::DrawSprite(0, 0, ghRule, 1, 1, 0.0f, WHITE);
+			}
 		}
 
 		if (scene == GAMEOVER)
@@ -5047,7 +5130,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			Novice::DrawSprite(0, 0, ghGameOver, 1, 1, 0.0f, WHITE);
 		}
 
-		//※クリア画面に行く処理はまだない
 		if (scene == GAMECLEAR)
 		{
 			//クリア画面
@@ -5153,11 +5235,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		// フレームの終了
 		Novice::EndFrame();
 
-		// ESCキーが押されたらループを抜ける
-		if (preKeys[DIK_ESCAPE] == 0 && keys[DIK_ESCAPE] != 0)
-		{
-			break;
-		}
 	}
 
 	// ライブラリの終了
