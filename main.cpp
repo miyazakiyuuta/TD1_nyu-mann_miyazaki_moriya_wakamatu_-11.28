@@ -1392,7 +1392,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 			//プレイヤーの初期化
 			player.isAlive = true;
-			player.hpCount = 10;
+			player.hpCount = 20;
 			player.pos.x = 100.0f;
 			player.pos.y = 100.0f;
 			player.isDirections = false;
@@ -1437,6 +1437,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			explosion.duration = 0;
 			explosion.isPlayerHit = false;
 			explosion.isShot = false;
+
+			//タイマー初期化
+			frameTimer = 0;
+			secondsTimer = 0;
+			printTime = 0;
 		}
 
 		//シーン切り替えまでの待機時間
@@ -3697,7 +3702,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						{
 							//プレイヤーの初期化
 							player.isAlive = true;
-							player.hpCount = 10;
+							player.hpCount = 20;
 							player.pos.x = 100.0f;
 							player.pos.y = 100.0f;
 							player.isDirections = false;
@@ -3806,8 +3811,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					static_cast<int>(backGround.pos.y),
 					ghBackGround1, 1, 1, 0.0f, backGround.color
 				);
+
+				//画面外(左)
+				Novice::DrawSprite
+				(
+					static_cast<int>(backGround.pos.x - 1280.0f),
+					static_cast<int>(backGround.pos.y),
+					ghBackGround1, 1, 1, 0.0f, backGround.color
+				);
+
+				//画面外(右)
+				Novice::DrawSprite
+				(
+					static_cast<int>(backGround.pos.x + 1280.0f),
+					static_cast<int>(backGround.pos.y),
+					ghBackGround1, 1, 1, 0.0f, backGround.color
+				);
 			}
-			else if (phase == THREE)
+			else if (phase == THREE) //最終ステージ
 			{
 				//背景
 				Novice::DrawSprite
@@ -3816,23 +3837,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					static_cast<int>(backGround.pos.y),
 					ghBackGround3, 1, 1, 0.0f, backGround.color
 				);
+
+				//画面外(左)
+				Novice::DrawSprite
+				(
+					static_cast<int>(backGround.pos.x - 1280.0f),
+					static_cast<int>(backGround.pos.y),
+					ghBackGround3, 1, 1, 0.0f, backGround.color
+				);
+
+				//画面外(右)
+				Novice::DrawSprite
+				(
+					static_cast<int>(backGround.pos.x + 1280.0f),
+					static_cast<int>(backGround.pos.y),
+					ghBackGround3, 1, 1, 0.0f, backGround.color
+				);
 			}
-
-			//画面外(左)
-			Novice::DrawSprite
-			(
-				static_cast<int>(backGround.pos.x - 1280.0f),
-				static_cast<int>(backGround.pos.y),
-				ghBackGround1, 1, 1, 0.0f, backGround.color
-			);
-
-			//画面外(右)
-			Novice::DrawSprite
-			(
-				static_cast<int>(backGround.pos.x + 1280.0f),
-				static_cast<int>(backGround.pos.y),
-				ghBackGround1, 1, 1, 0.0f, backGround.color
-			);
 
 			//---------------------パーティクル-----------------------//
 
