@@ -4555,17 +4555,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			if (phase == ONE || phase == THREE)
 			{
 
-				// 巨大火球
-				if (giantFire.isShot)
-				{
-					Novice::DrawBox(
-						static_cast<int>(giantFire.pos.x),
-						static_cast<int>(ToScreen(giantFire.pos.y)),
-						static_cast<int>(giantFire.width),
-						static_cast<int>(giantFire.height),
-						0.0f, RED, kFillModeWireFrame);
-				}
-
 				// 爆発
 				if (explosion.isShot)
 				{
