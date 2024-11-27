@@ -898,7 +898,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	shortSword.durationTime = 30; //攻撃の持続時間
 	shortSword.isAtk = false; //攻撃しているか
 	shortSword.isBossHit = false; //攻撃が当たっているか(ボスに)
-	shortSword.damage = 3; //攻撃力
+	shortSword.damage = 300; //攻撃力
 	shortSword.isReaction = false; //硬直が起きているか(アニメーション切り替えにも使う)
 	shortSword.reactionTime = 30; //硬直で動けない時間
 
@@ -1366,6 +1366,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//クリア
 	int ghClear = Novice::LoadTexture("./Resources/images/CLEAR.png");
+	int clearFrame = 60;
 
 	//ゲームオーバー
 	int ghGameOver = Novice::LoadTexture("./Resources/images/GAME_OVER.png");
@@ -2533,6 +2534,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			}
 
 
+			//------------ボスの体力が０になった時-------------//
+
+			if (boss.hpCount <= 0 && phase == THREE)
+			{
+				boss.isAlive = false;
+			}
+
 
 #pragma endregion
 
@@ -3464,8 +3472,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						//移動させる
 						hitFireEffect[i].circumference += rand() % 10;
 
-						hitFireEffect[i].pos.x = boss.pos.x + 150.0f - cosf(effectTheta * i) * hitFireEffect[i].circumference; //ｘ座標
-						hitFireEffect[i].pos.y = boss.pos.y + 150.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
+						if (phase == ONE) //フェーズ１の時
+						{
+							hitFireEffect[i].pos.x = boss.pos.x + 150.0f - cosf(effectTheta * i) * hitFireEffect[i].circumference; //ｘ座標
+							hitFireEffect[i].pos.y = boss.pos.y + 150.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
+						}
+
+						if (phase == TWO) //フェーズ3の時
+						{
+							hitFireEffect[i].pos.x = boss.pos.x + 150.0f - cosf(effectTheta * i) * hitFireEffect[i].circumference; //ｘ座標
+							hitFireEffect[i].pos.y = boss.pos.y + 200.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
+						}
 					}
 
 					//小さくなるにつれて色変化
@@ -3479,9 +3496,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 					if (!hitFireEffect[i].isDisplay)
 					{
-						//円状にに表示させる
-						hitFireEffect[i].pos.x = boss.pos.x + 150.0f - cosf(effectTheta * i) * hitFireEffect[i].circumference; //ｘ座標
-						hitFireEffect[i].pos.y = boss.pos.y + 150.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
+						if (phase == ONE) //フェーズ１の時
+						{
+							hitFireEffect[i].pos.x = boss.pos.x + 150.0f - cosf(effectTheta * i) * hitFireEffect[i].circumference; //ｘ座標
+							hitFireEffect[i].pos.y = boss.pos.y + 150.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
+						}
+
+						if (phase == ONE) //フェーズ２の時
+						{
+							hitFireEffect[i].pos.x = boss.pos.x + 150.0f - cosf(effectTheta * i) * hitFireEffect[i].circumference; //ｘ座標
+							hitFireEffect[i].pos.y = boss.pos.y + 200.0f - sinf(effectTheta * i) * hitFireEffect[i].circumference; //ｙ座標
+						}
 
 						hitFireEffect[i].color = 0xFF0000FF;
 					}
@@ -3532,8 +3557,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 				}
 			}
-
-
 
 			//--------------------小炎の軌跡---------------------//
 			for (int i = 0; i < kMaxSmallFire; i++)
@@ -3592,6 +3615,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						}
 						else
 						{
+							smallFireLocus[i][j].width = 32.0f;
+							smallFireLocus[i][j].height = 32.0f;
+							smallFireLocus[i][j].color = 0xFF0000FF;
 							smallFireLocus[i][j].isDisplay = true;
 							smallFireLocusCoolTime = 240;
 						}
@@ -3674,7 +3700,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				}
 			}
 
-			//死んだとき
+			//プレイヤーが死んだとき
 			if (!player.isAlive)
 			{
 				//----------------コンティニュー--------------//
@@ -3690,6 +3716,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					if (keys[DIK_D] && !preKeys[DIK_D] || padX >= 1)
 					{
 						isContinue = false; //NO
+					}
+
+					//次のフェーズに進まないための処理
+					if (phase == TWO)
+					{
+						phase1AttackCount = 0;
 					}
 				}
 
@@ -3790,6 +3822,43 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						{
 							scene = GAMEOVER;
 						}
+						sceneChangeTime = 65;
+						sceneChange = false;
+						isContinue = true;
+
+					}
+				}
+			}
+
+			//ボスが死んだとき
+			if (phase == THREE && !boss.isAlive)
+			{
+				if (clearFrame >= 0)
+				{
+					clearFrame--;
+				}
+				else
+				{
+					clearFrame = 60;
+					isTransition = true; //トランジション
+					sceneChange = true;
+				}
+
+				flash.isShot = true;
+				backGround.isShake = true;
+
+				//------------シーン切り替え-------------//
+
+				//シーン切り替えまでの待機時間
+				if (sceneChange)
+				{
+					if (sceneChangeTime >= 0)
+					{
+						sceneChangeTime--;
+					}
+					else
+					{
+						scene = GAMECLEAR;
 						sceneChangeTime = 65;
 						sceneChange = false;
 						isContinue = true;
