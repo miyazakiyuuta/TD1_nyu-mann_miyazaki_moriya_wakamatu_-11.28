@@ -141,7 +141,8 @@ enum SCENE
 	GAMETITLE,
 	GAMEPLAY,
 	GAMEOVER,
-	GAMECLEAR
+	GAMECLEAR,
+	GAMERESULT
 };
 
 enum ATTACKFIRST
@@ -1523,12 +1524,35 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				else
 				{
 					sceneChangeTime = 65;
-					scene = GAMETITLE;
+					scene = GAMERESULT;
 					sceneChange = false;
 				}
 			}
 
 			break;
+		case GAMERESULT:
+
+			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
+			{
+				isTransition = true; //トランジション
+				sceneChange = true;
+			}
+
+			//シーン切り替えまでの待機時間
+			if (sceneChange)
+			{
+				if (sceneChangeTime >= 0)
+				{
+					sceneChangeTime--;
+				}
+				else
+				{
+					sceneChangeTime = 65;
+					scene = GAMETITLE;
+					sceneChange = false;
+				}
+			}
+
 		}
 		if (scene == GAMEPLAY)
 		{
@@ -5115,6 +5139,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{
 			//クリア画面
 			Novice::DrawSprite(0, 0, ghClear, 1, 1, 0.0f, WHITE);
+		}
+
+		if (scene == GAMERESULT)
+		{
+			Novice::DrawBox(0, 0, 1280, 720, 0.0f, BLACK, kFillModeSolid);
+			Novice::DrawSprite(494, 360 - 64, numberGraphs[timeArray[0]], 2.0f, 2.0f, 0.0f, WHITE);
+			Novice::DrawSprite(622, 386 - 64, doubleQuotesGH, 2.0f, 2.0f, 0.0f, WHITE);
+			Novice::DrawSprite(640, 360 - 64, numberGraphs[timeArray[1]], 2.0f, 2.0f, 0.0f, WHITE);
+			Novice::DrawSprite(720, 360 - 64, numberGraphs[timeArray[2]], 2.0f, 2.0f, 0.0f, WHITE);
 		}
 
 		///
