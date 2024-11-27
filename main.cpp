@@ -1105,6 +1105,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	int frameCount = 0; // フレーム
 
+	//タイマー
+	int frameTimer = 0;
+	int secondsTimer = 0;
+	int printTime = 0;
+	const int kMaxDigit = 3;
+	int timeArray[kMaxDigit]{};
+	int numberGraphs[10];
+	numberGraphs[0] = Novice::LoadTexture("./Resources/images/0.png");
+	numberGraphs[1] = Novice::LoadTexture("./Resources/images/1.png");
+	numberGraphs[2] = Novice::LoadTexture("./Resources/images/2.png");
+	numberGraphs[3] = Novice::LoadTexture("./Resources/images/3.png");
+	numberGraphs[4] = Novice::LoadTexture("./Resources/images/4.png");
+	numberGraphs[5] = Novice::LoadTexture("./Resources/images/5.png");
+	numberGraphs[6] = Novice::LoadTexture("./Resources/images/6.png");
+	numberGraphs[7] = Novice::LoadTexture("./Resources/images/7.png");
+	numberGraphs[8] = Novice::LoadTexture("./Resources/images/8.png");
+	numberGraphs[9] = Novice::LoadTexture("./Resources/images/9.png");
+	int doubleQuotesGH = Novice::LoadTexture("./Resources/images/kaigyou.png");
+
 	//コンティニュー
 	int isContinue = true; //yes & no の選択
 	int ghContinue = Novice::LoadTexture("./Resources/images/Continue.png");
@@ -1136,136 +1155,149 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{
 		case GAMETITLE:
 
-		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
-		{
-			isTransition = true; //トランジション
-			sceneChange = true;
-
-			//プレイヤーの初期化
-			player.isAlive = true;
-			player.hpCount = 10;
-			player.pos.x = 100.0f;
-			player.pos.y = 100.0f;
-			player.isDirections = false;
-
-			//ボスの初期化
-			boss.pos = { 840.0f, 320.0f };
-			boss.hpCount = 200;
-			boss.attackCoolTimer = 60;
-			boss.fireCoolTimer = 0;
-			boss.isAttacking = false;
-			boss.isCharging = false;
-			boss.chargeTimer = 120;
-			boss.isHovering = false;
-			boss.isFlying = false;
-			boss.direction = LEFT;
-			boss.form = DRAGON;
-			boss.isFalling = false;
-			boss.fallTimer = 0;
-			boss.isPlayerHit = false;
-			boss.changedDirection = false;
-			phase = ONE;
-
-			//攻撃の初期化
-			for (int i = 0; i < kMaxSmallFire; i++)
+			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
 			{
-				smallFire[i].pos = { 0.0f };
-				smallFire[i].speed = 0.0f;
-				smallFire[i].isShot = false;
-				smallFire[i].gravity = 0.0f;
-				smallFire[i].direction = { 0.0f };
-				smallFire[i].isPlayerHit = false;
-				smallFire[i].isBossHit = false;
-				smallFire[i].isReflection = false;
+				isTransition = true; //トランジション
+				sceneChange = true;
+
+				//プレイヤーの初期化
+				player.isAlive = true;
+				player.hpCount = 10;
+				player.pos.x = 100.0f;
+				player.pos.y = 100.0f;
+				player.isDirections = false;
+
+				//ボスの初期化
+				boss.pos = { 840.0f, 320.0f };
+				boss.hpCount = 200;
+				boss.attackCoolTimer = 60;
+				boss.fireCoolTimer = 0;
+				boss.isAttacking = false;
+				boss.isCharging = false;
+				boss.chargeTimer = 120;
+				boss.isHovering = false;
+				boss.isFlying = false;
+				boss.direction = LEFT;
+				boss.form = DRAGON;
+				boss.isFalling = false;
+				boss.fallTimer = 0;
+				boss.isPlayerHit = false;
+				boss.changedDirection = false;
+				phase = ONE;
+
+				//攻撃の初期化
+				for (int i = 0; i < kMaxSmallFire; i++)
+				{
+					smallFire[i].pos = { 0.0f };
+					smallFire[i].speed = 0.0f;
+					smallFire[i].isShot = false;
+					smallFire[i].gravity = 0.0f;
+					smallFire[i].direction = { 0.0f };
+					smallFire[i].isPlayerHit = false;
+					smallFire[i].isBossHit = false;
+					smallFire[i].isReflection = false;
+				}
+
+				giantFire.pos = { 0.0f };
+				giantFire.isShot = false;
+				giantFire.direction = { 0.0f };
+				giantFire.isPlayerHit = false;
+
+				explosion.pos = { 0.0f };
+				explosion.duration = 0;
+				explosion.isPlayerHit = false;
+				explosion.isShot = false;
 			}
 
-			giantFire.pos = { 0.0f };
-			giantFire.isShot = false;
-			giantFire.direction = { 0.0f };
-			giantFire.isPlayerHit = false;
-
-			explosion.pos = { 0.0f };
-			explosion.duration = 0;
-			explosion.isPlayerHit = false;
-			explosion.isShot = false;
-		}
-
-		//シーン切り替えまでの待機時間
-		if (sceneChange)
-		{
-			if (sceneChangeTime >= 0)
+			//シーン切り替えまでの待機時間
+			if (sceneChange)
 			{
-				sceneChangeTime--;
+				if (sceneChangeTime >= 0)
+				{
+					sceneChangeTime--;
+				}
+				else
+				{
+					sceneChangeTime = 65;
+					scene = GAMEPLAY;
+					sceneChange = false;
+				}
 			}
-			else
-			{
-				sceneChangeTime = 65;
-				scene = GAMEPLAY;
-				sceneChange = false;
-			}
-		}
 
-		break;
+			break;
 		case GAMEPLAY:
-		break;
+			break;
 		case GAMEOVER:
 
-		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
-		{
-			isTransition = true; //トランジション
-			sceneChange = true;
-		}
-
-		//シーン切り替えまでの待機時間
-		if (sceneChange)
-		{
-			if (sceneChangeTime >= 0)
+			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
 			{
-				sceneChangeTime--;
+				isTransition = true; //トランジション
+				sceneChange = true;
 			}
-			else
-			{
-				sceneChangeTime = 65;
-				scene = GAMETITLE;
-				sceneChange = false;
-			}
-		}
 
-		break;
+			//シーン切り替えまでの待機時間
+			if (sceneChange)
+			{
+				if (sceneChangeTime >= 0)
+				{
+					sceneChangeTime--;
+				}
+				else
+				{
+					sceneChangeTime = 65;
+					scene = GAMETITLE;
+					sceneChange = false;
+				}
+			}
+
+			break;
 		case GAMECLEAR:
 
-		if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
-		{
-			isTransition = true; //トランジション
-			sceneChange = true;
-		}
-
-		//シーン切り替えまでの待機時間
-		if (sceneChange)
-		{
-			if (sceneChangeTime >= 0)
+			if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
 			{
-				sceneChangeTime--;
+				isTransition = true; //トランジション
+				sceneChange = true;
 			}
-			else
-			{
-				sceneChangeTime = 65;
-				scene = GAMETITLE;
-				sceneChange = false;
-			}
-		}
 
-		break;
+			//シーン切り替えまでの待機時間
+			if (sceneChange)
+			{
+				if (sceneChangeTime >= 0)
+				{
+					sceneChangeTime--;
+				}
+				else
+				{
+					sceneChangeTime = 65;
+					scene = GAMETITLE;
+					sceneChange = false;
+				}
+			}
+
+			break;
 		}
 		if (scene == GAMEPLAY)
 		{
-
-
+			if (player.isAlive)
+			{
+				frameTimer++;
+				if (frameTimer >= 60)
+				{
+					frameTimer = 0;
+					secondsTimer++;
+				}
+				printTime = secondsTimer;
+				timeArray[0] = printTime / 60;
+				printTime %= 60;
+				timeArray[1] = printTime / 10;
+				printTime %= 10;
+				timeArray[2] = printTime;
+			}
 
 			//スティックの値を取得する
 			Novice::GetAnalogInputLeft(0, &padX, &padY);
 
-		#pragma region プレイヤー
+#pragma region プレイヤー
 			//===========================================================
 			//プレイヤー
 			//===========================================================
@@ -1526,10 +1558,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					playerDrawing.pos.y = player.pos.y + playerDrawing.adjustment.y; //ｙ座標
 				}
 
+#pragma endregion
 
-			#pragma endregion
-
-			#pragma region ボス
+#pragma region ボス
 				//===========================================================
 				//ボスの移動 
 				//===========================================================
@@ -1662,8 +1693,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					case MOVE: BossMove(&boss, boss1FrameImageWidth);
 						break;
 					case SLOWFIRE:
-					SlowFire(kMaxSlowFire, smallFire, &boss, fireShootCount, fireDisappearCount);
-					break;
+						SlowFire(kMaxSlowFire, smallFire, &boss, fireShootCount, fireDisappearCount);
+						break;
 					case FASTFIRE: FastFire(kMaxFastFire, smallFire, &boss, player, fireShootCount, fireDisappearCount);
 						break;
 					case MULTIPLEFIRE: MultipleFire(kMaxMultiple, smallFire, &boss, fireShootCount, fireDisappearCount);
@@ -1671,144 +1702,144 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					case GIANTFIRE: GiantFire(&giantFire, &explosion, &boss, player, fireDisappearCount, bossFrameCount, bossAnimeCount, bossFlyFrameCount, bossFlyAnimeCount, explosionFrameCount, explosionAnimeCount);
 						break;
 					case FLY:
-					if (!boss.isHovering)
-					{
-						if (boss.isInScreen)
+						if (!boss.isHovering)
 						{
-							if (!boss.isFlying)
+							if (boss.isInScreen)
 							{
-								boss.isFlying = true;
-								bossFrameCount = 0;
+								if (!boss.isFlying)
+								{
+									boss.isFlying = true;
+									bossFrameCount = 0;
+								}
+
+								if (boss.pos.y < 620.0f + boss1FrameImageWidth)
+								{
+									boss.pos.y += boss.speed;
+								}
+
+								if (boss.pos.y >= 620.0f + boss1FrameImageWidth)
+								{
+									boss.isInScreen = false;
+								}
 							}
 
-							if (boss.pos.y < 620.0f + boss1FrameImageWidth)
+							if (!boss.isInScreen)
 							{
-								boss.pos.y += boss.speed;
-							}
+								if (boss.direction == LEFT)
+								{
+									if (boss.pos.x > 500)
+									{
+										boss.pos.x -= boss.pos.x;
+									}
 
-							if (boss.pos.y >= 620.0f + boss1FrameImageWidth)
-							{
-								boss.isInScreen = false;
+									if (boss.pos.x <= 500)
+									{
+										boss.pos.x = 500;
+										boss.isHovering = true;
+										boss.isFlying = false;
+										bossFlyFrameCount = 0;
+										bossFlyAnimeCount = 0;
+									}
+								}
+								else if (boss.direction == RIGHT)
+								{
+									if (boss.pos.x < 500)
+									{
+										boss.pos.x += boss.pos.x;
+									}
+
+									if (boss.pos.x >= 500)
+									{
+										boss.pos.x = 500;
+										boss.isHovering = true;
+										boss.isFlying = false;
+										bossFlyFrameCount = 0;
+										bossFlyAnimeCount = 0;
+									}
+								}
 							}
 						}
 
-						if (!boss.isInScreen)
+						if (boss.isHovering)
 						{
-							if (boss.direction == LEFT)
+							if (!boss.isInScreen)
 							{
-								if (boss.pos.x > 500)
+								if (boss.pos.y > 600.0f)
 								{
-									boss.pos.x -= boss.pos.x;
+									boss.pos.y -= boss.speed;
 								}
 
-								if (boss.pos.x <= 500)
+								if (boss.pos.y <= 600.0f)
 								{
-									boss.pos.x = 500;
-									boss.isHovering = true;
-									boss.isFlying = false;
-									bossFlyFrameCount = 0;
-									bossFlyAnimeCount = 0;
+									boss.pos.y = 600.0f;
+									boss.isInScreen = true;
 								}
 							}
-							else if (boss.direction == RIGHT)
+
+							if (boss.isInScreen)
 							{
-								if (boss.pos.x < 500)
+								if (fireDisappearCount < 1)
 								{
-									boss.pos.x += boss.pos.x;
+									if (!smallFire[0].isShot)
+									{
+										smallFire[0].pos.x = boss.pos.x + 128.0f;
+										smallFire[0].pos.y = boss.pos.y - 96.0f;
+										smallFire[0].isShot = true;
+									}
 								}
 
-								if (boss.pos.x >= 500)
+								if (smallFire[0].isShot)
 								{
-									boss.pos.x = 500;
-									boss.isHovering = true;
-									boss.isFlying = false;
-									bossFlyFrameCount = 0;
-									bossFlyAnimeCount = 0;
+									smallFire[0].pos.y -= dropSpeed;
+
+									if (smallFire[0].pos.y <= 0.0f + smallFire[0].width)
+									{
+										smallFire[0].isShot = false;
+										fireDisappearCount = 1;
+									}
+								}
+
+								if (fireDisappearCount == 1 && !flash.isShot)
+								{
+									flash.isShot = true;
+									flash.duration = 90;
+									flash.pos.x = smallFire[0].pos.x - 48.0f;
+									flash.pos.y = smallFire[0].pos.y + 96.0f;
+								}
+
+								if (flash.isShot)
+								{
+									if (flash.width <= 1280.0f)
+									{
+										flash.width += 64.0f;
+										flash.pos.x -= 32.0f;
+									}
+
+									if (flash.height <= 1280.0f)
+									{
+										flash.height += 64.0f;
+										flash.pos.y += 32.0f;
+									}
+
+									if (flash.duration > 0)
+									{
+										flash.duration--;
+									}
+
+									if (flash.duration == 0)
+									{
+										flash.isShot = false;
+										boss.isChange = true;
+										boss.form = 1;
+										boss.height = 200.0f;
+										boss.fallTimer = 60;
+										boss.isAttacking = false;
+										bossSkyFrameCount = 0;
+										bossSkyAnimeCount = 0;
+									}
 								}
 							}
 						}
-					}
-
-					if (boss.isHovering)
-					{
-						if (!boss.isInScreen)
-						{
-							if (boss.pos.y > 600.0f)
-							{
-								boss.pos.y -= boss.speed;
-							}
-
-							if (boss.pos.y <= 600.0f)
-							{
-								boss.pos.y = 600.0f;
-								boss.isInScreen = true;
-							}
-						}
-
-						if (boss.isInScreen)
-						{
-							if (fireDisappearCount < 1)
-							{
-								if (!smallFire[0].isShot)
-								{
-									smallFire[0].pos.x = boss.pos.x + 128.0f;
-									smallFire[0].pos.y = boss.pos.y - 96.0f;
-									smallFire[0].isShot = true;
-								}
-							}
-
-							if (smallFire[0].isShot)
-							{
-								smallFire[0].pos.y -= dropSpeed;
-
-								if (smallFire[0].pos.y <= 0.0f + smallFire[0].width)
-								{
-									smallFire[0].isShot = false;
-									fireDisappearCount = 1;
-								}
-							}
-
-							if (fireDisappearCount == 1 && !flash.isShot)
-							{
-								flash.isShot = true;
-								flash.duration = 90;
-								flash.pos.x = smallFire[0].pos.x - 48.0f;
-								flash.pos.y = smallFire[0].pos.y + 96.0f;
-							}
-
-							if (flash.isShot)
-							{
-								if (flash.width <= 1280.0f)
-								{
-									flash.width += 64.0f;
-									flash.pos.x -= 32.0f;
-								}
-
-								if (flash.height <= 1280.0f)
-								{
-									flash.height += 64.0f;
-									flash.pos.y += 32.0f;
-								}
-
-								if (flash.duration > 0)
-								{
-									flash.duration--;
-								}
-
-								if (flash.duration == 0)
-								{
-									flash.isShot = false;
-									boss.isChange = true;
-									boss.form = 1;
-									boss.height = 200.0f;
-									boss.fallTimer = 60;
-									boss.isAttacking = false;
-									bossSkyFrameCount = 0;
-									bossSkyAnimeCount = 0;
-								}
-							}
-						}
-					}
 					}
 				}
 
@@ -2208,21 +2239,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					switch (attackTypeThird)
 					{
 					case SLOWFIRE2:
-					SlowFire(kMaxSlowFire, smallFire, &boss, fireShootCount, fireDisappearCount);
+						SlowFire(kMaxSlowFire, smallFire, &boss, fireShootCount, fireDisappearCount);
 
-					break;
+						break;
 					case FASTFIRE2:
-					FastFire(kMaxFastFire, smallFire, &boss, player, fireShootCount, fireDisappearCount);
+						FastFire(kMaxFastFire, smallFire, &boss, player, fireShootCount, fireDisappearCount);
 
-					break;
+						break;
 					case MULTIPLEFIRE2:
-					MultipleFire(kMaxMultiple, smallFire, &boss, fireShootCount, fireDisappearCount);
+						MultipleFire(kMaxMultiple, smallFire, &boss, fireShootCount, fireDisappearCount);
 
-					break;
+						break;
 					case GIANTFIREMULTI:
-					GiantFire(&giantFire, &explosion, &boss, player, fireDisappearCount, bossFrameCount, bossAnimeCount, bossFlyFrameCount, bossFlyAnimeCount, explosionFrameCount, explosionAnimeCount);
+						GiantFire(&giantFire, &explosion, &boss, player, fireDisappearCount, bossFrameCount, bossAnimeCount, bossFlyFrameCount, bossFlyAnimeCount, explosionFrameCount, explosionAnimeCount);
 
-					break;
+						break;
 					}
 				}
 			}
@@ -2230,9 +2261,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 
 
-		#pragma endregion
+#pragma endregion
 
-		#pragma region アニメーション
+#pragma region アニメーション
 			//アニメーション
 
 			if (phase == ONE)
@@ -2458,9 +2489,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				}
 			}
 
-		#pragma endregion
+#pragma endregion
 
-		#pragma region 当たり判定
+#pragma region 当たり判定
 			//===========================================================
 			//当たり判定
 			//===========================================================
@@ -2835,9 +2866,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				}
 			}
 
-		#pragma endregion
+#pragma endregion
 
-		#pragma region パーティクル
+#pragma region パーティクル
 
 			//==============================================================
 			//パーティクル
@@ -3433,12 +3464,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						sceneChangeTime = 65;
 						sceneChange = false;
 						isContinue = true;
+
 					}
 				}
 			}
 		}
 
-		#pragma endregion
+#pragma endregion
 
 			///
 			/// ↑更新処理ここまで
@@ -3448,8 +3480,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			/// ↓描画処理ここから
 			///
 
-			if (scene == GAMEPLAY)
-			{
+		if (scene == GAMEPLAY)
+		{
 				if (phase == ONE || phase == THREE)
 				{
 					//------------------背景------------------//
@@ -4304,6 +4336,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						);
 					}
 				}
+			}
+
+			Novice::DrawSprite(567, 0, numberGraphs[timeArray[0]], 1.0f, 1.0f, 0.0f, WHITE);
+			Novice::DrawSprite(631, 13, doubleQuotesGH, 1.0f, 1.0f, 0.0f, WHITE);
+			Novice::DrawSprite(640, 0, numberGraphs[timeArray[1]], 1.0f, 1.0f, 0.0f, WHITE);
+			Novice::DrawSprite(688, 0, numberGraphs[timeArray[2]], 1.0f, 1.0f, 0.0f, WHITE);
 
 				//小炎の軌跡
 				for (int i = 0; i < kMaxSmallFire; i++)
@@ -4374,6 +4412,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				//ゲームオーバー画面
 				Novice::DrawSprite(0, 0, ghGameOver, 1, 1, 0.0f, WHITE);
 			}
+  
+  	if (scene == GAMETITLE)
+		{
+
+		}
+			///
+			/// ↑描画処理ここまで
+			///
 
 			//※クリア画面に行く処理はまだない
 			if (scene == GAMECLEAR)
@@ -4390,8 +4436,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			/// ↓更新処理
 			///	
 
-			//トランジション
-			for (int i = 0; i < transitionMaxY; i++)
+		//トランジション
+		for (int i = 0; i < transitionMaxY; i++)
+		{
+			for (int j = 0; j < transitionMaxX; j++)
 			{
 				for (int j = 0; j < transitionMaxX; j++)
 				{
