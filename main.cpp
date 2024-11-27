@@ -4412,20 +4412,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			Novice::DrawSprite(0, 0, ghGameOver, 1, 1, 0.0f, WHITE);
 		}
 
-		if (scene == GAMETITLE)
-		{
-
-		}
-		///
-		/// ↑描画処理ここまで
-		///
-
 		//※クリア画面に行く処理はまだない
 		if (scene == GAMECLEAR)
 		{
 			//クリア画面
 			Novice::DrawSprite(0, 0, ghClear, 1, 1, 0.0f, WHITE);
 		}
+
+		///
+		/// ↑描画処理ここまで
+		///
 
 		//=============================================================================
 		//全シーンで使う処理
