@@ -1353,7 +1353,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 
 						//ジャンプ(SPACE or A)
-						if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsPressButton(0, PadButton::kPadButton10))
+						if (keys[DIK_SPACE] && !preKeys[DIK_SPACE] || Novice::IsTriggerButton(0, PadButton::kPadButton10))
 						{
 							player.isJump = true;
 						}
@@ -1396,7 +1396,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					if (!shortSword.isAtk && !longSword.isAtk)
 					{
 						//短剣(J or X)
-						if (keys[DIK_J] && !preKeys[DIK_J] || Novice::IsPressButton(0, PadButton::kPadButton12))
+						if (keys[DIK_J] && !preKeys[DIK_J] || Novice::IsTriggerButton(0, PadButton::kPadButton12))
 						{
 							if (!longSword.isAtk) //大剣攻撃時は使えない
 							{
@@ -1411,7 +1411,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						}
 
 						//大剣(K or Y)
-						if (keys[DIK_K] && !preKeys[DIK_K] || Novice::IsPressButton(0, PadButton::kPadButton13))
+						if (keys[DIK_K] && !preKeys[DIK_K] || Novice::IsTriggerButton(0, PadButton::kPadButton13))
 						{
 							if (!shortSword.isAtk) //短剣攻撃時は使えない
 							{
@@ -2850,7 +2850,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					{
 						if (player.color == 0xFFFFFFFF)
 						{
-							player.color = 0xFFFFFF55;
+							player.color = 0xFFFFFF00;
 						}
 						else
 						{
@@ -3204,7 +3204,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				}
 			}
 
-			
+
 
 			//--------------------小炎の軌跡---------------------//
 			for (int i = 0; i < kMaxSmallFire; i++)
@@ -3748,30 +3748,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						ghExplosion,
 						explosionFrameWidth / explosionMaxImageWidth, 1,
 						0, 0xFFFFFFFF
-					);
-				}
-
-				if (shortSword.isReaction) //短剣の判定(持続時)
-				{
-					Novice::DrawBox
-					(
-						static_cast<int>(shortSword.pos.x),
-						static_cast<int>(ToScreen(shortSword.pos.y)),
-						static_cast<int>(shortSword.width),
-						static_cast<int>(shortSword.height),
-						0.0f, 0xFF000055, kFillModeSolid
-					);
-				}
-
-				if (longSword.isReaction) //大剣の判定(持続時)
-				{
-					Novice::DrawBox
-					(
-						static_cast<int>(longSword.pos.x),
-						static_cast<int>(ToScreen(longSword.pos.y)),
-						static_cast<int>(longSword.width),
-						static_cast<int>(longSword.height),
-						0.0f, 0x0000FF55, kFillModeSolid
 					);
 				}
 
@@ -4336,70 +4312,67 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					);
 				}
 			}
-		}
 
-		Novice::DrawSprite(567, 0, numberGraphs[timeArray[0]], 1.0f, 1.0f, 0.0f, WHITE);
-		Novice::DrawSprite(631, 13, doubleQuotesGH, 1.0f, 1.0f, 0.0f, WHITE);
-		Novice::DrawSprite(640, 0, numberGraphs[timeArray[1]], 1.0f, 1.0f, 0.0f, WHITE);
-		Novice::DrawSprite(688, 0, numberGraphs[timeArray[2]], 1.0f, 1.0f, 0.0f, WHITE);
 
-		//小炎の軌跡
-		for (int i = 0; i < kMaxSmallFire; i++)
-		{
-			for (int j = 0; j < smallFireLocusMax; j++)
+			Novice::DrawSprite(567, 0, numberGraphs[timeArray[0]], 1.0f, 1.0f, 0.0f, WHITE);
+			Novice::DrawSprite(631, 13, doubleQuotesGH, 1.0f, 1.0f, 0.0f, WHITE);
+			Novice::DrawSprite(640, 0, numberGraphs[timeArray[1]], 1.0f, 1.0f, 0.0f, WHITE);
+			Novice::DrawSprite(688, 0, numberGraphs[timeArray[2]], 1.0f, 1.0f, 0.0f, WHITE);
+
+			//小炎の軌跡
+			for (int i = 0; i < kMaxSmallFire; i++)
 			{
-				if (smallFireLocus[i][j].isDisplay)
+				for (int j = 0; j < smallFireLocusMax; j++)
 				{
-					Novice::DrawEllipse
-					(
-						static_cast<int>(smallFireLocus[i][j].pos.x),
-						static_cast<int>(smallFireLocus[i][j].pos.y),
-						static_cast<int>(smallFireLocus[i][j].width / 2.0f),
-						static_cast<int>(smallFireLocus[i][j].height / 2.0f),
-						smallFireLocus[i][j].rotation, smallFireLocus[i][j].color, kFillModeSolid
-					);
+					if (smallFireLocus[i][j].isDisplay)
+					{
+						Novice::DrawEllipse
+						(
+							static_cast<int>(smallFireLocus[i][j].pos.x),
+							static_cast<int>(smallFireLocus[i][j].pos.y),
+							static_cast<int>(smallFireLocus[i][j].width / 2.0f),
+							static_cast<int>(smallFireLocus[i][j].height / 2.0f),
+							smallFireLocus[i][j].rotation, smallFireLocus[i][j].color, kFillModeSolid
+						);
+					}
 				}
 			}
-		}
 
-		//コンティニュー
-		if (!player.isAlive)
-		{
-			//コンティニュー画面
-			Novice::DrawSprite(0, 0, ghContinue, 1, 1, 0.0f, WHITE);
-
-			if (isContinue)
+			//コンティニュー
+			if (!player.isAlive)
 			{
-				//YES強調
-				Novice::DrawSprite(0, 0, ghContinueYes, 1, 1, 0.0f, WHITE);
+				//コンティニュー画面
+				Novice::DrawSprite(0, 0, ghContinue, 1, 1, 0.0f, WHITE);
+
+				if (isContinue)
+				{
+					//YES強調
+					Novice::DrawSprite(0, 0, ghContinueYes, 1, 1, 0.0f, WHITE);
+				}
+				else
+				{
+					//NO強調
+					Novice::DrawSprite(0, 0, ghContinueNo, 1, 1, 0.0f, WHITE);
+				}
 			}
-			else
-			{
-				//NO強調
-				Novice::DrawSprite(0, 0, ghContinueNo, 1, 1, 0.0f, WHITE);
-			}
+
+			Novice::ScreenPrintf(100, 100, "isAttacking: %d", boss.isAttacking);
+			Novice::ScreenPrintf(100, 120, "attack coolTimer: %d", boss.attackCoolTimer);
+			Novice::ScreenPrintf(100, 140, "attack type: %d", attackTypeFirst);
+			Novice::ScreenPrintf(100, 160, "boss hp: %d", boss.hpCount);
+			Novice::ScreenPrintf(100, 180, "player hp: %d", player.hpCount);
+			Novice::ScreenPrintf(100, 200, "isShot: %d", explosion.isShot);
+			Novice::ScreenPrintf(100, 220, "disappearcount: %d", fireDisappearCount);
+			Novice::ScreenPrintf(100, 240, "smallFire : %d", smallFire[7].isShot);
+			Novice::ScreenPrintf(100, 260, "player.isNodamage : %d", player.isNoDamage);
+			Novice::ScreenPrintf(100, 280, "player.noDamageTime : %d", player.noDamageTime);
+
+			Novice::DrawBox(static_cast<int>(boss.pos.x),
+				static_cast<int>(ToScreen(boss.pos.y)),
+				static_cast<int>(boss.width),
+				static_cast<int>(boss.height),
+				0.0f, 0xFFFFFFFF, kFillModeWireFrame);
 		}
-
-		Novice::ScreenPrintf(100, 100, "isAttacking: %d", boss.isAttacking);
-		Novice::ScreenPrintf(100, 120, "attack coolTimer: %d", boss.attackCoolTimer);
-		Novice::ScreenPrintf(100, 140, "attack type: %d", attackTypeFirst);
-		Novice::ScreenPrintf(100, 160, "boss hp: %d", boss.hpCount);
-		Novice::ScreenPrintf(100, 180, "player hp: %d", player.hpCount);
-		Novice::ScreenPrintf(100, 200, "isShot: %d", explosion.isShot);
-		Novice::ScreenPrintf(100, 220, "disappearcount: %d", fireDisappearCount);
-		Novice::ScreenPrintf(100, 240, "smallFire : %d", smallFire[7].isShot);
-		Novice::ScreenPrintf(100, 260, "player.isNodamage : %d", player.isNoDamage);
-		Novice::ScreenPrintf(100, 280, "player.noDamageTime : %d", player.noDamageTime);
-
-		Novice::DrawBox(static_cast<int>(boss.pos.x),
-			static_cast<int>(ToScreen(boss.pos.y)),
-			static_cast<int>(boss.width),
-			static_cast<int>(boss.height),
-			0.0f, 0xFFFFFFFF, kFillModeWireFrame);
-
-		///
-		/// ↑描画処理ここまで
-		///
 
 		if (scene == GAMETITLE)
 		{
