@@ -1686,6 +1686,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 									longSword.isReaction = true;
 									shortSword.coolTime = 20;
 									longSword.coolTime = 40;
+									ghPlayerAtkLFrameCount = 0;
 
 								}
 							}
