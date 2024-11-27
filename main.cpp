@@ -824,6 +824,7 @@ void GiantFireMulti(Attack* giantFire, Attack* explosion, Boss* boss, Player* pl
 			}
 		}
 	}
+}
 
 void PlayerMove(Player* player, float a, float b)
 {
@@ -852,7 +853,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	int sceneChange = false;
 	int sceneChangeTime = 65;
 
-	int phase = THREE;
+	int phase = ONE;
 
 	//コントローラー
 	int padX = 0;	//左スティックの左右値
@@ -1008,7 +1009,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	boss.hpCount = 200; // 体力
 	boss.width = 288.0f; // 横幅(当たり判定用)
 	boss.height = 320.0f; // 縦幅(当たり判定用)
-	boss.form = HUMAN; // 形態
+	boss.form = DRAGON; // 形態
 	boss.fallSpeed = 16.0f;
 	boss.theta = 0.0f;
 	boss.rotateRange = 350.0f;
@@ -3817,300 +3818,183 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				);
 			}
 
-				//画面外(左)
-				Novice::DrawSprite
-				(
-					static_cast<int>(backGround.pos.x - 1280.0f),
-					static_cast<int>(backGround.pos.y),
-					ghBackGround1, 1, 1, 0.0f, backGround.color
-				);
+			//画面外(左)
+			Novice::DrawSprite
+			(
+				static_cast<int>(backGround.pos.x - 1280.0f),
+				static_cast<int>(backGround.pos.y),
+				ghBackGround1, 1, 1, 0.0f, backGround.color
+			);
 
-				//画面外(右)
-				Novice::DrawSprite
-				(
-					static_cast<int>(backGround.pos.x + 1280.0f),
-					static_cast<int>(backGround.pos.y),
-					ghBackGround1, 1, 1, 0.0f, backGround.color
-				);
+			//画面外(右)
+			Novice::DrawSprite
+			(
+				static_cast<int>(backGround.pos.x + 1280.0f),
+				static_cast<int>(backGround.pos.y),
+				ghBackGround1, 1, 1, 0.0f, backGround.color
+			);
 
-				//---------------------パーティクル-----------------------//
+			//---------------------パーティクル-----------------------//
 
-				//地面から出るオーラ
-				for (int i = 0; i < powderAuraMax; i++)
+			//地面から出るオーラ
+			for (int i = 0; i < powderAuraMax; i++)
+			{
+				if (powderAura[i].isDisplay)
 				{
-					if (powderAura[i].isDisplay)
+					Novice::DrawBox(
+						static_cast<int>(powderAura[i].pos.x),
+						static_cast<int>(powderAura[i].pos.y),
+						static_cast<int>(powderAura[i].width),
+						static_cast<int>(powderAura[i].height),
+						powderAura[i].rotation, powderAura[i].color, kFillModeSolid);
+				}
+			}
+
+			//プレイヤーの軌跡
+			for (int i = 0; i < playerLocusMax; i++)
+			{
+				if (playerLocus[i].isDisplay)
+				{
+					Novice::DrawBox
+					(
+						static_cast<int>(playerLocus[i].pos.x),
+						static_cast<int>(playerLocus[i].pos.y),
+						static_cast<int>(playerLocus[i].width),
+						static_cast<int>(playerLocus[i].height),
+						playerLocus[i].rotation, playerLocus[i].color, kFillModeWireFrame
+					);
+				}
+			}
+
+
+
+
+			//巨大火球の軌跡
+			for (int i = 0; i < giantFireLocusMax; i++)
+			{
+				if (giantFireLocus[i].isDisplay)
+				{
+					Novice::DrawEllipse
+					(
+						static_cast<int>(giantFireLocus[i].pos.x),
+						static_cast<int>(giantFireLocus[i].pos.y),
+						static_cast<int>(giantFireLocus[i].width / 2.0f),
+						static_cast<int>(giantFireLocus[i].height / 2.0f),
+						giantFireLocus[i].rotation, giantFireLocus[i].color, kFillModeSolid
+					);
+				}
+			}
+
+			if (phase == ONE)
+			{
+				if (boss.form == DRAGON)
+				{
+					if (!boss.isFlying && !boss.isHovering)
 					{
-						Novice::DrawBox(
-							static_cast<int>(powderAura[i].pos.x),
-							static_cast<int>(powderAura[i].pos.y),
-							static_cast<int>(powderAura[i].width),
-							static_cast<int>(powderAura[i].height),
-							powderAura[i].rotation, powderAura[i].color, kFillModeSolid);
+						// ボス
+						if (boss.direction == LEFT)
+						{
+							Novice::DrawSpriteRect
+							(
+								static_cast<int>(boss.pos.x - (boss1FrameImageWidth / 2.0f - boss.width / 2.0f)),
+								static_cast<int>(ToScreen(boss.pos.y + (boss1ImageHeight - boss.height))),
+								640 * bossAnimeCount,
+								0,
+								static_cast<int>(boss1FrameImageWidth),
+								static_cast<int>(boss1ImageHeight),
+								ghBoss1Left,
+								boss1FrameImageWidth / boss1MaxImageWidth, 1,
+								0, 0xFFFFFFFF
+							);
+						}
+						else if (boss.direction == RIGHT)
+						{
+							Novice::DrawSpriteRect
+							(
+								static_cast<int>(boss.pos.x - (boss1FrameImageWidth / 2.0f - boss.width / 2.0f)),
+								static_cast<int>(ToScreen(boss.pos.y + (boss1ImageHeight - boss.height))),
+								640 * bossAnimeCount,
+								0,
+								static_cast<int>(boss1FrameImageWidth),
+								static_cast<int>(boss1ImageHeight),
+								ghBoss1Right,
+								boss1FrameImageWidth / boss1MaxImageWidth, 1,
+								0, 0xFFFFFFFF
+							);
+						}
+					}
+
+					if (boss.isFlying)
+					{
+						if (boss.direction == LEFT)
+						{
+							Novice::DrawSpriteRect
+							(
+								static_cast<int>(boss.pos.x - (boss1FlyFrameWidth / 2.0f - boss.width / 2.0f)),
+								static_cast<int>(ToScreen(boss.pos.y + (boss1FlyImageHeight - boss.height))),
+								static_cast<int>(boss1FlyFrameWidth) * bossFlyAnimeCount,
+								0,
+								static_cast<int>(boss1FlyFrameWidth),
+								static_cast<int>(boss1FlyImageHeight),
+								ghBoss1FlyLeft,
+								boss1FlyFrameWidth / boss1FlyMaxWidth, 1,
+								0, 0xFFFFFFFF
+							);
+						}
+						else if (boss.direction == RIGHT)
+						{
+							Novice::DrawSpriteRect
+							(
+								static_cast<int>(boss.pos.x - (boss1FlyFrameWidth / 2.0f - boss.width / 2.0f)),
+								static_cast<int>(ToScreen(boss.pos.y + (boss1FlyImageHeight - boss.height))),
+								static_cast<int>(boss1FlyFrameWidth) * bossFlyAnimeCount,
+								0,
+								static_cast<int>(boss1FlyFrameWidth),
+								static_cast<int>(boss1FlyImageHeight),
+								ghBoss1FlyRight,
+								boss1FlyFrameWidth / boss1FlyMaxWidth, 1,
+								0, 0xFFFFFFFF
+							);
+						}
+					}
+
+					if (attackTypeFirst == FLY)
+					{
+						if (boss.isHovering)
+						{
+							Novice::DrawSpriteRect
+							(
+								static_cast<int>(boss.pos.x - (boss1SkyFrameWidth / 2.0f - boss.width / 2.0f)),
+								static_cast<int>(ToScreen(boss.pos.y + (boss1SkyImageHeight - boss.height))),
+								static_cast<int>(boss1SkyFrameWidth) * bossSkyAnimeCount,
+								0,
+								static_cast<int>(boss1SkyFrameWidth),
+								static_cast<int>(boss1SkyImageHeight),
+								ghBoss1Sky,
+								boss1SkyFrameWidth / boss1MaxImageWidth, 1,
+								0, 0xFFFFFFFF
+							);
+						}
 					}
 				}
-
-				//プレイヤーの軌跡
-				for (int i = 0; i < playerLocusMax; i++)
+				else if (boss.form == HUMAN)
 				{
-					if (playerLocus[i].isDisplay)
+					if (!boss.isFalling)
 					{
-						Novice::DrawBox
+						Novice::DrawSpriteRect
 						(
-							static_cast<int>(playerLocus[i].pos.x),
-							static_cast<int>(playerLocus[i].pos.y),
-							static_cast<int>(playerLocus[i].width),
-							static_cast<int>(playerLocus[i].height),
-							playerLocus[i].rotation, playerLocus[i].color, kFillModeWireFrame
+							static_cast<int>(boss.pos.x - (boss2TempFrameWidth / 2.0f - boss.width / 2.0f)),
+							static_cast<int>(ToScreen(boss.pos.y + (boss2TempImageHeight - boss.height))),
+							static_cast<int>(boss2TempFrameWidth) * boss2TempAnimeCount,
+							0,
+							static_cast<int>(boss2TempFrameWidth),
+							static_cast<int>(boss2TempImageHeight),
+							ghBoss2Temp,
+							boss2TempFrameWidth / boss2TempMaxImageWidth, 1,
+							0, 0xFFFFFFFF
 						);
 					}
-				}
-
-
-
-
-				//巨大火球の軌跡
-				for (int i = 0; i < giantFireLocusMax; i++)
-				{
-					if (giantFireLocus[i].isDisplay)
-					{
-						Novice::DrawEllipse
-						(
-							static_cast<int>(giantFireLocus[i].pos.x),
-							static_cast<int>(giantFireLocus[i].pos.y),
-							static_cast<int>(giantFireLocus[i].width / 2.0f),
-							static_cast<int>(giantFireLocus[i].height / 2.0f),
-							giantFireLocus[i].rotation, giantFireLocus[i].color, kFillModeSolid
-						);
-					}
-				}
-
-				if (phase == ONE)
-				{
-					if (boss.form == DRAGON)
-					{
-						if (!boss.isFlying && !boss.isHovering)
-						{
-							// ボス
-							if (boss.direction == LEFT)
-							{
-								Novice::DrawSpriteRect
-								(
-									static_cast<int>(boss.pos.x - (boss1FrameImageWidth / 2.0f - boss.width / 2.0f)),
-									static_cast<int>(ToScreen(boss.pos.y + (boss1ImageHeight - boss.height))),
-									640 * bossAnimeCount,
-									0,
-									static_cast<int>(boss1FrameImageWidth),
-									static_cast<int>(boss1ImageHeight),
-									ghBoss1Left,
-									boss1FrameImageWidth / boss1MaxImageWidth, 1,
-									0, 0xFFFFFFFF
-								);
-							}
-							else if (boss.direction == RIGHT)
-							{
-								Novice::DrawSpriteRect
-								(
-									static_cast<int>(boss.pos.x - (boss1FrameImageWidth / 2.0f - boss.width / 2.0f)),
-									static_cast<int>(ToScreen(boss.pos.y + (boss1ImageHeight - boss.height))),
-									640 * bossAnimeCount,
-									0,
-									static_cast<int>(boss1FrameImageWidth),
-									static_cast<int>(boss1ImageHeight),
-									ghBoss1Right,
-									boss1FrameImageWidth / boss1MaxImageWidth, 1,
-									0, 0xFFFFFFFF
-								);
-							}
-						}
-
-						if (boss.isFlying)
-						{
-							if (boss.direction == LEFT)
-							{
-								Novice::DrawSpriteRect
-								(
-									static_cast<int>(boss.pos.x - (boss1FlyFrameWidth / 2.0f - boss.width / 2.0f)),
-									static_cast<int>(ToScreen(boss.pos.y + (boss1FlyImageHeight - boss.height))),
-									static_cast<int>(boss1FlyFrameWidth) * bossFlyAnimeCount,
-									0,
-									static_cast<int>(boss1FlyFrameWidth),
-									static_cast<int>(boss1FlyImageHeight),
-									ghBoss1FlyLeft,
-									boss1FlyFrameWidth / boss1FlyMaxWidth, 1,
-									0, 0xFFFFFFFF
-								);
-							}
-							else if (boss.direction == RIGHT)
-							{
-								Novice::DrawSpriteRect
-								(
-									static_cast<int>(boss.pos.x - (boss1FlyFrameWidth / 2.0f - boss.width / 2.0f)),
-									static_cast<int>(ToScreen(boss.pos.y + (boss1FlyImageHeight - boss.height))),
-									static_cast<int>(boss1FlyFrameWidth) * bossFlyAnimeCount,
-									0,
-									static_cast<int>(boss1FlyFrameWidth),
-									static_cast<int>(boss1FlyImageHeight),
-									ghBoss1FlyRight,
-									boss1FlyFrameWidth / boss1FlyMaxWidth, 1,
-									0, 0xFFFFFFFF
-								);
-							}
-						}
-
-						if (attackTypeFirst == FLY)
-						{
-							if (boss.isHovering)
-							{
-								Novice::DrawSpriteRect
-								(
-									static_cast<int>(boss.pos.x - (boss1SkyFrameWidth / 2.0f - boss.width / 2.0f)),
-									static_cast<int>(ToScreen(boss.pos.y + (boss1SkyImageHeight - boss.height))),
-									static_cast<int>(boss1SkyFrameWidth) * bossSkyAnimeCount,
-									0,
-									static_cast<int>(boss1SkyFrameWidth),
-									static_cast<int>(boss1SkyImageHeight),
-									ghBoss1Sky,
-									boss1SkyFrameWidth / boss1MaxImageWidth, 1,
-									0, 0xFFFFFFFF
-								);
-							}
-						}
-					}
-					else if (boss.form == HUMAN)
-					{
-						if (!boss.isFalling)
-						{
-							Novice::DrawSpriteRect
-							(
-								static_cast<int>(boss.pos.x - (boss2TempFrameWidth / 2.0f - boss.width / 2.0f)),
-								static_cast<int>(ToScreen(boss.pos.y + (boss2TempImageHeight - boss.height))),
-								static_cast<int>(boss2TempFrameWidth) * boss2TempAnimeCount,
-								0,
-								static_cast<int>(boss2TempFrameWidth),
-								static_cast<int>(boss2TempImageHeight),
-								ghBoss2Temp,
-								boss2TempFrameWidth / boss2TempMaxImageWidth, 1,
-								0, 0xFFFFFFFF
-							);
-						}
-						else
-						{
-							Novice::DrawSprite
-							(
-								static_cast<int>(boss.pos.x - (boss2FallWidth / 2.0f - boss.width / 2.0f)),
-								static_cast<int>(ToScreen(boss.pos.y + (boss2FallHeight - boss.height))),
-								ghBoss2Fall,
-								1, 1,
-								0.0f, 0xFFFFFFFF
-							);
-						}
-					}
-				}
-				else if (phase == THREE)
-				{
-					if (!boss.isHovering && !boss.isFalling)
-					{
-						if (!boss.isFullPower)
-						{
-							if (boss.direction == LEFT)
-							{
-								Novice::DrawSpriteRect
-								(
-									static_cast<int>(boss.pos.x - (boss2AttackFrameWidth / 2.0f - boss.width / 2.0f)),
-									static_cast<int>(ToScreen(boss.pos.y + (boss2AttackImageHeight - boss.height))),
-									static_cast<int>(boss2AttackFrameWidth)* boss2AttackAnimeCount,
-									0,
-									static_cast<int>(boss2AttackFrameWidth),
-									static_cast<int>(boss2AttackImageHeight),
-									ghBoss2AttackLeft,
-									boss2AttackFrameWidth / boss2AttackMaxImageWidth, 1,
-									0, 0xFFFFFFFF
-								);
-							}
-							else if (boss.direction == RIGHT)
-							{
-								Novice::DrawSpriteRect
-								(
-									static_cast<int>(boss.pos.x - (boss2AttackFrameWidth / 2.0f - boss.width / 2.0f)),
-									static_cast<int>(ToScreen(boss.pos.y + (boss2AttackImageHeight - boss.height))),
-									static_cast<int>(boss2AttackFrameWidth) * boss2AttackAnimeCount,
-									0,
-									static_cast<int>(boss2AttackFrameWidth),
-									static_cast<int>(boss2AttackImageHeight),
-									ghBoss2AttackRight,
-									boss2AttackFrameWidth / boss2AttackMaxImageWidth, 1,
-									0, 0xFFFFFFFF
-								);
-							}
-						}
-						else
-						{
-							if (boss.direction == LEFT)
-							{
-								Novice::DrawSpriteRect
-								(
-									static_cast<int>(boss.pos.x - (boss2AttackFrameWidth / 2.0f - boss.width / 2.0f)),
-									static_cast<int>(ToScreen(boss.pos.y + (boss2AttackImageHeight - boss.height))),
-									static_cast<int>(boss2AttackFrameWidth)* boss2AttackAnimeCount,
-									0,
-									static_cast<int>(boss2AttackFrameWidth),
-									static_cast<int>(boss2AttackImageHeight),
-									ghBoss2AttackBigLeft,
-									boss2AttackFrameWidth / boss2AttackMaxImageWidth, 1,
-									0, 0xFFFFFFFF
-								);
-							}
-							else if (boss.direction == RIGHT)
-							{
-								Novice::DrawSpriteRect
-								(
-									static_cast<int>(boss.pos.x - (boss2AttackFrameWidth / 2.0f - boss.width / 2.0f)),
-									static_cast<int>(ToScreen(boss.pos.y + (boss2AttackImageHeight - boss.height))),
-									static_cast<int>(boss2AttackFrameWidth) * boss2AttackAnimeCount,
-									0,
-									static_cast<int>(boss2AttackFrameWidth),
-									static_cast<int>(boss2AttackImageHeight),
-									ghBoss2AttackBigRight,
-									boss2AttackFrameWidth / boss2AttackMaxImageWidth, 1,
-									0, 0xFFFFFFFF
-								);
-							}
-						}
-					}
-					else if (boss.isHovering)
-					{
-						if (!boss.isFullPower)
-						{
-							Novice::DrawSpriteRect
-							(
-								static_cast<int>(boss.pos.x - (boss2TempFrameWidth / 2.0f - boss.width / 2.0f)),
-								static_cast<int>(ToScreen(boss.pos.y + (boss2TempImageHeight - boss.height))),
-								static_cast<int>(boss2TempFrameWidth) * boss2TempAnimeCount,
-								0,
-								static_cast<int>(boss2TempFrameWidth),
-								static_cast<int>(boss2TempImageHeight),
-								ghBoss2Temp,
-								boss2TempFrameWidth / boss2TempMaxImageWidth, 1,
-								0, 0xFFFFFFFF
-							);
-						}
-						else
-						{
-							Novice::DrawSpriteRect
-							(
-								static_cast<int>(boss.pos.x - (boss2TempFrameWidth / 2.0f - boss.width / 2.0f)),
-								static_cast<int>(ToScreen(boss.pos.y + (boss2TempImageHeight - boss.height))),
-								static_cast<int>(boss2TempFrameWidth)* boss2TempAnimeCount,
-								0,
-								static_cast<int>(boss2TempFrameWidth),
-								static_cast<int>(boss2TempImageHeight),
-								ghBoss2TempBig,
-								boss2TempFrameWidth / boss2TempMaxImageWidth, 1,
-								0, 0xFFFFFFFF
-							);
-						}
-					}
-					else if (boss.isFalling)
+					else
 					{
 						Novice::DrawSprite
 						(
@@ -4121,6 +4005,122 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 							0.0f, 0xFFFFFFFF
 						);
 					}
+				}
+			}
+			else if (phase == THREE)
+			{
+				if (!boss.isHovering && !boss.isFalling)
+				{
+					if (!boss.isFullPower)
+					{
+						if (boss.direction == LEFT)
+						{
+							Novice::DrawSpriteRect
+							(
+								static_cast<int>(boss.pos.x - (boss2AttackFrameWidth / 2.0f - boss.width / 2.0f)),
+								static_cast<int>(ToScreen(boss.pos.y + (boss2AttackImageHeight - boss.height))),
+								static_cast<int>(boss2AttackFrameWidth)* boss2AttackAnimeCount,
+								0,
+								static_cast<int>(boss2AttackFrameWidth),
+								static_cast<int>(boss2AttackImageHeight),
+								ghBoss2AttackLeft,
+								boss2AttackFrameWidth / boss2AttackMaxImageWidth, 1,
+								0, 0xFFFFFFFF
+							);
+						}
+						else if (boss.direction == RIGHT)
+						{
+							Novice::DrawSpriteRect
+							(
+								static_cast<int>(boss.pos.x - (boss2AttackFrameWidth / 2.0f - boss.width / 2.0f)),
+								static_cast<int>(ToScreen(boss.pos.y + (boss2AttackImageHeight - boss.height))),
+								static_cast<int>(boss2AttackFrameWidth) * boss2AttackAnimeCount,
+								0,
+								static_cast<int>(boss2AttackFrameWidth),
+								static_cast<int>(boss2AttackImageHeight),
+								ghBoss2AttackRight,
+								boss2AttackFrameWidth / boss2AttackMaxImageWidth, 1,
+								0, 0xFFFFFFFF
+							);
+						}
+					}
+					else
+					{
+						if (boss.direction == LEFT)
+						{
+							Novice::DrawSpriteRect
+							(
+								static_cast<int>(boss.pos.x - (boss2AttackFrameWidth / 2.0f - boss.width / 2.0f)),
+								static_cast<int>(ToScreen(boss.pos.y + (boss2AttackImageHeight - boss.height))),
+								static_cast<int>(boss2AttackFrameWidth)* boss2AttackAnimeCount,
+								0,
+								static_cast<int>(boss2AttackFrameWidth),
+								static_cast<int>(boss2AttackImageHeight),
+								ghBoss2AttackBigLeft,
+								boss2AttackFrameWidth / boss2AttackMaxImageWidth, 1,
+								0, 0xFFFFFFFF
+							);
+						}
+						else if (boss.direction == RIGHT)
+						{
+							Novice::DrawSpriteRect
+							(
+								static_cast<int>(boss.pos.x - (boss2AttackFrameWidth / 2.0f - boss.width / 2.0f)),
+								static_cast<int>(ToScreen(boss.pos.y + (boss2AttackImageHeight - boss.height))),
+								static_cast<int>(boss2AttackFrameWidth) * boss2AttackAnimeCount,
+								0,
+								static_cast<int>(boss2AttackFrameWidth),
+								static_cast<int>(boss2AttackImageHeight),
+								ghBoss2AttackBigRight,
+								boss2AttackFrameWidth / boss2AttackMaxImageWidth, 1,
+								0, 0xFFFFFFFF
+							);
+						}
+					}
+				}
+				else if (boss.isHovering)
+				{
+					if (!boss.isFullPower)
+					{
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(boss.pos.x - (boss2TempFrameWidth / 2.0f - boss.width / 2.0f)),
+							static_cast<int>(ToScreen(boss.pos.y + (boss2TempImageHeight - boss.height))),
+							static_cast<int>(boss2TempFrameWidth) * boss2TempAnimeCount,
+							0,
+							static_cast<int>(boss2TempFrameWidth),
+							static_cast<int>(boss2TempImageHeight),
+							ghBoss2Temp,
+							boss2TempFrameWidth / boss2TempMaxImageWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+					else
+					{
+						Novice::DrawSpriteRect
+						(
+							static_cast<int>(boss.pos.x - (boss2TempFrameWidth / 2.0f - boss.width / 2.0f)),
+							static_cast<int>(ToScreen(boss.pos.y + (boss2TempImageHeight - boss.height))),
+							static_cast<int>(boss2TempFrameWidth)* boss2TempAnimeCount,
+							0,
+							static_cast<int>(boss2TempFrameWidth),
+							static_cast<int>(boss2TempImageHeight),
+							ghBoss2TempBig,
+							boss2TempFrameWidth / boss2TempMaxImageWidth, 1,
+							0, 0xFFFFFFFF
+						);
+					}
+				}
+				else if (boss.isFalling)
+				{
+					Novice::DrawSprite
+					(
+						static_cast<int>(boss.pos.x - (boss2FallWidth / 2.0f - boss.width / 2.0f)),
+						static_cast<int>(ToScreen(boss.pos.y + (boss2FallHeight - boss.height))),
+						ghBoss2Fall,
+						1, 1,
+						0.0f, 0xFFFFFFFF
+					);
 				}
 			}
 
@@ -5001,6 +5001,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			for (int j = 0; j < transitionMaxX; j++)
 			{
 				if (transition[i][j].width >= 1.0f || transition[i][j].height >= 1.0f)
+				{
 					Novice::DrawBox
 					(
 						static_cast<int>(transition[i][j].pos.x),
@@ -5009,6 +5010,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 						static_cast<int>(transition[i][j].height),
 						transition[i][j].rotation, transition[i][j].color, kFillModeSolid
 					);
+				}
 			}
 		}
 
@@ -5025,6 +5027,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			break;
 		}
 	}
+
 	// ライブラリの終了
 	Novice::Finalize();
 	return 0;
