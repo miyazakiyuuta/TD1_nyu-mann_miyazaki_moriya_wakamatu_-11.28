@@ -3196,6 +3196,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 				}
 				if (boss.isPlayerHit)
 				{
+					player.hpCount--;
 					player.isNoDamage = true;
 					boss.isPlayerHit = false;
 				}
