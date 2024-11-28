@@ -3623,7 +3623,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 					}
 
 					//フェーズ１の時の色
-					if (phase == THREE)
+					if (phase == ONE)
 					{
 						powderAura[i].color = 0xFFFFFFFF;
 					}
